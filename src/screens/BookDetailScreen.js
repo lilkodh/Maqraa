@@ -1,459 +1,567 @@
-import React from "react";
+import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
   ScrollView,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
   Dimensions,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
-import { Theme } from "../utils/theme";
-import ProgressRing from "../components/ProgressRing";
+} from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import ProgressRing from '../components/ProgressRing';
+import { colors, typography, spacing, radii, glassMorphism, shadows } from '../utils/theme';
 
-const { width, height } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-export default function BookDetailScreen({
-  book = {
-    id: "wisdom",
-    title: "Le Jardin des Savoirs",
-    author: "Ibn Hazm",
-    coverUrl: null,
-    rating: 5,
-    languageTags: ["AR", "FR", "AMAZIGH"],
-    progress: 0.45,
-    pagesRead: 145,
-    totalPages: 320,
-  },
-  timerSession = {
-    formattedTime: "00:26:48",
-    isRunning: false,
-  },
+// ── Star rating ──────────────────────────────────────────────
+const StarIcon = ({ filled }) => (
+  <MaterialCommunityIcons
+    name={filled === 'half' ? 'star-half-full' : filled ? 'star' : 'star-outline'}
+    size={16}
+    color={colors.tertiaryFixedDim}
+  />
+);
+
+const RatingRow = ({ rating, isArabic }) => {
+  const stars = [];
+  for (let i = 1; i <= 5; i++) {
+    if (rating >= i)         stars.push(<StarIcon key={i} filled />);
+    else if (rating >= i - 0.5) stars.push(<StarIcon key={i} filled="half" />);
+    else                     stars.push(<StarIcon key={i} />);
+  }
+  return (
+    <View style={{ flexDirection: isArabic ? 'row-reverse' : 'row', alignItems: 'center', gap: 2 }}>
+      {stars}
+      <Text style={styles.ratingValue}>{rating > 0 ? ` ${rating}` : ''}</Text>
+    </View>
+  );
+};
+
+/**
+ * BookDetailScreen — Presentation layer
+ * Props passed from app/book/[id].js route.
+ */
+const BookDetailScreen = ({
+  book,
+  onBack,
+  onMarkCompleted,
   onStartTimer,
   onPauseTimer,
   onStopTimer,
-  onMarkCompleted,
-  onBackPress,
-}) {
+  timerSeconds,
+  timerRunning,
+}) => {
   const insets = useSafeAreaInsets();
-  const displayPercent = Math.round(book.progress * 100);
 
-  // Render Stars
-  const renderStars = () => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <Ionicons
-          key={i}
-          name={i <= book.rating ? "star" : "star-outline"}
-          size={18}
-          color={Theme.colors.gold}
-          style={{ marginHorizontal: 2 }}
-        />
-      );
-    }
-    return <View style={styles.starsRow}>{stars}</View>;
+  if (!book) return null;
+
+  const isArabic = book.language === 'Arabic';
+
+  const formatTimer = (s) => {
+    const h   = Math.floor(s / 3600).toString().padStart(2, '0');
+    const m   = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+    const sec = (s % 60).toString().padStart(2, '0');
+    return `${h}:${m}:${sec}`;
   };
 
+  const pagesLeft = book.totalPages - book.currentPage;
+  const sessionMinutes = Math.floor(timerSeconds / 60);
+
   return (
-    <View style={styles.container}>
-      {/* Blurred Full-Bleed Backdrop Banner */}
-      <View style={styles.backdropContainer}>
-        {book.coverUrl ? (
-          <Image
-            source={
-              typeof book.coverUrl === "string"
-                ? { uri: book.coverUrl }
-                : book.coverUrl
-            }
-            style={styles.backdropImage}
-            blurRadius={20}
-          />
-        ) : (
-          <View style={[styles.backdropImage, styles.backdropPlaceholder]} />
-        )}
-        {/* Spot/Fader Overlays */}
-        <LinearGradient
-          colors={["rgba(5, 8, 14, 0.4)", "rgba(5, 8, 14, 1)"]}
-          style={StyleSheet.absoluteFillObject}
-        />
-      </View>
-
-      {/* Screen Navigation Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <TouchableOpacity
-          onPress={onBackPress}
-          style={styles.backButton}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="arrow-back" size={22} color={Theme.colors.ivory} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Maqra</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
+    <View style={styles.root}>
       <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 120 }]}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: insets.bottom + 100 },
-        ]}
       >
-        {/* Book Cover and Title details */}
-        <View style={styles.metaContainer}>
-          <View style={styles.book3DWrapper}>
-            {book.coverUrl ? (
-              <Image
-                source={
-                  typeof book.coverUrl === "string"
-                    ? { uri: book.coverUrl }
-                    : book.coverUrl
-                }
-                style={styles.bookCover}
-              />
-            ) : (
-              <LinearGradient
-                colors={["#1E293B", "#0F172A"]}
-                style={styles.bookCoverPlaceholder}
-              >
-                <Ionicons name="book" size={50} color={Theme.colors.gold} />
-                <Text style={styles.bookPlaceholderText}>MAQRA</Text>
-              </LinearGradient>
-            )}
-            <View style={styles.bookSpineReflection} />
-          </View>
+        {/* ── Hero / Floating Cover ──────────────── */}
+        <View style={styles.heroWrapper}>
 
-          <Text style={styles.title}>{book.title}</Text>
-          <Text style={styles.author}>{book.author}</Text>
+          {/* Back button */}
+          <Animated.View entering={FadeInDown.duration(500)} style={[styles.backBtn, { top: insets.top + 8 }]}>
+            <TouchableOpacity
+              onPress={onBack}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+              activeOpacity={0.8}
+            >
+              <Ionicons name={isArabic ? "arrow-forward" : "arrow-back"} size={18} color={colors.onSurface} />
+              <Text style={styles.backBtnText}>{isArabic ? 'رجوع' : 'Back'}</Text>
+            </TouchableOpacity>
+          </Animated.View>
 
-          {/* Stars Matrix */}
-          {renderStars()}
+          {/* Floating cover */}
+          <Animated.View entering={FadeInDown.duration(600).delay(80)} style={styles.floatingCoverWrapper}>
+            <Image
+              source={{ uri: book.cover }}
+              style={styles.floatingCover}
+              resizeMode="cover"
+            />
+            <View style={[styles.coverSpine, isArabic && { left: undefined, right: 0 }]} />
+          </Animated.View>
+        </View>
 
-          {/* Language Tags */}
-          <View style={styles.tagsContainer}>
-            {book.languageTags.map((tag) => (
-              <View key={tag} style={styles.tagPill}>
-                <Text style={styles.tagText}>{tag}</Text>
+        {/* ── Content area ────────────────────────── */}
+        <View style={styles.content}>
+
+          {/* Identity + progress ring */}
+          <Animated.View entering={FadeInDown.duration(600).delay(150)} style={[styles.identityRow, isArabic && { flexDirection: 'row-reverse' }]}>
+            <ProgressRing
+              size={100}
+              progress={book.progress}
+              strokeWidth={6}
+              label={`${book.progress}%`}
+              labelStyle={{ fontSize: 16 }}
+            />
+            <View style={[styles.identityText, isArabic && { alignItems: 'flex-end' }]}>
+              <Text style={[styles.bookTitle, isArabic && { textAlign: 'right', writingDirection: 'rtl' }]} numberOfLines={2}>{book.title}</Text>
+              <Text style={[styles.bookAuthor, isArabic && { textAlign: 'right', writingDirection: 'rtl' }]}>{isArabic ? 'بقلم ' : 'By '}{book.author}</Text>
+              <RatingRow rating={book.rating} isArabic={isArabic} />
+              <View style={[styles.tagsRow, isArabic && { flexDirection: 'row-reverse' }]}>
+                {book.language && (
+                  <View style={styles.tag}><Text style={styles.tagText}>{isArabic && book.language === 'Arabic' ? 'العربية' : book.language}</Text></View>
+                )}
+                {book.genre?.map((g) => (
+                  <View key={g} style={styles.tag}><Text style={styles.tagText}>{g}</Text></View>
+                ))}
               </View>
+            </View>
+          </Animated.View>
+
+          {/* ══════════════════════════════════════════════════════
+               BIG READING TIMER CARD
+          ══════════════════════════════════════════════════════ */}
+          <Animated.View entering={FadeInDown.duration(600).delay(220)} style={styles.timerCardOuter}>
+            <View style={[glassMorphism.cardLiquid, styles.timerCard]}>
+              {/* Top row: label + running status */}
+              <View style={styles.timerHeaderRow}>
+                <View style={styles.timerLabelGroup}>
+                  <MaterialCommunityIcons
+                    name="timer-outline"
+                    size={16}
+                    color={colors.primaryFixedDim}
+                  />
+                  <Text style={styles.timerLabel}>SESSION TIMER</Text>
+                </View>
+                <View style={[
+                  styles.timerStatusPill,
+                  timerRunning ? styles.timerStatusActive : styles.timerStatusIdle,
+                ]}>
+                  <View style={[
+                    styles.timerStatusDot,
+                    { backgroundColor: timerRunning ? colors.emeraldSuccess : colors.outline },
+                  ]} />
+                  <Text style={[
+                    styles.timerStatusText,
+                    { color: timerRunning ? colors.emeraldSuccess : colors.outline },
+                  ]}>
+                    {timerRunning ? 'Running' : 'Paused'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* BIG timer display */}
+              <Text style={styles.timerDisplay}>{formatTimer(timerSeconds)}</Text>
+
+              {/* Session info sub-row */}
+              <View style={styles.timerInfoRow}>
+                <View style={styles.timerInfoChip}>
+                  <MaterialCommunityIcons name="clock-fast" size={13} color={colors.cyanGrey} />
+                  <Text style={styles.timerInfoText}>{sessionMinutes}m this session</Text>
+                </View>
+                <View style={styles.timerInfoChip}>
+                  <MaterialCommunityIcons name="book-open-page-variant" size={13} color={colors.cyanGrey} />
+                  <Text style={styles.timerInfoText}>{pagesLeft} pages left</Text>
+                </View>
+              </View>
+
+              {/* Divider */}
+              <View style={styles.timerDivider} />
+
+              {/* Controls row — centered, larger buttons */}
+              <View style={styles.timerControls}>
+                {/* Stop */}
+                <TouchableOpacity
+                  onPress={onStopTimer}
+                  style={[styles.timerBtnSecondary]}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="stop" size={22} color={colors.cyanGrey} />
+                  <Text style={styles.timerBtnSecondaryLabel}>Stop</Text>
+                </TouchableOpacity>
+
+                 <TouchableOpacity
+                  onPress={onStartTimer}
+                  style={styles.timerBtnPlay}
+                  activeOpacity={0.85}
+                >
+                  <View style={styles.timerBtnPlaySolid}>
+                    <Ionicons name="play" size={28} color={colors.onPrimary} />
+                  </View>
+                </TouchableOpacity>
+
+                {/* Pause */}
+                <TouchableOpacity
+                  onPress={onPauseTimer}
+                  style={[styles.timerBtnSecondary]}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="pause" size={22} color={colors.cyanGrey} />
+                  <Text style={styles.timerBtnSecondaryLabel}>Pause</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Animated.View>
+
+          {/* ── Meta stats 2×2 ──────────────────────── */}
+          <View style={styles.metaGrid}>
+            {[
+              { label: isArabic ? 'الصفحات المتبقية' : 'Pages Left',  value: pagesLeft.toString(), icon: 'book-open-page-variant' },
+              { label: isArabic ? 'معدل السرعة' : 'Avg. Speed',  value: isArabic ? '٢.٥ د/ص' : '2.5m/p',             icon: 'speedometer' },
+              { label: isArabic ? 'بدأت في' : 'Started',     value: isArabic && book.startedDate === 'May 28' ? '٢٨ مايو' : (book.startedDate || '—'), icon: 'calendar-start' },
+              { label: isArabic ? 'الهدف التالي' : 'Next Goal',   value: isArabic ? 'الفصل ٨' : 'Ch. 8',              icon: 'flag-outline' },
+            ].map((item, index) => (
+              <Animated.View
+                key={item.label}
+                entering={FadeInDown.duration(500).delay(280 + index * 60)}
+                style={[glassMorphism.cardLiquid, styles.metaCard, isArabic && { alignItems: 'flex-end' }]}
+              >
+                <MaterialCommunityIcons name={item.icon} size={16} color={colors.primaryFixedDim} style={{ marginBottom: 6 }} />
+                <Text style={[styles.metaLabel, isArabic && { textAlign: 'right', writingDirection: 'rtl' }]}>{item.label}</Text>
+                <Text style={[styles.metaValue, isArabic && { textAlign: 'right', writingDirection: 'rtl' }]}>{item.value}</Text>
+              </Animated.View>
             ))}
           </View>
-        </View>
 
-        {/* Concentric Metrics Hub */}
-        <View style={styles.metricsHub}>
-          <ProgressRing size={150} strokeWidth={10} progress={book.progress}>
-            <View style={styles.metricsInner}>
-              <Text style={styles.metricsPercent}>{displayPercent}%</Text>
-              <Text style={styles.metricsPageCount}>
-                p. {book.pagesRead} / {book.totalPages}
+          {/* ── Synopsis ────────────────────────────── */}
+          {book.synopsis && (
+            <Animated.View entering={FadeInDown.duration(600).delay(450)} style={[styles.synopsisSection, isArabic && { alignItems: 'flex-end' }]}>
+              <Text style={[styles.synopsisTitle, isArabic && { textAlign: 'right', writingDirection: 'rtl' }]}>
+                {isArabic ? 'نبذة عن الطبعة' : 'About this edition'}
               </Text>
-            </View>
-          </ProgressRing>
-        </View>
-
-        {/* Tactile Session Timer Card */}
-        <View style={styles.timerCard}>
-          <Text style={styles.timerTitle}>Session de Lecture</Text>
-          <Text style={styles.clockText}>{timerSession.formattedTime}</Text>
-
-          <View style={styles.controlsRow}>
-            {/* Start Button */}
-            <TouchableOpacity
-              onPress={onStartTimer}
-              activeOpacity={0.8}
-              style={[
-                styles.controlBtn,
-                styles.startBtn,
-                timerSession.isRunning ? styles.disabledBtn : null,
-              ]}
-              disabled={timerSession.isRunning}
-            >
-              <Ionicons name="play" size={14} color={Theme.colors.ivory} />
-              <Text style={styles.controlBtnText}>Start</Text>
-            </TouchableOpacity>
-
-            {/* Pause Button */}
-            <TouchableOpacity
-              onPress={onPauseTimer}
-              activeOpacity={0.8}
-              style={[
-                styles.controlBtn,
-                styles.pauseBtn,
-                !timerSession.isRunning ? styles.disabledBtn : null,
-              ]}
-              disabled={!timerSession.isRunning}
-            >
-              <Ionicons name="pause" size={14} color={Theme.colors.cobalt} />
-              <Text style={[styles.controlBtnText, { color: Theme.colors.cobalt }]}>
-                Pause
-              </Text>
-            </TouchableOpacity>
-
-            {/* Stop Button */}
-            <TouchableOpacity
-              onPress={onStopTimer}
-              activeOpacity={0.8}
-              style={[styles.controlBtn, styles.stopBtn]}
-            >
-              <Ionicons name="square" size={12} color={Theme.colors.onyx} />
-            </TouchableOpacity>
-          </View>
+              <Text style={[styles.synopsisText, isArabic && { textAlign: 'right', writingDirection: 'rtl' }]}>{book.synopsis}</Text>
+            </Animated.View>
+          )}
         </View>
       </ScrollView>
 
-      {/* Fixed Master CTA Button */}
-      <View style={[styles.ctaContainer, { paddingBottom: insets.bottom || 16 }]}>
-        <TouchableOpacity
-          onPress={onMarkCompleted}
-          activeOpacity={0.8}
-          style={[styles.ctaButton, Theme.shadows.emeraldGlow]}
-        >
-          <Text style={styles.ctaButtonText}>Marquer comme terminé</Text>
-        </TouchableOpacity>
-      </View>
+      {/* ── Pinned CTA ──────────────────────────── */}
+      {book.status !== 'finished' && (
+        <Animated.View entering={FadeInDown.duration(600).delay(500)} style={[styles.ctaWrapper, { paddingBottom: insets.bottom + 16, backgroundColor: colors.background }]}>
+          <TouchableOpacity
+            onPress={onMarkCompleted}
+            style={styles.completedBtn}
+            activeOpacity={0.85}
+          >
+            <View style={[styles.completedBtnSolid, isArabic && { flexDirection: 'row-reverse' }]}>
+              <Ionicons name="checkmark-circle-outline" size={20} color={colors.ivoryWhite} style={isArabic ? { marginLeft: 8 } : { marginRight: 8 }} />
+              <Text style={styles.completedBtnText}>{isArabic ? 'تحديد كمقروء' : 'Mark as Completed'}</Text>
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Theme.colors.void,
-  },
-  backdropContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
+  root: { flex: 1, backgroundColor: colors.background },
+  scroll: { flex: 1 },
+  scrollContent: {},
+
+  // ── Hero ──────────────────────────────────────────────────
+  heroWrapper: {
     height: 320,
-    zIndex: 0,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#0e1d2a',
   },
-  backdropImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  backdropPlaceholder: {
-    backgroundColor: Theme.colors.surface,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    height: 80,
+  backBtn: {
+    position: 'absolute',
+    left: spacing.containerPadding,
     zIndex: 10,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(5, 8, 14, 0.5)",
-    ...Theme.borders.glass,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  headerTitle: {
-    fontFamily: Theme.fonts.serifBold,
-    fontSize: 20,
-    color: Theme.colors.ivory,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    zIndex: 1,
-  },
-  metaContainer: {
-    alignItems: "center",
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  book3DWrapper: {
-    width: 140,
-    height: 200,
-    borderRadius: 10,
-    overflow: "hidden",
-    backgroundColor: "#1E293B",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.6,
-    shadowRadius: 15,
-    elevation: 12,
-    marginBottom: 20,
+    backgroundColor: '#13212e',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: radii.full,
     borderWidth: 1,
-    borderColor: "rgba(248, 250, 252, 0.1)",
+    borderColor: '#1c2d3d',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
-  bookCover: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
+  backBtnText: {
+    ...typography.labelMd,
+    color: colors.onSurface,
   },
-  bookCoverPlaceholder: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
+  floatingCoverWrapper: {
+    position: 'absolute',
+    bottom: 16,
+    alignSelf: 'center',
+    width: 130,
+    height: 195,
+    borderRadius: radii.sm,
+    overflow: 'hidden',
+    ...shadows.card,
+    transform: [{ rotate: '-1deg' }],
   },
-  bookPlaceholderText: {
-    fontFamily: Theme.fonts.serifSemi,
-    color: Theme.colors.ivory,
-    fontSize: 14,
-    marginTop: 10,
-    letterSpacing: 3,
+  floatingCover: { width: '100%', height: '100%' },
+  coverSpine: {
+    position: 'absolute',
+    top: 0, left: 0, bottom: 0,
+    width: 5,
+    backgroundColor: '#000000',
   },
-  bookSpineReflection: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: 20,
-    height: "100%",
-    backgroundColor: "rgba(255, 255, 255, 0.12)",
+
+  curveDivider: {
+    height: 2,
+    marginHorizontal: spacing.containerPadding,
+    borderRadius: 1,
   },
-  title: {
-    fontFamily: Theme.fonts.serifBold,
-    fontSize: 24,
-    color: Theme.colors.ivory,
-    textAlign: "center",
-    marginBottom: 6,
+
+  // ── Content ───────────────────────────────────────────────
+  content: {
+    paddingHorizontal: spacing.containerPadding,
+    paddingTop: 20,
+    gap: 20,
   },
-  author: {
-    fontFamily: Theme.fonts.sansRegular,
-    fontSize: 15,
-    color: Theme.colors.onyx,
-    textAlign: "center",
-    marginBottom: 12,
+
+  // ── Identity ─────────────────────────────────────────────
+  identityRow: {
+    flexDirection: 'row',
+    gap: 16,
+    alignItems: 'flex-start',
   },
-  starsRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: 16,
+  identityText: { flex: 1 },
+  bookTitle: {
+    ...typography.headlineLgMobile,
+    color: colors.ivoryWhite,
+    marginBottom: 4,
   },
-  tagsContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    flexWrap: "wrap",
+  bookAuthor: {
+    ...typography.bodyLg,
+    color: colors.cyanGrey,
+    fontStyle: 'italic',
+    marginBottom: 8,
   },
-  tagPill: {
-    backgroundColor: "rgba(248, 250, 252, 0.08)",
-    paddingHorizontal: 12,
+  ratingValue: {
+    ...typography.labelMd,
+    color: colors.outline,
+    marginLeft: 4,
+  },
+  tagsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 8,
+  },
+  tag: {
+    ...glassMorphism.cardLiquid,
+    paddingHorizontal: 14,
     paddingVertical: 4,
-    borderRadius: Theme.geometry.capsule,
-    borderWidth: 1,
-    borderColor: "rgba(248, 250, 252, 0.12)",
-    marginHorizontal: 4,
+    borderRadius: radii.full,
   },
   tagText: {
-    fontFamily: Theme.fonts.sansMedium,
-    fontSize: 10,
-    color: Theme.colors.ivory,
-    letterSpacing: 0.5,
-  },
-  metricsHub: {
-    alignItems: "center",
-    marginVertical: 20,
-  },
-  metricsInner: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  metricsPercent: {
-    fontFamily: Theme.fonts.serifBold,
-    fontSize: 28,
-    color: Theme.colors.ivory,
-  },
-  metricsPageCount: {
-    fontFamily: Theme.fonts.sansRegular,
+    ...typography.labelMd,
     fontSize: 12,
-    color: Theme.colors.onyx,
-    marginTop: 4,
+    color: colors.primaryFixed,
   },
+
+  // ══════════════════════════════════════════════════════════
+  // BIG TIMER CARD
+  // ══════════════════════════════════════════════════════════
+  timerCardOuter: {
+    position: 'relative',
+    marginVertical: 4,
+  },
+
   timerCard: {
-    backgroundColor: Theme.colors.elevatedGlass,
-    ...Theme.borders.glass,
-    borderRadius: 20,
-    padding: 20,
-    alignItems: "center",
-    marginBottom: 20,
+    borderRadius: radii.xl,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 24,
+    overflow: 'hidden',
+    gap: 0,
   },
-  timerTitle: {
-    fontFamily: Theme.fonts.sansRegular,
-    fontSize: 12,
-    color: Theme.colors.onyx,
-    textTransform: "uppercase",
-    letterSpacing: 1,
+
+  // Header row
+  timerHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  timerLabelGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  timerLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: colors.primaryFixedDim,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+  },
+  timerStatusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radii.full,
+    borderWidth: 1,
+  },
+  timerStatusActive: {
+    backgroundColor: '#0f3a2c',
+    borderColor: '#10B981',
+  },
+  timerStatusIdle: {
+    backgroundColor: '#1c2d3d',
+    borderColor: '#3b494c',
+  },
+  timerStatusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  timerStatusText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+  },
+
+  // ── THE BIG DISPLAY ───────────────────────────────────────
+  timerDisplay: {
+    fontFamily: 'JetBrainsMono_500Medium',
+    fontSize: 64,
+    color: colors.onSurface,
+    letterSpacing: -2,
+    textAlign: 'center',
     marginBottom: 12,
   },
-  clockText: {
-    fontFamily: Theme.fonts.mono,
-    fontSize: 32,
-    color: Theme.colors.ivory,
-    fontWeight: "bold",
-    letterSpacing: 1,
+
+  // Info row
+  timerInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 16,
     marginBottom: 20,
   },
-  controlsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
+  timerInfoChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
-  controlBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 38,
-    borderRadius: Theme.geometry.capsule,
-    paddingHorizontal: 16,
-    marginHorizontal: 6,
-  },
-  startBtn: {
-    backgroundColor: Theme.colors.cobalt,
-    flex: 1,
-  },
-  pauseBtn: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: Theme.colors.cobalt,
-    flex: 1,
-  },
-  stopBtn: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: "rgba(100, 116, 139, 0.4)",
-    width: 44,
-  },
-  disabledBtn: {
-    opacity: 0.4,
-  },
-  controlBtnText: {
-    fontFamily: Theme.fonts.sansMedium,
+  timerInfoText: {
+    fontFamily: 'Inter_400Regular',
     fontSize: 12,
-    color: Theme.colors.ivory,
-    marginLeft: 6,
+    color: colors.cyanGrey,
   },
-  ctaContainer: {
-    position: "absolute",
+
+  timerDivider: {
+    height: 1,
+    backgroundColor: '#1c2d3d',
+    marginBottom: 20,
+  },
+
+  // ── Controls ──────────────────────────────────────────────
+  timerControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 28,
+  },
+  timerBtnPlay: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    overflow: 'hidden',
+  },
+  timerBtnPlaySolid: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primaryFixedDim,
+  },
+  timerBtnSecondary: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    ...glassMorphism.cardLiquid,
+  },
+  timerBtnSecondaryLabel: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 10,
+    color: colors.cyanGrey,
+    letterSpacing: 0.3,
+  },
+
+  // ── Meta grid ─────────────────────────────────────────────
+  metaGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  metaCard: {
+    width: (SCREEN_WIDTH - spacing.containerPadding * 2 - 10) / 2 - 5,
+    borderRadius: radii.md,
+    padding: 14,
+  },
+  metaLabel: {
+    ...typography.labelMd,
+    fontSize: 11,
+    color: colors.cyanGrey,
+    marginBottom: 4,
+  },
+  metaValue: {
+    ...typography.headlineMd,
+    fontSize: 20,
+    color: colors.onSurface,
+  },
+
+  // ── Synopsis ──────────────────────────────────────────────
+  synopsisSection: { gap: 8 },
+  synopsisTitle: {
+    ...typography.headlineMd,
+    color: colors.ivoryWhite,
+  },
+  synopsisText: {
+    ...typography.bodyLg,
+    color: colors.outline,
+    lineHeight: 26,
+  },
+
+  // ── Pinned CTA ────────────────────────────────────────────
+  ctaWrapper: {
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "rgba(5, 8, 14, 0.9)",
-    paddingTop: 12,
-    paddingHorizontal: 20,
-    borderTopWidth: 1,
-    borderColor: "rgba(248, 250, 252, 0.05)",
+    paddingTop: 32,
+    paddingHorizontal: spacing.containerPadding,
   },
-  ctaButton: {
-    backgroundColor: Theme.colors.emerald,
-    height: 48,
-    borderRadius: Theme.geometry.capsule,
-    justifyContent: "center",
-    alignItems: "center",
+  completedBtn: {
+    borderRadius: radii.full,
+    overflow: 'hidden',
   },
-  ctaButtonText: {
-    fontFamily: Theme.fonts.sansBold,
-    fontSize: 14,
-    color: Theme.colors.ivory,
+  completedBtnSolid: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    backgroundColor: colors.emeraldSuccess,
+  },
+  completedBtnText: {
+    ...typography.headlineMd,
+    fontSize: 18,
+    color: colors.ivoryWhite,
   },
 });
+
+export default BookDetailScreen;

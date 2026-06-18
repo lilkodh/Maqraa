@@ -1,44 +1,61 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Theme } from "../utils/theme";
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { colors, typography, radii, glassMorphism } from '../utils/theme';
 
-export default function Emptystate({ title = "Aucun livre", description = "Commencez votre voyage littéraire en ajoutant un livre." }) {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.icon}>📚</Text>
+/**
+ * EmptyState — Presentational component
+ * Shown when a filtered book list returns zero results.
+ *
+ * Props:
+ *   title   {string} — headline text
+ *   message {string} — supporting body text
+ *   icon    {React.Node} — optional icon node
+ */
+const EmptyState = ({
+  title = 'Nothing here yet',
+  message = 'Your collection will appear here once you add some books.',
+  icon,
+}) => (
+  <View style={styles.container}>
+    <View style={styles.card}>
+      {icon && <View style={styles.iconWrapper}>{icon}</View>}
       <Text style={styles.title}>{title}</Text>
-      <Text style={styles.description}>{description}</Text>
+      <Text style={styles.message}>{message}</Text>
     </View>
-  );
-}
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
-    padding: 30,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Theme.colors.surface,
-    ...Theme.borders.glass,
-    borderRadius: 16,
-    marginVertical: 16,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    paddingVertical: 48,
   },
-  icon: {
-    fontSize: 40,
-    marginBottom: 12,
-    opacity: 0.8,
+  card: {
+    ...glassMorphism.cardLiquid,
+    borderRadius: radii.lg,
+    paddingVertical: 40,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    width: '100%',
+  },
+  iconWrapper: {
+    marginBottom: 16,
   },
   title: {
-    fontFamily: Theme.fonts.serifBold,
-    fontSize: 18,
-    color: Theme.colors.ivory,
-    textAlign: "center",
-    marginBottom: 6,
+    ...typography.headlineMd,
+    color: colors.onSurface,
+    textAlign: 'center',
+    marginBottom: 8,
   },
-  description: {
-    fontFamily: Theme.fonts.sansRegular,
-    fontSize: 14,
-    color: Theme.colors.onyx,
-    textAlign: "center",
-    lineHeight: 20,
+  message: {
+    ...typography.bodyMd,
+    color: colors.cyanGrey,
+    textAlign: 'center',
+    lineHeight: 22,
   },
 });
+
+export default EmptyState;

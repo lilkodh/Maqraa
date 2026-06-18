@@ -1,503 +1,415 @@
-import React from "react";
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
+  StyleSheet,
   Image,
   Dimensions,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { Theme } from "../utils/theme";
-import ProgressRing from "../components/ProgressRing";
-import StatCard from "../components/StatCard";
-import BookCard from "../components/BookCard";
-import Emptystate from "../components/Emptystate";
+} from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import BookCard from '../components/BookCard';
+import ProgressRing from '../components/ProgressRing';
+import EmptyState from '../components/Emptystate';
+import { colors, typography, spacing, radii, glassMorphism, shadows } from '../utils/theme';
 
-const { width } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const FILTERS = [
+  { key: 'all',         label: 'All' },
+  { key: 'in_progress', label: 'In Progress' },
+  { key: 'to_read',    label: 'To Read' },
+  { key: 'finished',   label: 'Finished' },
+];
 
-export default function LibraryScreen({
-  userProfile = {
-    name: "Malek El-Mansour",
-    streak: 14,
-    booksRead: 28,
-    totalPages: 8420,
-    annualGoalProgress: 0.68,
-  },
-  activeBook = {
-    id: "wisdom",
-    title: "The Art of Wisdom",
-    author: "Ibn Hazm",
-    coverUrl: null,
-    progress: 0.45,
-    pagesRead: 145,
-    totalPages: 320,
-  },
-  books = [],
-  categories = ["Tous", "En cours", "Terminés"],
-  activeCategory = "Tous",
-  onCategorySelect,
-  onBookSelect,
-  onSearchPress,
-  onAddBookPress,
-  onNavPress,
-  activeTab = "library",
-}) {
+/**
+ * LibraryScreen — Presentation layer
+ * Props passed from app/index.js route.
+ */
+const LibraryScreen = ({
+  books,
+  filteredBooks,
+  activeFilter,
+  currentlyReading,
+  booksFinished,
+  readingGoal,
+  onFilterChange,
+  onBookPress,
+  onResumeReading,
+}) => {
   const insets = useSafeAreaInsets();
+  const goalProgress = Math.round((booksFinished / readingGoal) * 100);
+  const isArabicFeatured = currentlyReading?.language === 'Arabic';
+  const featuredTextAlign = isArabicFeatured ? { textAlign: 'right', writingDirection: 'rtl' } : {};
+
+  const renderBookCard = useCallback(({ item }) => (
+    <View style={styles.bookCardWrapper}>
+      <BookCard book={item} onPress={() => onBookPress(item.id)} />
+    </View>
+  ), [onBookPress]);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Background Subtle Spotlight */}
-      <LinearGradient
-        colors={["rgba(245, 158, 11, 0.08)", "rgba(5, 8, 14, 0)", "rgba(5, 8, 14, 0)"]}
-        style={StyleSheet.absoluteFillObject}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 0.6 }}
-      />
-
-      {/* Header Tier */}
-      <View style={styles.header}>
-        <Text style={styles.logo}>Maqra</Text>
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            onPress={onSearchPress}
-            style={styles.iconButton}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="search-outline" size={20} color={Theme.colors.gold} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={onAddBookPress}
-            style={[styles.iconButton, { marginLeft: 12 }]}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="add-outline" size={22} color={Theme.colors.gold} />
-          </TouchableOpacity>
-        </View>
-      </View>
+    <View style={styles.root}>
 
       <ScrollView
-        showsVerticalScrollIndicator={false}
+        style={styles.scroll}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: insets.bottom + 80 },
+          { paddingTop: insets.top + 72, paddingBottom: insets.bottom + 100 },
         ]}
+        showsVerticalScrollIndicator={false}
       >
-        {/* Showcase Shelf Section */}
-        <View style={styles.shelfContainer}>
-          {/* Spotlight Highlight Glow */}
-          <LinearGradient
-            colors={["rgba(46, 102, 255, 0.12)", "transparent"]}
-            style={styles.shelfSpotlight}
-          />
-
-          <View style={styles.shelfContent}>
-            {/* Active Book 3D Showcase */}
-            <TouchableOpacity
-              activeOpacity={0.9}
-              onPress={() => onBookSelect && onBookSelect(activeBook.id)}
-              style={styles.book3DWrapper}
-            >
-              {activeBook.coverUrl ? (
-                <Image
-                  source={
-                    typeof activeBook.coverUrl === "string"
-                      ? { uri: activeBook.coverUrl }
-                      : activeBook.coverUrl
-                  }
-                  style={styles.book3DCover}
-                />
-              ) : (
-                <LinearGradient
-                  colors={["#1E293B", "#0F172A"]}
-                  style={styles.book3DCoverPlaceholder}
-                >
-                  <Ionicons name="book" size={40} color={Theme.colors.gold} />
-                  <Text style={styles.book3DPlaceholderText}>MAQRA</Text>
-                </LinearGradient>
-              )}
-              {/* Glossy Spine Reflection Overlay */}
-              <View style={styles.bookSpineReflection} />
-            </TouchableOpacity>
-
-            {/* Floating Progress Ring */}
-            <View style={styles.ringWrapper}>
-              <ProgressRing
-                size={110}
-                strokeWidth={8}
-                progress={userProfile.annualGoalProgress}
-              >
-                <View style={styles.ringInnerContent}>
-                  <Text style={styles.ringPercentText}>
-                    {Math.round(userProfile.annualGoalProgress * 100)}%
-                  </Text>
-                  <Text style={styles.ringLabel}>Objectif</Text>
-                </View>
-              </ProgressRing>
-            </View>
-          </View>
-
-          {/* Skeuomorphic Wooden Shelf Ledge */}
-          <View style={styles.woodShelf}>
-            <LinearGradient
-              colors={["#3b2314", "#23120a", "#120603"]}
-              style={styles.woodShelfGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 0, y: 1 }}
-            />
-            {/* Wood lip line */}
-            <View style={styles.woodShelfLip} />
-          </View>
-        </View>
-
-        {/* Quick-Stats Dashboard Row */}
-        <View style={styles.statsRow}>
-          <StatCard
-            title="Streak"
-            value={`${userProfile.streak} Jours`}
-            isHighlight={true}
-            icon={
-              <MaterialCommunityIcons
-                name="fire"
-                size={18}
-                color={Theme.colors.gold}
-              />
-            }
-          />
-          <StatCard
-            title="Livres Lus"
-            value={`${userProfile.booksRead}`}
-            icon={
-              <Ionicons
-                name="book-outline"
-                size={16}
-                color={Theme.colors.cobalt}
-              />
-            }
-          />
-          <StatCard
-            title="Pages"
-            value={userProfile.totalPages.toLocaleString()}
-            icon={
-              <Ionicons
-                name="document-text-outline"
-                size={16}
-                color={Theme.colors.emerald}
-              />
-            }
-          />
-        </View>
-
-        {/* Pill Categorization Row */}
-        <View style={styles.categoryContainer}>
+        {/* ── Filter tabs ─────────────────────────── */}
+        <Animated.View entering={FadeInDown.duration(500)}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryScroll}
+            contentContainerStyle={styles.filterRow}
+            style={styles.filterScroll}
           >
-            {categories.map((cat) => {
-              const isActive = activeCategory === cat;
+            {FILTERS.map((f) => {
+              const isActive = activeFilter === f.key;
               return (
                 <TouchableOpacity
-                  key={cat}
-                  activeOpacity={0.8}
-                  onPress={() => onCategorySelect && onCategorySelect(cat)}
-                  style={[
-                    styles.categoryPill,
-                    isActive ? styles.activeCategoryPill : null,
-                    isActive ? Theme.shadows.cobaltGlow : null,
-                  ]}
+                  key={f.key}
+                  onPress={() => onFilterChange(f.key)}
+                  style={[styles.filterPill, isActive && styles.filterPillActive]}
+                  activeOpacity={0.75}
                 >
-                  <Text
-                    style={[
-                      styles.categoryText,
-                      isActive ? styles.activeCategoryText : null,
-                    ]}
-                  >
-                    {cat}
+                  <Text style={[styles.filterLabel, isActive && styles.filterLabelActive]}>
+                    {f.label}
                   </Text>
                 </TouchableOpacity>
               );
             })}
           </ScrollView>
+        </Animated.View>
+
+        {/* ── Curved divider ──────────────────────── */}
+        <View style={styles.dividerWrapper}>
+          <LinearGradient
+            colors={[colors.primaryContainer, colors.tertiaryFixedDim]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.divider}
+          />
         </View>
 
-        {/* Book Catalog Section */}
-        <View style={styles.catalogContainer}>
-          {books.length === 0 ? (
-            <Emptystate />
+        {/* ── Currently Reading feature card ──────── */}
+        {currentlyReading && (
+          <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Currently Reading</Text>
+              <View style={styles.goalRingWrapper}>
+                <ProgressRing
+                  size={56}
+                  progress={goalProgress}
+                  strokeWidth={4}
+                  label={`${booksFinished}/${readingGoal}`}
+                />
+              </View>
+            </View>
+
+            {/* Featured card — liquid glass */}
+            <View style={styles.featuredCard}>
+              <View style={[glassMorphism.cardLiquid, styles.featuredInner, isArabicFeatured && { flexDirection: 'row-reverse' }]}>
+
+                {/* Cover */}
+                <View style={styles.featuredCoverWrapper}>
+                  <Image
+                    source={{ uri: currentlyReading.cover }}
+                    style={styles.featuredCover}
+                    resizeMode="cover"
+                  />
+                  <View style={[styles.featuredSpine, isArabicFeatured && { left: undefined, right: 0 }]} />
+                </View>
+
+                {/* Info */}
+                <View style={[styles.featuredInfo, isArabicFeatured && { alignItems: 'flex-end' }]}>
+                  <Text style={[styles.featuredSince, featuredTextAlign]}>
+                    {isArabicFeatured ? `قراءة منذ ${currentlyReading.startedDate}` : `Reading Since ${currentlyReading.startedDate}`}
+                  </Text>
+                  <Text style={[styles.featuredTitle, featuredTextAlign]} numberOfLines={2}>
+                    {currentlyReading.title}
+                  </Text>
+                  <Text style={[styles.featuredAuthor, featuredTextAlign]}>
+                    {isArabicFeatured ? 'بقلم ' : 'By '}{currentlyReading.author}
+                  </Text>
+
+                  {/* Progress ring + page count */}
+                  <View style={[styles.featuredProgressRow, isArabicFeatured && { flexDirection: 'row-reverse' }]}>
+                    <ProgressRing
+                      size={48}
+                      progress={currentlyReading.progress}
+                      strokeWidth={4}
+                      label={`${currentlyReading.progress}%`}
+                    />
+                    <Text style={styles.featuredPages}>
+                      {isArabicFeatured ? `صفحة ${currentlyReading.currentPage} / ${currentlyReading.totalPages}` : `${currentlyReading.currentPage} / ${currentlyReading.totalPages} pages`}
+                    </Text>
+                  </View>
+
+                  {/* CTA */}
+                  <TouchableOpacity
+                    style={[styles.resumeBtn, isArabicFeatured && { alignSelf: 'flex-end' }]}
+                    onPress={() => onResumeReading(currentlyReading.id)}
+                    activeOpacity={0.85}
+                  >
+                    <LinearGradient
+                      colors={[colors.primaryContainer, colors.secondaryContainer]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={[styles.resumeBtnGradient, isArabicFeatured && { flexDirection: 'row-reverse' }]}
+                    >
+                      <MaterialCommunityIcons
+                        name="book-open-variant"
+                        size={14}
+                        color={colors.onPrimaryFixed}
+                        style={isArabicFeatured ? { marginLeft: 6 } : { marginRight: 6 }}
+                      />
+                      <Text style={styles.resumeBtnText}>
+                        {isArabicFeatured ? 'متابعة القراءة' : 'Resume Reading'}
+                      </Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Animated.View>
+        )}
+
+        {/* ── Your Collection grid ────────────────── */}
+        <Animated.View entering={FadeInDown.duration(600).delay(150)} style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitleMd}>Your Collection</Text>
+            <Text style={styles.viewAll}>View All →</Text>
+          </View>
+
+          {filteredBooks.length === 0 ? (
+            <EmptyState
+              title="No books here"
+              message="Try a different filter or add some books to your library."
+            />
           ) : (
-            books.map((book) => (
-              <BookCard
-                key={book.id}
-                title={book.title}
-                author={book.author}
-                coverUrl={book.coverUrl}
-                progress={book.progress}
-                pagesRead={book.pagesRead}
-                totalPages={book.totalPages}
-                onPress={() => onBookSelect && onBookSelect(book.id)}
-              />
-            ))
+            <View style={styles.bookGrid}>
+              {filteredBooks.map((book, index) => (
+                <Animated.View
+                  key={book.id}
+                  entering={FadeInDown.duration(500).delay(200 + index * 60)}
+                  style={styles.bookCardWrapper}
+                >
+                  <BookCard book={book} onPress={() => onBookPress(book.id)} />
+                </Animated.View>
+              ))}
+            </View>
           )}
-        </View>
+        </Animated.View>
+
+        {/* ── Quick stats strip ───────────────────── */}
+        <Animated.View entering={FadeInDown.duration(600).delay(350)} style={styles.statsStrip}>
+          <View style={[glassMorphism.cardLiquid, styles.statPill]}>
+            <MaterialCommunityIcons name="timer-outline" size={18} color={colors.primaryFixedDim} style={{ marginBottom: 4 }} />
+            <Text style={styles.statPillValue}>148.5</Text>
+            <Text style={styles.statPillLabel}>hrs read</Text>
+          </View>
+          <View style={[glassMorphism.cardStreak, styles.statPill]}>
+            <MaterialCommunityIcons name="fire" size={18} color={colors.tertiaryFixedDim} style={{ marginBottom: 4 }} />
+            <Text style={[styles.statPillValue, { color: colors.tertiaryFixedDim }]}>
+              {currentlyReading ? '12' : '—'}
+            </Text>
+            <Text style={styles.statPillLabel}>day streak</Text>
+          </View>
+        </Animated.View>
       </ScrollView>
-
-      {/* Presentational Bottom Navigation Bar */}
-      <View style={[styles.bottomNav, { paddingBottom: insets.bottom || 16 }]}>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => onNavPress && onNavPress("library")}
-        >
-          <Ionicons
-            name="library"
-            size={22}
-            color={
-              activeTab === "library" ? Theme.colors.cobalt : Theme.colors.onyx
-            }
-          />
-          <Text
-            style={[
-              styles.navText,
-              activeTab === "library" ? styles.activeNavText : null,
-            ]}
-          >
-            Maqra
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => onNavPress && onNavPress("stats")}
-        >
-          <Ionicons
-            name="stats-chart"
-            size={22}
-            color={
-              activeTab === "stats" ? Theme.colors.cobalt : Theme.colors.onyx
-            }
-          />
-          <Text
-            style={[
-              styles.navText,
-              activeTab === "stats" ? styles.activeNavText : null,
-            ]}
-          >
-            Chrono
-          </Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    backgroundColor: Theme.colors.void,
+    backgroundColor: colors.background,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    height: 60,
-  },
-  logo: {
-    fontFamily: Theme.fonts.serifBold,
-    fontSize: 26,
-    color: Theme.colors.gold,
-    letterSpacing: 0.5,
-  },
-  headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "rgba(245, 158, 11, 0.08)",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(245, 158, 11, 0.15)",
-  },
+  scroll: { flex: 1 },
   scrollContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.containerPadding,
   },
-  shelfContainer: {
-    height: 230,
-    backgroundColor: "rgba(12, 18, 32, 0.4)",
-    borderRadius: 20,
-    ...Theme.borders.glass,
-    overflow: "hidden",
-    marginVertical: 16,
-    position: "relative",
-    justifyContent: "flex-end",
+
+  // Filter tabs
+  filterScroll: { marginBottom: 4 },
+  filterRow: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingRight: spacing.containerPadding,
   },
-  shelfSpotlight: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 120,
-  },
-  shelfContent: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-around",
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-    zIndex: 2,
-  },
-  book3DWrapper: {
-    width: 100,
-    height: 140,
-    borderRadius: 8,
-    backgroundColor: "#1E293B",
-    shadowColor: "#000",
-    shadowOffset: { width: 8, height: 12 },
-    shadowOpacity: 0.7,
-    shadowRadius: 10,
-    elevation: 10,
-    overflow: "hidden",
-    transform: [{ rotateY: "-15deg" }, { skewY: "2deg" }],
-    borderWidth: 1,
-    borderColor: "rgba(248, 250, 252, 0.1)",
-  },
-  book3DCover: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  book3DCoverPlaceholder: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 8,
-  },
-  book3DPlaceholderText: {
-    fontFamily: Theme.fonts.serifSemi,
-    color: Theme.colors.ivory,
-    fontSize: 12,
-    marginTop: 8,
-    letterSpacing: 2,
-  },
-  bookSpineReflection: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: 15,
-    height: "100%",
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
-  },
-  ringWrapper: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  ringInnerContent: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  ringPercentText: {
-    fontFamily: Theme.fonts.serifBold,
-    fontSize: 20,
-    color: Theme.colors.ivory,
-  },
-  ringLabel: {
-    fontFamily: Theme.fonts.sansRegular,
-    fontSize: 10,
-    color: Theme.colors.onyx,
-    marginTop: 2,
-  },
-  woodShelf: {
-    height: 16,
-    width: "100%",
-    position: "relative",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  woodShelfGradient: {
-    flex: 1,
-  },
-  woodShelfLip: {
-    height: 2,
-    backgroundColor: "rgba(255,255,255,0.06)",
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-  },
-  statsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  categoryContainer: {
-    marginBottom: 16,
-  },
-  categoryScroll: {
-    paddingVertical: 4,
-  },
-  categoryPill: {
+  filterPill: {
     paddingHorizontal: 20,
     paddingVertical: 8,
-    borderRadius: Theme.geometry.capsule,
-    borderWidth: 1,
-    borderColor: "rgba(248, 250, 252, 0.15)",
-    backgroundColor: "transparent",
-    marginRight: 8,
+    borderRadius: radii.full,
+    ...glassMorphism.cardLiquid,
+    borderRadius: radii.full,
   },
-  activeCategoryPill: {
-    backgroundColor: Theme.colors.cobalt,
-    borderColor: Theme.colors.cobalt,
+  filterPillActive: {
+    backgroundColor: '#0c2a39',
+    borderColor: colors.primaryFixedDim,
+    shadowColor: '#00daf3',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 4,
   },
-  categoryText: {
-    fontFamily: Theme.fonts.sansMedium,
-    fontSize: 13,
-    color: Theme.colors.onyx,
+  filterLabel: {
+    ...typography.labelMd,
+    color: colors.cyanGrey,
   },
-  activeCategoryText: {
-    color: Theme.colors.ivory,
+  filterLabelActive: {
+    color: colors.primaryFixedDim,
   },
-  catalogContainer: {
-    width: "100%",
+
+  // Divider
+  dividerWrapper: { marginVertical: 16 },
+  divider: {
+    height: 2,
+    borderRadius: 1,
+    opacity: 0.9,
+    shadowColor: '#00daf3',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 4,
   },
-  bottomNav: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "rgba(12, 18, 32, 0.95)",
-    borderTopWidth: 1,
-    borderColor: "rgba(248, 250, 252, 0.1)",
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingTop: 10,
-    height: 75,
+
+  // Section
+  section: { marginBottom: spacing.sectionGap },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
-  navItem: {
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1,
+  sectionTitle: {
+    ...typography.headlineLgMobile,
+    color: colors.onSurface,
   },
-  navText: {
-    fontFamily: Theme.fonts.sansRegular,
+  sectionTitleMd: {
+    ...typography.headlineMd,
+    color: colors.onSurface,
+  },
+  goalRingWrapper: {},
+  viewAll: {
+    ...typography.labelMd,
+    color: colors.primaryFixedDim,
+  },
+
+  // Featured card (liquid glass)
+  featuredCard: {
+    position: 'relative',
+  },
+  featuredInner: {
+    borderRadius: radii.lg,
+    padding: 20,
+    flexDirection: 'row',
+    gap: 16,
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  featuredCoverWrapper: {
+    width: 100,
+    height: 150,
+    borderRadius: radii.sm,
+    overflow: 'hidden',
+    flexShrink: 0,
+    ...shadows.card,
+  },
+  featuredCover: { width: '100%', height: '100%' },
+  featuredSpine: {
+    position: 'absolute',
+    top: 0, left: 0, bottom: 0,
+    width: 5,
+    backgroundColor: '#000000',
+  },
+  featuredInfo: { flex: 1 },
+  featuredSince: {
+    ...typography.dataMono,
+    fontSize: 10,
+    color: colors.primaryContainer,
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+    marginBottom: 4,
+  },
+  featuredTitle: {
+    ...typography.headlineMd,
+    color: colors.ivoryWhite,
+    marginBottom: 4,
+  },
+  featuredAuthor: {
+    ...typography.bodyMd,
+    color: colors.cyanGrey,
+    marginBottom: 12,
+  },
+  featuredProgressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 14,
+  },
+  featuredPages: {
+    ...typography.dataMono,
     fontSize: 11,
-    color: Theme.colors.onyx,
-    marginTop: 4,
+    color: colors.cyanGrey,
   },
-  activeNavText: {
-    color: Theme.colors.cobalt,
-    fontFamily: Theme.fonts.sansMedium,
+  resumeBtn: {
+    borderRadius: radii.full,
+    overflow: 'hidden',
+    alignSelf: 'flex-start',
+  },
+  resumeBtnGradient: {
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  resumeBtnText: {
+    ...typography.labelMd,
+    color: colors.onPrimaryFixed,
+    fontFamily: 'Inter_600SemiBold',
+  },
+
+  // Book grid
+  bookGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  bookCardWrapper: {
+    width: (SCREEN_WIDTH - spacing.containerPadding * 2 - 16) / 2,
+  },
+
+  // Stats strip
+  statsStrip: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 8,
+  },
+  statPill: {
+    flex: 1,
+    borderRadius: radii.md,
+    padding: 16,
+    alignItems: 'center',
+  },
+  statPillValue: {
+    ...typography.headlineMd,
+    color: colors.primaryFixedDim,
+    marginBottom: 2,
+  },
+  statPillLabel: {
+    ...typography.labelMd,
+    fontSize: 11,
+    color: colors.cyanGrey,
   },
 });
+
+export default LibraryScreen;

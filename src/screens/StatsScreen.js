@@ -1,493 +1,381 @@
-import React from "react";
+import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Image,
+  StyleSheet,
   Dimensions,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import Svg, { Rect, Defs, LinearGradient as SvgGradient, Stop } from "react-native-svg";
-import { Theme } from "../utils/theme";
+} from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import StatCard from '../components/StatCard';
+import { colors, typography, spacing, radii, glassMorphism, shadows } from '../utils/theme';
 
-const { width } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const AVATAR_URI = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC48zS_omS_vZ9dNPLiIPHgCvDD7mO9a14RmLKKwbc0OUt3Q1Q78-GGblj0ddqcyKpsx8YJgmzdz8X1nPqBOyT0WA-Hs1pPKEQmIMRamq24XM7AzZOsoQkiJPy-srLdEXkdS36ARtKrN8MaDMrlLI13ukyh7v0w9Z0gJ0fEtW-5nGmb1bFi77-OKunNl5jaKGwu1A4UjfObI-iCwjQp_WR3VFtgdAz_qJLCb2wDP5ephmigZroxnfIE3G6yMfDfSjkz0h2cfqu3wp-s';
 
-export default function StatsScreen({
-  userProfile = {
-    name: "Malek El-Mansour",
-    streak: 14,
-    totalPages: 8420,
-    level: "Savant",
-    avatarUrl: null,
+const BAR_DATA = [
+  { month: 'January',  books: 8,  pct: 80 },
+  { month: 'February', books: 5,  pct: 50 },
+  { month: 'March',    books: 12, pct: 95 },
+  { month: 'April',    books: 3,  pct: 30 },
+];
+
+const ACHIEVEMENTS = [
+  {
+    id: 'speed',
+    label: 'Speed Reader',
+    iconName: 'lightning-bolt',
+    iconSet: 'mci',
+    unlocked: true,
+    color: colors.emeraldSuccess,
   },
-  trendData = [4, 6, 3, 8, 5, 7],
-  trendLabels = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN"],
-  historyLogs = [
-    {
-      id: "log1",
-      bookTitle: "The Art of Wisdom",
-      date: "15 juin",
-      durationText: "26 min",
-      pagesText: "+14 pages",
-      progressChangeText: "45%",
-    },
-    {
-      id: "log2",
-      bookTitle: "Moorish Architecture",
-      date: "12 juin",
-      durationText: "42 min",
-      pagesText: "+28 pages",
-      progressChangeText: "80%",
-    },
-    {
-      id: "log3",
-      bookTitle: "Midnight Meditation",
-      date: "10 juin",
-      durationText: "15 min",
-      pagesText: "+8 pages",
-      progressChangeText: "12%",
-    },
-  ],
-  onNavPress,
-  activeTab = "stats",
-}) {
+  {
+    id: 'night',
+    label: 'Night Owl',
+    iconName: 'owl',
+    iconSet: 'mci',
+    unlocked: true,
+    color: colors.tertiaryFixedDim,
+  },
+  {
+    id: 'historian',
+    label: 'Historian',
+    iconName: 'lock',
+    iconSet: 'ion',
+    unlocked: false,
+    color: colors.outline,
+  },
+];
+
+/**
+ * StatsScreen — Presentation layer
+ * Props passed from app/stats.js route.
+ */
+const StatsScreen = ({ profile }) => {
   const insets = useSafeAreaInsets();
 
-  // Max value for graph scale
-  const maxVal = Math.max(...trendData, 1);
-  const chartHeight = 100;
-  const barWidth = 24;
-  const barGap = 16;
-  const chartWidth = trendData.length * (barWidth + barGap) - barGap;
+  if (!profile) return null;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Background Subtle Gradient */}
-      <LinearGradient
-        colors={["rgba(46, 102, 255, 0.05)", "rgba(5, 8, 14, 0)", "rgba(5, 8, 14, 0)"]}
-        style={StyleSheet.absoluteFillObject}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 0.5 }}
-      />
+    <View style={styles.root}>
 
       <ScrollView
-        showsVerticalScrollIndicator={false}
+        style={styles.scroll}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: insets.bottom + 80 },
+          { paddingTop: insets.top + 72, paddingBottom: insets.bottom + 100 },
         ]}
+        showsVerticalScrollIndicator={false}
       >
-        {/* Header Title */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Chrono-Analytics</Text>
-        </View>
-
-        {/* Reader Profile Section */}
-        <View style={styles.profileSection}>
-          <View style={[styles.avatarGlowWrapper, Theme.shadows.goldGlow]}>
-            <View style={styles.avatarBorder}>
-              <View style={styles.avatarInner}>
-                <Ionicons name="person" size={42} color={Theme.colors.gold} />
-              </View>
+        {/* ── Profile section ─────────────────────── */}
+        <Animated.View entering={FadeInDown.duration(600)} style={styles.profileSection}>
+          {/* Avatar ring */}
+          <View style={styles.avatarWrapper}>
+            <Image
+              source={{ uri: AVATAR_URI }}
+              style={styles.avatar}
+              resizeMode="cover"
+            />
+            {/* Badge */}
+            <View style={styles.avatarBadge}>
+              <MaterialCommunityIcons name="book-open-variant" size={14} color={colors.onTertiaryFixed} />
             </View>
           </View>
-          <Text style={styles.profileName}>{userProfile.name}</Text>
-          <Text style={styles.profileRole}>Lecteur Royal</Text>
-        </View>
+          <Text style={styles.profileName}>{profile.name}</Text>
+          <Text style={styles.profileTitle}>{profile.title}</Text>
+        </Animated.View>
 
-        {/* Performance Matrix Grid */}
-        <View style={styles.perfGrid}>
-          {/* Streak block with Gold Token style */}
-          <View
-            style={[
-              styles.gridBlock,
-              styles.highlightGridBlock,
-              Theme.shadows.goldGlow,
-            ]}
-          >
-            <MaterialCommunityIcons
-              name="fire"
-              size={22}
-              color={Theme.colors.gold}
+        {/* ── Curved divider ──────────────────────── */}
+        <Animated.View entering={FadeInDown.duration(500).delay(100)} style={styles.dividerWrapper}>
+          <LinearGradient
+            colors={['transparent', colors.primaryFixedDim, colors.secondaryContainer, 'transparent']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.divider}
+          />
+        </Animated.View>
+
+        {/* ── Stats 2×2 grid ──────────────────────── */}
+        <View style={styles.statsGrid}>
+          <Animated.View entering={FadeInDown.duration(500).delay(150)}>
+            <StatCard
+              label="Books Read"
+              value={profile.booksRead.toString()}
+              icon={<MaterialCommunityIcons name="book-multiple" size={22} color={colors.primaryFixedDim} />}
+              style={styles.statCardItem}
             />
-            <Text style={styles.gridValueHighlight}>
-              {userProfile.streak}
-            </Text>
-            <Text style={styles.gridLabel}>Streak Actuel</Text>
-          </View>
-
-          {/* Statistics block */}
-          <View style={styles.gridBlock}>
-            <Ionicons name="book" size={20} color={Theme.colors.cobalt} />
-            <Text style={styles.gridValue}>
-              {userProfile.totalPages.toLocaleString()}
-            </Text>
-            <Text style={styles.gridLabel}>Pages Totales</Text>
-          </View>
-
-          {/* Level block */}
-          <View style={styles.gridBlock}>
-            <Ionicons name="ribbon" size={20} color={Theme.colors.emerald} />
-            <Text style={[styles.gridValue, { color: Theme.colors.emerald }]}>
-              {userProfile.level}
-            </Text>
-            <Text style={styles.gridLabel}>Rang de Lecture</Text>
-          </View>
+          </Animated.View>
+          <Animated.View entering={FadeInDown.duration(500).delay(200)}>
+            <StatCard
+              label="Current Streak"
+              value={profile.currentStreak.toString()}
+              unit="Days"
+              icon={<MaterialCommunityIcons name="fire" size={22} color={colors.tertiaryFixedDim} />}
+              highlight
+              style={styles.statCardItem}
+            />
+          </Animated.View>
+          <Animated.View entering={FadeInDown.duration(500).delay(250)}>
+            <StatCard
+              label="Pages This Month"
+              value={profile.pagesThisMonth.toLocaleString()}
+              icon={<MaterialCommunityIcons name="file-document-multiple-outline" size={22} color={colors.primaryFixedDim} />}
+              style={styles.statCardItem}
+            />
+          </Animated.View>
+          <Animated.View entering={FadeInDown.duration(500).delay(300)}>
+            <StatCard
+              label="Reading Time"
+              value={profile.readingTimeHours.toString()}
+              unit="hrs"
+              icon={<MaterialCommunityIcons name="timer-outline" size={22} color={colors.primaryFixedDim} />}
+              style={styles.statCardItem}
+            />
+          </Animated.View>
         </View>
 
-        {/* Native Trend Graph */}
-        <View style={styles.graphCard}>
-          <Text style={styles.graphTitle}>Livres par mois</Text>
-          <View style={styles.chartWrapper}>
-            <Svg height={chartHeight} width={chartWidth}>
-              <Defs>
-                <SvgGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                  <Stop offset="0" stopColor={Theme.colors.cobalt} stopOpacity="1" />
-                  <Stop
-                    offset="1"
-                    stopColor="rgba(46, 102, 255, 0.15)"
-                    stopOpacity="0.15"
-                  />
-                </SvgGradient>
-              </Defs>
-
-              {trendData.map((val, idx) => {
-                const barHeight = (val / maxVal) * (chartHeight - 15);
-                const x = idx * (barWidth + barGap);
-                const y = chartHeight - barHeight;
-
-                return (
-                  <View key={idx}>
-                    {/* Background Bar track */}
-                    <Rect
-                      x={x}
-                      y={0}
-                      width={barWidth}
-                      height={chartHeight}
-                      fill="rgba(248, 250, 252, 0.03)"
-                      rx={6}
-                    />
-                    {/* Active Gradient Bar */}
-                    <Rect
-                      x={x}
-                      y={y}
-                      width={barWidth}
-                      height={barHeight}
-                      fill="url(#barGrad)"
-                      rx={6}
-                    />
-                    {/* Highlight Glow Cap */}
-                    <Rect
-                      x={x}
-                      y={y}
-                      width={barWidth}
-                      height={4}
-                      fill={Theme.colors.ivory}
-                      opacity={0.8}
-                      rx={2}
-                    />
-                  </View>
-                );
-              })}
-            </Svg>
+        {/* ── Bar chart card ──────────────────────── */}
+        <Animated.View entering={FadeInDown.duration(600).delay(350)} style={[glassMorphism.cardLiquid, styles.chartCard]}>
+          <View style={styles.chartHeader}>
+            <Text style={styles.chartTitle}>Books per Month</Text>
+            <View style={styles.chartBadge}>
+              <Text style={styles.chartBadgeText}>Yearly Recap</Text>
+            </View>
           </View>
 
-          {/* X Axis Labels */}
-          <View style={[styles.xAxisRow, { width: chartWidth }]}>
-            {trendLabels.map((lbl, idx) => (
-              <Text key={idx} style={styles.xAxisLabel}>
-                {lbl}
-              </Text>
+          <View style={styles.barsWrapper}>
+            {BAR_DATA.map((d) => (
+              <View key={d.month} style={styles.barItem}>
+                <View style={styles.barLabelRow}>
+                  <Text style={styles.barMonth}>{d.month}</Text>
+                  <Text style={styles.barValue}>{d.books} Books</Text>
+                </View>
+                <View style={styles.barTrack}>
+                  <LinearGradient
+                    colors={[colors.primaryFixedDim, colors.secondary]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[styles.barFill, { width: `${d.pct}%` }]}
+                  />
+                </View>
+              </View>
             ))}
           </View>
-        </View>
+        </Animated.View>
 
-        {/* Historical Timeline Ledger */}
-        <View style={styles.ledgerCard}>
-          <Text style={styles.ledgerTitle}>Historique de Lecture</Text>
-          {historyLogs.map((log, index) => (
-            <View
-              key={log.id}
-              style={[
-                styles.ledgerRow,
-                index === historyLogs.length - 1 ? styles.lastLedgerRow : null,
-              ]}
-            >
-              <View style={styles.ledgerMeta}>
-                <Text style={styles.ledgerBookTitle}>{log.bookTitle}</Text>
-                <Text style={styles.ledgerDate}>{log.date}</Text>
-              </View>
-              <View style={styles.ledgerStats}>
-                <Text style={styles.ledgerTime}>{log.durationText}</Text>
-                <Text style={styles.ledgerPages}>
-                  {log.pagesText} ({log.progressChangeText})
+        {/* ── Achievements ────────────────────────── */}
+        <View style={styles.achievementsSection}>
+          <Animated.View entering={FadeInDown.duration(500).delay(400)}>
+            <Text style={styles.achievementsTitle}>Mastery Badges</Text>
+          </Animated.View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.achievementsScroll}
+          >
+            {ACHIEVEMENTS.map((a, index) => (
+              <Animated.View
+                key={a.id}
+                entering={FadeInDown.duration(500).delay(450 + index * 60)}
+                style={[
+                  glassMorphism.cardLiquid,
+                  styles.achievementCard,
+                  !a.unlocked && styles.achievementLocked,
+                ]}
+              >
+                <View
+                  style={[
+                    styles.achievementIcon,
+                    { borderColor: a.color + '60', backgroundColor: a.color + '18' },
+                  ]}
+                >
+                  {a.iconSet === 'ion' ? (
+                    <Ionicons name={a.iconName} size={28} color={a.unlocked ? a.color : colors.outline} />
+                  ) : (
+                    <MaterialCommunityIcons name={a.iconName} size={28} color={a.unlocked ? a.color : colors.outline} />
+                  )}
+                </View>
+                <Text
+                  style={[
+                    styles.achievementLabel,
+                    { color: a.unlocked ? colors.ivoryWhite : colors.outline },
+                  ]}
+                >
+                  {a.label}
                 </Text>
-              </View>
-            </View>
-          ))}
+              </Animated.View>
+            ))}
+          </ScrollView>
         </View>
       </ScrollView>
-
-      {/* Presentational Bottom Navigation Bar */}
-      <View style={[styles.bottomNav, { paddingBottom: insets.bottom || 16 }]}>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => onNavPress && onNavPress("library")}
-        >
-          <Ionicons
-            name="library"
-            size={22}
-            color={
-              activeTab === "library" ? Theme.colors.cobalt : Theme.colors.onyx
-            }
-          />
-          <Text
-            style={[
-              styles.navText,
-              activeTab === "library" ? styles.activeNavText : null,
-            ]}
-          >
-            Maqra
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => onNavPress && onNavPress("stats")}
-        >
-          <Ionicons
-            name="stats-chart"
-            size={22}
-            color={
-              activeTab === "stats" ? Theme.colors.cobalt : Theme.colors.onyx
-            }
-          />
-          <Text
-            style={[
-              styles.navText,
-              activeTab === "stats" ? styles.activeNavText : null,
-            ]}
-          >
-            Chrono
-          </Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Theme.colors.void,
-  },
-  header: {
-    height: 60,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 20,
-  },
-  headerTitle: {
-    fontFamily: Theme.fonts.serifBold,
-    fontSize: 22,
-    color: Theme.colors.gold,
-  },
+  root: { flex: 1, backgroundColor: colors.background },
+  scroll: { flex: 1 },
   scrollContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.containerPadding,
   },
+
+  // Profile
   profileSection: {
-    alignItems: "center",
-    marginVertical: 20,
+    alignItems: 'center',
+    marginBottom: 24,
   },
-  avatarGlowWrapper: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: "transparent",
-    justifyContent: "center",
-    alignItems: "center",
+  avatarWrapper: {
+    width: 120,
+    height: 120,
     marginBottom: 16,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  avatarBorder: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+  avatar: {
+    width: 116,
+    height: 116,
+    borderRadius: 58,
     borderWidth: 2,
-    borderColor: Theme.colors.gold,
-    padding: 3,
-    backgroundColor: Theme.colors.void,
+    borderColor: '#1c2d3d',
   },
-  avatarInner: {
-    flex: 1,
-    borderRadius: 40,
-    backgroundColor: Theme.colors.elevatedGlass,
-    ...Theme.borders.glass,
-    justifyContent: "center",
-    alignItems: "center",
+  avatarBadge: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.tertiaryFixedDim,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.background,
   },
   profileName: {
-    fontFamily: Theme.fonts.serifBold,
-    fontSize: 22,
-    color: Theme.colors.ivory,
+    ...typography.headlineLgMobile,
+    color: colors.tertiaryFixedDim,
+    marginBottom: 4,
   },
-  profileRole: {
-    fontFamily: Theme.fonts.sansRegular,
-    fontSize: 13,
-    color: Theme.colors.onyx,
-    marginTop: 2,
+  profileTitle: {
+    ...typography.labelMd,
+    color: colors.cyanGrey,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
   },
-  perfGrid: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 24,
-  },
-  gridBlock: {
-    backgroundColor: Theme.colors.elevatedGlass,
-    ...Theme.borders.glass,
-    borderRadius: 16,
-    padding: 12,
-    flex: 1,
-    marginHorizontal: 4,
-    height: 100,
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  highlightGridBlock: {
-    borderColor: Theme.colors.gold,
-    borderTopWidth: 2,
-  },
-  gridValue: {
-    fontFamily: Theme.fonts.serifBold,
-    fontSize: 18,
-    color: Theme.colors.ivory,
-  },
-  gridValueHighlight: {
-    fontFamily: Theme.fonts.serifBold,
-    fontSize: 20,
-    color: Theme.colors.gold,
-  },
-  gridLabel: {
-    fontFamily: Theme.fonts.sansRegular,
-    fontSize: 10,
-    color: Theme.colors.onyx,
-  },
-  graphCard: {
-    backgroundColor: Theme.colors.elevatedGlass,
-    ...Theme.borders.glass,
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 24,
-    alignItems: "center",
-  },
-  graphTitle: {
-    fontFamily: Theme.fonts.sansRegular,
-    fontSize: 12,
-    color: Theme.colors.onyx,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 16,
-    alignSelf: "flex-start",
-  },
-  chartWrapper: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  xAxisRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 8,
-  },
-  xAxisLabel: {
-    fontFamily: Theme.fonts.sansRegular,
-    fontSize: 9,
-    color: Theme.colors.onyx,
-    width: 24,
-    textAlign: "center",
-  },
-  ledgerCard: {
-    backgroundColor: Theme.colors.elevatedGlass,
-    ...Theme.borders.glass,
-    borderRadius: 20,
-    padding: 20,
+
+  // Divider
+  dividerWrapper: { marginBottom: 24 },
+  divider: { height: 1.5, borderRadius: 1 },
+
+  // Stats grid
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
     marginBottom: 20,
   },
-  ledgerTitle: {
-    fontFamily: Theme.fonts.sansRegular,
-    fontSize: 12,
-    color: Theme.colors.onyx,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 16,
+  statCardItem: {
+    width: (SCREEN_WIDTH - spacing.containerPadding * 2 - 12) / 2,
   },
-  ledgerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(245, 158, 11, 0.12)", // Sand colored divider
+
+  // Chart
+  chartCard: {
+    borderRadius: radii.md,
+    padding: 20,
+    marginBottom: 20,
+    overflow: 'hidden',
   },
-  lastLedgerRow: {
-    borderBottomWidth: 0,
+
+  chartHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
   },
-  ledgerMeta: {
-    flex: 1.2,
+  chartTitle: {
+    ...typography.headlineMd,
+    color: colors.ivoryWhite,
   },
-  ledgerBookTitle: {
-    fontFamily: Theme.fonts.serifBold,
-    fontSize: 14,
-    color: Theme.colors.ivory,
+  chartBadge: {
+    backgroundColor: '#0d2f3c',
+    borderWidth: 1,
+    borderColor: colors.primaryFixedDim,
+    borderRadius: radii.full,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
   },
-  ledgerDate: {
-    fontFamily: Theme.fonts.sansRegular,
+  chartBadgeText: {
+    ...typography.dataMono,
     fontSize: 11,
-    color: Theme.colors.onyx,
-    marginTop: 2,
+    color: colors.primaryFixedDim,
   },
-  ledgerStats: {
-    flex: 0.8,
-    alignItems: "flex-end",
+  barsWrapper: { gap: 16 },
+  barItem: { gap: 6 },
+  barLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  ledgerTime: {
-    fontFamily: Theme.fonts.mono,
+  barValue: {
+    ...typography.dataMono,
+    fontSize: 11,
+    color: colors.cyanGrey,
+  },
+  barTrack: {
+    height: 12,
+    backgroundColor: colors.surfaceContainer,
+    borderRadius: radii.full,
+    overflow: 'hidden',
+  },
+  barFill: {
+    height: '100%',
+    borderRadius: radii.full,
+    minWidth: 4,
+  },
+  barMonth: {
+    ...typography.labelMd,
     fontSize: 13,
-    color: Theme.colors.cobalt,
-    fontWeight: "bold",
+    color: colors.cyanGrey,
   },
-  ledgerPages: {
-    fontFamily: Theme.fonts.sansRegular,
-    fontSize: 11,
-    color: Theme.colors.onyx,
-    marginTop: 2,
+
+  // Achievements
+  achievementsSection: { marginBottom: 8 },
+  achievementsTitle: {
+    ...typography.headlineMd,
+    color: colors.ivoryWhite,
+    marginBottom: 14,
   },
-  bottomNav: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "rgba(12, 18, 32, 0.95)",
-    borderTopWidth: 1,
-    borderColor: "rgba(248, 250, 252, 0.1)",
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingTop: 10,
-    height: 75,
+  achievementsScroll: {
+    gap: 12,
+    paddingRight: spacing.containerPadding,
   },
-  navItem: {
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1,
+  achievementCard: {
+    width: 130,
+    borderRadius: radii.md,
+    padding: 16,
+    alignItems: 'center',
+    gap: 10,
   },
-  navText: {
-    fontFamily: Theme.fonts.sansRegular,
-    fontSize: 11,
-    color: Theme.colors.onyx,
-    marginTop: 4,
+  achievementLocked: {
+    opacity: 0.4,
   },
-  activeNavText: {
-    color: Theme.colors.cobalt,
-    fontFamily: Theme.fonts.sansMedium,
+  achievementIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  achievementLabel: {
+    ...typography.labelMd,
+    textAlign: 'center',
   },
 });
+
+export default StatsScreen;

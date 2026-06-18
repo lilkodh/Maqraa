@@ -1,67 +1,130 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Theme } from "../utils/theme";
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { colors, typography, radii, glassMorphism, shadows } from '../utils/theme';
 
-export default function StatCard({ title, value, icon, isHighlight = false }) {
+/**
+ * StatCard — Presentational component
+ * Displays a single statistic in a glass-morphism tile.
+ *
+ * Props:
+ *   label      {string}     — label text (e.g. "Books Read")
+ *   value      {string}     — large displayed value (e.g. "42")
+ *   unit       {string}     — optional unit suffix (e.g. "hrs", "Days")
+ *   icon       {React.Node} — optional icon node rendered top-left
+ *   accent     {string}     — optional accent color for the value
+ *   highlight  {boolean}    — if true, renders gold streak styling
+ *   style      {object}     — optional container style override
+ */
+const StatCard = ({
+  label,
+  value,
+  unit,
+  icon,
+  accent,
+  highlight = false,
+  style,
+}) => {
+  const valueColor = accent ?? (highlight ? colors.tertiaryFixedDim : colors.primaryFixedDim);
+
   return (
     <View
       style={[
         styles.card,
-        isHighlight ? styles.highlightCard : null,
-        isHighlight ? Theme.shadows.goldGlow : null,
+        highlight ? styles.cardHighlight : styles.cardDefault,
+        style,
       ]}
     >
-      {/* Icon and Title */}
-      <View style={styles.headerRow}>
-        {icon && <View style={styles.iconContainer}>{icon}</View>}
-        <Text style={styles.title}>{title}</Text>
-      </View>
 
-      {/* Value */}
-      <Text style={[styles.value, isHighlight ? styles.highlightValue : null]}>
-        {value}
-      </Text>
+      {/* Absolute fire badge for streak */}
+      {highlight && (
+        <View style={styles.highlightBadge}>
+          <MaterialCommunityIcons
+            name="fire"
+            size={14}
+            color={colors.tertiaryFixedDim}
+          />
+        </View>
+      )}
+
+      {/* Icon top-left */}
+      {icon && <View style={styles.iconWrapper}>{icon}</View>}
+
+      {/* Stats */}
+      <View style={styles.bottom}>
+        <View style={styles.valueRow}>
+          <Text style={[styles.value, { color: valueColor }]}>{value}</Text>
+          {!!unit && (
+            <Text style={[styles.unit, { color: valueColor }]}>{' '}{unit}</Text>
+          )}
+        </View>
+        <Text style={[styles.label, highlight && styles.labelHighlight]}>{label}</Text>
+      </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Theme.colors.elevatedGlass,
-    ...Theme.borders.glass,
-    borderRadius: 16,
-    padding: 14,
-    flex: 1,
-    minWidth: 100,
-    marginHorizontal: 4,
-    justifyContent: "space-between",
-    height: 100,
+    borderRadius: radii.md,
+    padding: 20,
+    aspectRatio: 1,
+    justifyContent: 'space-between',
+    overflow: 'hidden',
+    ...shadows.card,
   },
-  highlightCard: {
-    borderColor: Theme.colors.gold,
-    borderTopWidth: 2,
+  cardDefault: {
+    ...glassMorphism.cardLiquid,
   },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
+  cardHighlight: {
+    backgroundColor: '#161922',
+    borderWidth: 1.5,
+    borderColor: '#4a3824',
+    shadowColor: '#ffb95f',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    elevation: 5,
   },
-  iconContainer: {
-    marginRight: 6,
+
+  iconWrapper: {
+    alignSelf: 'flex-start',
   },
-  title: {
-    fontFamily: Theme.fonts.sansRegular,
-    fontSize: 12,
-    color: Theme.colors.onyx,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
+  bottom: {
+    marginTop: 'auto',
+  },
+  valueRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
   },
   value: {
-    fontFamily: Theme.fonts.serifBold,
-    fontSize: 22,
-    color: Theme.colors.ivory,
+    ...typography.headlineLg,
+    lineHeight: 40,
   },
-  highlightValue: {
-    color: Theme.colors.gold,
+  unit: {
+    ...typography.bodyMd,
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  label: {
+    ...typography.labelMd,
+    color: colors.cyanGrey,
+    marginTop: 2,
+  },
+  labelHighlight: {
+    color: colors.tertiary,
+  },
+  highlightBadge: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: colors.background,
+    padding: 6,
+    borderRadius: radii.full,
+    borderWidth: 1,
+    borderColor: colors.tertiary,
+    zIndex: 10,
   },
 });
+
+export default StatCard;

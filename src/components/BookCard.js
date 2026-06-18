@@ -1,164 +1,168 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
-import { Theme } from "../utils/theme";
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { colors, typography, radii, glassMorphism, shadows } from '../utils/theme';
 
-export default function BookCard({
-  title,
-  author,
-  coverUrl,
-  progress = 0,
-  pagesRead,
-  totalPages,
-  onPress,
-}) {
-  const displayProgress = Math.round(progress * 100);
+/**
+ * BookCard — Presentational component
+ * Displays a book cover with title, author, and progress overlay.
+ *
+ * Props:
+ *   book       {object}   — { id, title, author, cover, progress, status }
+ *   onPress    {function} — called when card is tapped
+ *   style      {object}   — optional container style override
+ */
+const BookCard = ({ book, onPress, style }) => {
+  const { title, author, cover, progress, status } = book;
+
+  const statusLabel = status === 'finished'
+    ? 'Finished'
+    : status === 'in_progress'
+    ? `${progress}%`
+    : 'Unread';
+
+  const statusColor = status === 'finished'
+    ? colors.emeraldSuccess
+    : status === 'in_progress'
+    ? colors.primaryFixedDim
+    : colors.cyanGrey;
+
+  const statusBg = status === 'finished'
+    ? '#0f3a2c'
+    : status === 'in_progress'
+    ? '#0d2f3c'
+    : '#13212e';
+
+  const statusBorder = status === 'finished'
+    ? colors.emeraldSuccess
+    : status === 'in_progress'
+    ? colors.primaryFixedDim
+    : colors.outlineVariant;
+
+  const isArabic = book.language === 'Arabic';
+
+  const coverWrapperStyle = [
+    styles.coverWrapper,
+    isArabic ? { borderLeftWidth: 0, borderRightWidth: 4, borderRightColor: '#000000' } : {}
+  ];
+
+  const spineStyle = [
+    styles.spine,
+    isArabic ? { left: undefined, right: 0 } : {}
+  ];
+
+  const progressBarTrackStyle = [
+    styles.progressBarTrack,
+    isArabic ? { flexDirection: 'row-reverse' } : { flexDirection: 'row' }
+  ];
+
+  const textStyle = isArabic ? { textAlign: 'right', writingDirection: 'rtl' } : {};
 
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
       onPress={onPress}
-      style={styles.card}
+      style={[styles.container, style]}
+      activeOpacity={0.8}
     >
-      {/* Book Cover Container */}
-      <View style={styles.coverContainer}>
-        {coverUrl ? (
-          <Image
-            source={typeof coverUrl === "string" ? { uri: coverUrl } : coverUrl}
-            style={styles.coverImage}
-          />
-        ) : (
-          <View style={styles.placeholderCover}>
-            <Text style={styles.placeholderText}>📖</Text>
+      {/* Book cover */}
+      <View style={coverWrapperStyle}>
+        <Image
+          source={{ uri: cover }}
+          style={styles.cover}
+          resizeMode="cover"
+        />
+        {/* Spine shadow */}
+        <View style={spineStyle} />
+        {/* Liquid glass status badge */}
+        <View style={[
+          styles.statusBadge,
+          { backgroundColor: statusBg, borderColor: statusBorder },
+        ]}>
+          <Text style={[styles.statusText, { color: statusColor }]}>
+            {statusLabel}
+          </Text>
+        </View>
+        {/* Progress bar at bottom */}
+        {status === 'in_progress' && (
+          <View style={progressBarTrackStyle}>
+            <View
+              style={[
+                styles.progressBarFill,
+                { width: `${progress}%` },
+              ]}
+            />
           </View>
         )}
       </View>
 
-      {/* Info Container */}
-      <View style={styles.infoContainer}>
-        <View>
-          <Text style={styles.title} numberOfLines={1}>
-            {title}
-          </Text>
-          <Text style={styles.author} numberOfLines={1}>
-            {author}
-          </Text>
-        </View>
-
-        {/* Progress Section */}
-        <View style={styles.progressSection}>
-          <View style={styles.progressBarBg}>
-            <View
-              style={[
-                styles.progressBarFill,
-                { width: `${displayProgress}%` },
-              ]}
-            />
-          </View>
-          <View style={styles.progressLabelRow}>
-            <Text style={styles.progressText}>
-              {pagesRead !== undefined && totalPages !== undefined
-                ? `p. ${pagesRead} / ${totalPages}`
-                : `${displayProgress}%`}
-            </Text>
-            {progress >= 1 && (
-              <View style={styles.completedBadge}>
-                <Text style={styles.completedText}>Terminé</Text>
-              </View>
-            )}
-          </View>
-        </View>
-      </View>
+      {/* Text info */}
+      <Text style={[styles.title, textStyle]} numberOfLines={1}>{title}</Text>
+      <Text style={[styles.author, textStyle]} numberOfLines={1}>{author}</Text>
     </TouchableOpacity>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: Theme.colors.elevatedGlass,
-    ...Theme.borders.glass,
-    borderRadius: 16,
-    flexDirection: "row",
-    padding: 12,
-    marginBottom: 12,
-    alignItems: "center",
+  container: {
+    width: '100%',
   },
-  coverContainer: {
-    width: 60,
-    height: 80,
-    borderRadius: 8,
-    overflow: "hidden",
-    backgroundColor: Theme.colors.surface,
+  coverWrapper: {
+    aspectRatio: 2 / 3,
+    borderRadius: radii.sm,
+    overflow: 'hidden',
+    marginBottom: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#000000',
+    ...shadows.card,
   },
-  coverImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
+  cover: {
+    width: '100%',
+    height: '100%',
   },
-  placeholderCover: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(46, 102, 255, 0.15)",
+  spine: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: 4,
+    backgroundColor: '#000000',
+  },
+  statusBadge: {
+    position: 'absolute',
+    bottom: 20,
+    left: 8,
+    right: 8,
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: "rgba(245, 158, 11, 0.3)",
+    borderRadius: radii.full,
+    paddingVertical: 3,
   },
-  placeholderText: {
-    fontSize: 24,
+  statusText: {
+    ...typography.dataMono,
+    fontSize: 10,
+    letterSpacing: 0.6,
   },
-  infoContainer: {
-    flex: 1,
-    marginLeft: 16,
-    height: 80,
-    justifyContent: "space-between",
-  },
-  title: {
-    fontFamily: Theme.fonts.serifBold,
-    fontSize: 16,
-    color: Theme.colors.ivory,
-  },
-  author: {
-    fontFamily: Theme.fonts.sansRegular,
-    fontSize: 13,
-    color: Theme.colors.onyx,
-    marginTop: 2,
-  },
-  progressSection: {
-    width: "100%",
-  },
-  progressBarBg: {
-    height: 6,
-    backgroundColor: "rgba(248, 250, 252, 0.1)",
-    borderRadius: Theme.geometry.capsule,
-    overflow: "hidden",
-    marginBottom: 6,
+  progressBarTrack: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: '#1d2b39',
   },
   progressBarFill: {
-    height: "100%",
-    backgroundColor: Theme.colors.cobalt,
-    borderRadius: Theme.geometry.capsule,
+    height: '100%',
+    backgroundColor: colors.primaryFixedDim,
+    borderRadius: 2,
   },
-  progressLabelRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  title: {
+    ...typography.labelMd,
+    color: colors.onSurface,
+    marginBottom: 2,
   },
-  progressText: {
-    fontFamily: Theme.fonts.sansRegular,
-    fontSize: 11,
-    color: Theme.colors.onyx,
-  },
-  completedBadge: {
-    backgroundColor: "rgba(16, 185, 129, 0.15)",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: Theme.geometry.capsule,
-    borderWidth: 1,
-    borderColor: "rgba(16, 185, 129, 0.3)",
-  },
-  completedText: {
-    fontFamily: Theme.fonts.sansMedium,
-    fontSize: 10,
-    color: Theme.colors.emerald,
+  author: {
+    ...typography.bodyMd,
+    fontSize: 12,
+    color: colors.cyanGrey,
   },
 });
+
+export default BookCard;
