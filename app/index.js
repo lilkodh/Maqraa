@@ -30,21 +30,34 @@ export default function HomeRoute() {
     router.push(`/book/${bookId}`);
   };
 
-  const handleAddBook = () => {
-    addBook({
-      title: 'Chronicles of Andalusia',
-      author: 'Ibn Jubayr',
-      coverUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCKgYRBY9pAVpwZ72mu2lqyGHwTJHx_8AL8PbSVoYFMVsG3PDOdVVuaeTdmVrkwIe-NRYEza_I7xQtfiB7ekGOEz4nVpSMR4QbAqnHtcOoKLu18lG49zMk2lAA9ZUFc6Sd25DjcLDm8GCR0EUfSrrK3iuGRPW49vuIufDLhCsw5cX6zE1uPKe2SnlGNvdtFsnMjRbbV3Ms_zkcn19f8Cf4p3mLSh1oJP7qBXGrrEALl4X0LxKWOhPdliF0krebIT7XV3u0P2SPPFkA',
-      totalPages: 310,
-    });
-    console.log('Book added manually');
-    Alert.alert("Success", "Book 'Chronicles of Andalusia' has been added to your library.");
+  const handleAddBook = (bookDetails) => {
+    addBook(bookDetails);
+    console.log('Book added manually:', bookDetails.title);
   };
 
   const handleStartSession = () => {
     startTimer();
     console.log('Started reading session for active book:', activeBookId);
     router.push(`/book/${activeBookId}`);
+  };
+
+  const handlePickCoverImage = async () => {
+    const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!granted) {
+      Alert.alert("Permission Required", "Permission to access the camera roll is required to select a photo.");
+      return null;
+    }
+
+    const pickerResult = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [3, 4],
+      quality: 0.8,
+    });
+
+    if (!pickerResult.canceled) {
+      return pickerResult.assets[0].uri;
+    }
+    return null;
   };
 
   const handleAddPhoto = async () => {
@@ -80,6 +93,7 @@ export default function HomeRoute() {
       onAddBook={handleAddBook}
       onStartSession={handleStartSession}
       onAddPhoto={handleAddPhoto}
+      onPickCoverImage={handlePickCoverImage}
     />
   );
 }

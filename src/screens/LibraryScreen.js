@@ -10,6 +10,9 @@ import {
   SafeAreaView,
   Animated,
   Platform,
+  Modal,
+  Alert,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
@@ -29,10 +32,18 @@ export default function LibraryScreen({
   onAddBook,
   onStartSession,
   onAddPhoto,
+  onPickCoverImage,
 }) {
   const goalProgress = goalCount > 0 ? finishedBooksCount / goalCount : 0;
 
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Add Book Modal States
+  const [isAddBookVisible, setIsAddBookVisible] = useState(false);
+  const [newBookTitle, setNewBookTitle] = useState('');
+  const [newBookAuthor, setNewBookAuthor] = useState('');
+  const [newBookPages, setNewBookPages] = useState('');
+  const [newBookCover, setNewBookCover] = useState(null);
 
   // Animated values
   const anim1 = useRef(new Animated.Value(0)).current;
@@ -120,6 +131,41 @@ export default function LibraryScreen({
     outputRange: ['0deg', '135deg'],
   });
 
+  const handlePickCover = async () => {
+    if (onPickCoverImage) {
+      const uri = await onPickCoverImage();
+      if (uri) {
+        setNewBookCover(uri);
+      }
+    }
+  };
+
+  const handleSaveBook = () => {
+    if (!newBookTitle.trim()) {
+      Alert.alert("Error", "Please enter a book title.");
+      return;
+    }
+    const pages = parseInt(newBookPages, 10);
+    if (isNaN(pages) || pages <= 0) {
+      Alert.alert("Error", "Please enter a valid number of pages.");
+      return;
+    }
+
+    onAddBook({
+      title: newBookTitle.trim(),
+      author: newBookAuthor.trim() || 'Unknown Author',
+      totalPages: pages,
+      coverUrl: newBookCover || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCKgYRBY9pAVpwZ72mu2lqyGHwTJHx_8AL8PbSVoYFMVsG3PDOdVVuaeTdmVrkwIe-NRYEza_I7xQtfiB7ekGOEz4nVpSMR4QbAqnHtcOoKLu18lG49zMk2lAA9ZUFc6Sd25DjcLDm8GCR0EUfSrrK3iuGRPW49vuIufDLhCsw5cX6zE1uPKe2SnlGNvdtFsnMjRbbV3Ms_zkcn19f8Cf4p3mLSh1oJP7qBXGrrEALl4X0LxKWOhPdliF0krebIT7XV3u0P2SPPFkA',
+    });
+
+    // Reset and close
+    setNewBookTitle('');
+    setNewBookAuthor('');
+    setNewBookPages('');
+    setNewBookCover(null);
+    setIsAddBookVisible(false);
+  };
+
   // Calculate coordinates for the arc fanning out from the bottom-right (center of FAB)
   // Radius of arc = 90
   // Button 1 (top, 90 degrees): dx = 0, dy = -90
@@ -192,7 +238,7 @@ export default function LibraryScreen({
       translateY: sub3TranslateY,
       scale: sub3Scale,
       opacity: anim3,
-      onPress: () => handleClose(onAddBook),
+      onPress: () => handleClose(() => setIsAddBookVisible(true)),
     },
   ];
 
@@ -368,6 +414,105 @@ export default function LibraryScreen({
           </Animated.View>
         </TouchableOpacity>
       </View>
+
+      {/* Add Book Modal */}
+      <Modal
+        visible={isAddBookVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setIsAddBookVisible(false)}
+      >
+        <SafeAreaView style={styles.modalOverlay}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.modalKeyboardAvoiding}
+          >
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Add New Book</Text>
+                <TouchableOpacity onPress={() => setIsAddBookVisible(false)} style={styles.modalCloseButton} activeOpacity={0.7}>
+                  <MaterialIcons name="close" size={24} color={colors.textPrimary} />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalForm}>
+                {/* Cover Image Picker */}
+                <TouchableOpacity style={styles.coverPickerContainer} onPress={handlePickCover} activeOpacity={0.8}>
+                  {newBookCover ? (
+                    <View style={styles.coverPreviewWrapper}>
+                      <Image source={{ uri: newBookCover }} style={styles.coverPreviewImage} resizeMode="cover" />
+                      <View style={styles.changeCoverBadge}>
+                        <MaterialIcons name="photo-camera" size={14} color={colors.white} />
+                        <Text style={styles.changeCoverText}>Change Cover</Text>
+                      </View>
+                    </View>
+                  ) : (
+                    <View style={styles.coverPickerPlaceholder}>
+                      <MaterialIcons name="add-photo-alternate" size={40} color={colors.textSecondary} />
+                      <Text style={styles.coverPickerLabel}>Upload Book Cover</Text>
+                      <Text style={styles.coverPickerHint}>Tap to browse photo library</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                {/* Form Fields */}
+                <View style={styles.formField}>
+                  <Text style={styles.formLabel}>Book Title</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    placeholder="Enter book title..."
+                    placeholderTextColor={colors.textSecondary}
+                    value={newBookTitle}
+                    onChangeText={setNewBookTitle}
+                  />
+                </View>
+
+                <View style={styles.formField}>
+                  <Text style={styles.formLabel}>Author Name</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    placeholder="Enter author's name..."
+                    placeholderTextColor={colors.textSecondary}
+                    value={newBookAuthor}
+                    onChangeText={setNewBookAuthor}
+                  />
+                </View>
+
+                <View style={styles.formField}>
+                  <Text style={styles.formLabel}>Total Pages</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    placeholder="e.g. 350"
+                    placeholderTextColor={colors.textSecondary}
+                    keyboardType="numeric"
+                    value={newBookPages}
+                    onChangeText={setNewBookPages}
+                  />
+                </View>
+
+                {/* Buttons */}
+                <View style={styles.modalButtonsRow}>
+                  <TouchableOpacity
+                    style={styles.modalCancelButton}
+                    onPress={() => setIsAddBookVisible(false)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.modalCancelText}>Cancel</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.modalSaveButton}
+                    onPress={handleSaveBook}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.modalSaveText}>Save Book</Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </View>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Modal>
 
       {/* Shared Bottom Nav Component */}
       <BottomNav activeTab="home" />
@@ -636,5 +781,166 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 12,
     fontFamily: 'Inter_500Medium',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(13, 13, 13, 0.6)',
+    justifyContent: 'flex-end',
+  },
+  modalKeyboardAvoiding: {
+    width: '100%',
+  },
+  modalContent: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+    maxHeight: '90%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontFamily: 'Inter_600SemiBold',
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+  modalCloseButton: {
+    padding: 6,
+    borderRadius: radii.full,
+    backgroundColor: colors.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  modalForm: {
+    paddingBottom: 24,
+  },
+  coverPickerContainer: {
+    width: 130,
+    height: 180,
+    borderRadius: radii.lg,
+    backgroundColor: colors.white,
+    alignSelf: 'center',
+    marginBottom: 24,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#EBE7E7',
+    borderStyle: 'dashed',
+  },
+  coverPickerPlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+  },
+  coverPickerLabel: {
+    fontSize: 13,
+    fontFamily: 'Inter_600SemiBold',
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  coverPickerHint: {
+    fontSize: 10,
+    fontFamily: 'Inter_300Light',
+    color: colors.textSecondary,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  coverPreviewWrapper: {
+    flex: 1,
+    position: 'relative',
+  },
+  coverPreviewImage: {
+    width: '100%',
+    height: '100%',
+  },
+  changeCoverBadge: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 108, 75, 0.85)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+  },
+  changeCoverText: {
+    color: colors.white,
+    fontSize: 11,
+    fontFamily: 'Inter_500Medium',
+    marginLeft: 4,
+  },
+  formField: {
+    marginBottom: 16,
+  },
+  formLabel: {
+    fontSize: 13,
+    fontFamily: 'Inter_500Medium',
+    fontWeight: '500',
+    color: colors.textPrimary,
+    marginBottom: 8,
+  },
+  formInput: {
+    backgroundColor: colors.white,
+    borderRadius: radii.md,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 15,
+    fontFamily: 'Inter_300Light',
+    color: colors.textPrimary,
+    borderWidth: 1,
+    borderColor: '#EBE7E7',
+  },
+  modalButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  modalCancelButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: radii.full,
+    borderWidth: 1,
+    borderColor: '#bdc9c1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  modalCancelText: {
+    fontSize: 15,
+    fontFamily: 'Inter_600SemiBold',
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  modalSaveButton: {
+    flex: 1.5,
+    paddingVertical: 16,
+    borderRadius: radii.full,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#006C4B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  modalSaveText: {
+    fontSize: 15,
+    fontFamily: 'Inter_600SemiBold',
+    fontWeight: '600',
+    color: colors.white,
   },
 });
