@@ -19,8 +19,6 @@ export function StatCard({ title, value, iconName, iconColor = colors.primary })
 export function BottomNav({ activeTab = 'home' }) {
   const tabs = [
     { id: 'home', label: 'Home', icon: 'home', route: '/' },
-    { id: 'library', label: 'Library', icon: 'menu-book', route: '/' },
-    { id: 'stats', label: 'Stats', icon: 'leaderboard', route: '/stats' },
     { id: 'profile', label: 'Profile', icon: 'person', route: '/stats' },
   ];
 

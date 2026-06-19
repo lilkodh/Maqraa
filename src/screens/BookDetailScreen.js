@@ -219,7 +219,7 @@ export default function BookDetailScreen({
           </View>
         </ScrollView>
 
-        <BottomNav activeTab="library" />
+        <BottomNav activeTab="home" />
       </SafeAreaView>
     </KeyboardAvoidingView>
   );
