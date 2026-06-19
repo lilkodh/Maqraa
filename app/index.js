@@ -42,6 +42,14 @@ export default function HomeRoute() {
   };
 
   const handleStartSession = () => {
+    if (books.length === 0 || !activeBookId) {
+      Alert.alert(
+        "No Books Added",
+        "Please add a book to your library first to start a reading session.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
     startTimer();
     console.log('Started reading session for active book:', activeBookId);
     router.push(`/book/${activeBookId}`);

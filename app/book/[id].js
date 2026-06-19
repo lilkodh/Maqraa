@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocalSearchParams, router } from 'expo-router';
+import { Alert } from 'react-native';
 import useBookStore from '../../src/store/bookStore';
 import BookDetailScreen from '../../src/screens/BookDetailScreen';
 
@@ -18,6 +19,17 @@ export default function BookDetailRoute() {
 
   // Find active book
   const book = books.find((b) => b.id === id) || books[0];
+
+  useEffect(() => {
+    if (books.length === 0 || !book) {
+      Alert.alert(
+        "No Books Added",
+        "Please add a book to your library first to start a reading session.",
+        [{ text: "OK", onPress: () => router.replace('/') }]
+      );
+    }
+  }, [books, book]);
+
 
   const handleUpdateProgress = (pages) => {
     if (book) {
