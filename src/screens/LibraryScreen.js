@@ -426,9 +426,6 @@ export default function LibraryScreen({
           ]}
           pointerEvents={isExpanded ? 'auto' : 'none'}
         >
-          <View style={styles.subButtonLabelContainer}>
-            <Text style={styles.subButtonLabel}>{btn.label}</Text>
-          </View>
           <TouchableOpacity
             style={[styles.subButton, shadows.active]}
             onPress={btn.onPress}
@@ -815,18 +812,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryContainer,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  subButtonLabelContainer: {
-    backgroundColor: 'rgba(13, 13, 13, 0.85)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: radii.md,
-    marginRight: 12,
-  },
-  subButtonLabel: {
-    color: colors.white,
-    fontSize: 12,
-    fontFamily: 'Inter_500Medium',
   },
   modalOverlay: {
     flex: 1,
