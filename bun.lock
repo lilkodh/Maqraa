@@ -6,6 +6,7 @@
       "name": "maqraa",
       "dependencies": {
         "@expo-google-fonts/courier-prime": "^0.4.1",
+        "@expo-google-fonts/eb-garamond": "^0.4.2",
         "@expo-google-fonts/inter": "^0.4.2",
         "@expo-google-fonts/jetbrains-mono": "^0.4.1",
         "@expo-google-fonts/playfair-display": "^0.4.2",
@@ -27,9 +28,6 @@
         "zustand": "^5.0.14",
       },
     },
-  },
-  "overrides": {
-    "react-native-screens": "~4.16.0",
   },
   "packages": {
     "@0no-co/graphql.web": ["@0no-co/graphql.web@1.3.2", "", { "peerDependencies": { "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0" }, "optionalPeers": ["graphql"] }, "sha512-Q1+pRlLhE31GOY/2c9BAEnFTNxO7Awtc6fhhEDlxyCBQ2N0IhD32cPVvPChrK9mwBNSgRdW/sF1kd2e0ojHj1Q=="],
@@ -225,6 +223,8 @@
     "@egjs/hammerjs": ["@egjs/hammerjs@2.0.17", "", { "dependencies": { "@types/hammerjs": "^2.0.36" } }, "sha512-XQsZgjm2EcVUiZQf11UBJQfmZeEmOW8DpI1gsFeln6w0ae0ii4dMQEQ0kjl6DspdWX1aGY1/loyXnP0JS06e/A=="],
 
     "@expo-google-fonts/courier-prime": ["@expo-google-fonts/courier-prime@0.4.1", "", {}, "sha512-92Mb2Qi70yvL4XqA8VzM+Q/uFFxVulZXPU5WNTPeDzo1P1q6/bCTsZzE1BnfhYwcsp+PmrB0Ulq3E6zmZSrI6g=="],
+
+    "@expo-google-fonts/eb-garamond": ["@expo-google-fonts/eb-garamond@0.4.2", "", {}, "sha512-tkw/RNj3sLpOfasAYF1wrh8XnKspHXmoNf6StJ4LDvFlRpDCXXtG8sxkyjab1ncnlgK8iRUC8FugmYMr55YCHw=="],
 
     "@expo-google-fonts/inter": ["@expo-google-fonts/inter@0.4.2", "", {}, "sha512-syfiImMaDmq7cFi0of+waE2M4uSCyd16zgyWxdPOY7fN2VBmSLKEzkfbZgeOjJq61kSqPBNNtXjggiQiSD6gMQ=="],
 

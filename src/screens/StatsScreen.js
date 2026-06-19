@@ -217,8 +217,8 @@ const styles = StyleSheet.create({
     borderColor: '#0D0D0D',
   },
   userName: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 22,
+    fontFamily: 'EBGaramond_700Bold',
+    fontSize: 26,
     color: colors.white,
     fontWeight: '700',
   },
@@ -245,8 +245,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   headerStatValue: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 24,
+    fontFamily: 'EBGaramond_700Bold',
+    fontSize: 28,
     color: colors.white,
     fontWeight: 'bold',
   },
@@ -263,8 +263,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
   },
   sectionTitle: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 22,
+    fontFamily: 'EBGaramond_700Bold',
+    fontSize: 26,
     color: colors.textPrimary,
     fontWeight: '700',
     marginBottom: spacing.md,
@@ -382,8 +382,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   historyBookTitle: {
-    fontFamily: 'PlayfairDisplay_600SemiBold',
-    fontSize: 14,
+    fontFamily: 'EBGaramond_600SemiBold',
+    fontSize: 16,
     color: colors.textPrimary,
     fontWeight: '600',
   },

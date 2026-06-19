@@ -804,8 +804,8 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   userName: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 22,
+    fontFamily: 'EBGaramond_700Bold',
+    fontSize: 26,
     color: colors.primary,
     fontWeight: '700',
   },
@@ -915,8 +915,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   goalTitle: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 22,
+    fontFamily: 'EBGaramond_700Bold',
+    fontSize: 24,
     color: colors.textPrimary,
     fontWeight: '700',
   },
@@ -958,8 +958,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   sectionTitle: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 24,
+    fontFamily: 'EBGaramond_700Bold',
+    fontSize: 26,
     color: colors.textPrimary,
     fontWeight: '700',
   },
@@ -979,8 +979,8 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   sectionTitleStats: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 24,
+    fontFamily: 'EBGaramond_700Bold',
+    fontSize: 26,
     color: colors.textPrimary,
     fontWeight: '700',
     paddingHorizontal: spacing.marginEdge,

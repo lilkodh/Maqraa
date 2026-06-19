@@ -290,8 +290,8 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   bookTitle: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 24,
+    fontFamily: 'EBGaramond_700Bold',
+    fontSize: 28,
     color: colors.white,
     marginTop: 20,
     fontWeight: '700',
@@ -346,8 +346,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   progressPercent: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 34,
+    fontFamily: 'EBGaramond_700Bold',
+    fontSize: 38,
     color: colors.primary,
     fontWeight: '700',
   },
@@ -521,8 +521,8 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   sessionStatValue: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 22,
+    fontFamily: 'EBGaramond_700Bold',
+    fontSize: 26,
     color: colors.textPrimary,
     fontWeight: '700',
     marginTop: 4,
