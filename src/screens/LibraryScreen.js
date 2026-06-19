@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   TextInput,
   SafeAreaView,
-  Platform,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
@@ -139,8 +138,13 @@ export default function LibraryScreen({
         </View>
       </ScrollView>
 
+      {/* Floating Action Button */}
+      <TouchableOpacity style={[styles.fab, shadows.active]} onPress={onAddBook} activeOpacity={0.8}>
+        <MaterialIcons name="add" size={32} color={colors.white} />
+      </TouchableOpacity>
+
       {/* Shared Bottom Nav Component */}
-      {Platform.OS !== 'ios' && <BottomNav activeTab="home" />}
+      <BottomNav activeTab="home" />
     </SafeAreaView>
   );
 }
@@ -355,5 +359,17 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.marginEdge,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 100,
+    right: spacing.marginEdge,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 50,
   },
 });

@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
-import { View, ActivityIndicator, Platform } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import {
   Inter_300Light,
   Inter_400Regular,
@@ -40,26 +39,6 @@ export default function Layout() {
     );
   }
 
-  if (Platform.OS === 'ios') {
-    return (
-      <SafeAreaProvider>
-        <StatusBar style="dark" />
-        <NativeTabs>
-          <NativeTabs.Trigger name="index">
-            <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-          </NativeTabs.Trigger>
-          <NativeTabs.Trigger name="add">
-            <NativeTabs.Trigger.Label>+</NativeTabs.Trigger.Label>
-          </NativeTabs.Trigger>
-          <NativeTabs.Trigger name="stats">
-            <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
-          </NativeTabs.Trigger>
-          <NativeTabs.Trigger name="book/[id]" hidden={true} />
-        </NativeTabs>
-      </SafeAreaProvider>
-    );
-  }
-
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
@@ -71,7 +50,6 @@ export default function Layout() {
       >
         <Stack.Screen name="index" />
         <Stack.Screen name="stats" />
-        <Stack.Screen name="add" options={{ presentation: 'transparentModal', animation: 'fade' }} />
         <Stack.Screen name="book/[id]" />
       </Stack>
     </SafeAreaProvider>

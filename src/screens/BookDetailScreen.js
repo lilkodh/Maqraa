@@ -219,7 +219,7 @@ export default function BookDetailScreen({
           </View>
         </ScrollView>
 
-        {Platform.OS !== 'ios' && <BottomNav activeTab="home" />}
+        <BottomNav activeTab="home" />
       </SafeAreaView>
     </KeyboardAvoidingView>
   );

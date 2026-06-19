@@ -11,9 +11,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { colors, radii, spacing, shadows } from '../utils/theme';
 
 export default function AddScreen({
-  onAddManual,
-  onScanBarcode,
-  onSearchBook,
+  onAddBook,
+  onStartSession,
+  onAddPhoto,
   onBack,
 }) {
   // Animation values
@@ -152,34 +152,34 @@ export default function AddScreen({
 
   const subButtons = [
     {
-      id: 'scan',
-      icon: 'photo-camera',
-      label: 'Scan Barcode',
+      id: 'add_book',
+      icon: 'library-add',
+      label: 'Add Book',
       translateX: sub1TranslateX,
       translateY: sub1TranslateY,
       scale: sub1Scale,
       opacity: anim1,
-      onPress: () => handleClose(onScanBarcode),
+      onPress: () => handleClose(onAddBook),
     },
     {
-      id: 'manual',
-      icon: 'edit',
-      label: 'Add Manually',
+      id: 'start_session',
+      icon: 'play-arrow',
+      label: 'Start Session',
       translateX: sub2TranslateX,
       translateY: sub2TranslateY,
       scale: sub2Scale,
       opacity: anim2,
-      onPress: () => handleClose(onAddManual),
+      onPress: () => handleClose(onStartSession),
     },
     {
-      id: 'search',
-      icon: 'search',
-      label: 'Search Book',
+      id: 'add_photo',
+      icon: 'add-a-photo',
+      label: 'Add Photo',
       translateX: sub3TranslateX,
       translateY: sub3TranslateY,
       scale: sub3Scale,
       opacity: anim3,
-      onPress: () => handleClose(onSearchBook),
+      onPress: () => handleClose(onAddPhoto),
     },
   ];
 

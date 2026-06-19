@@ -19,7 +19,6 @@ export function StatCard({ title, value, iconName, iconColor = colors.primary })
 export function BottomNav({ activeTab = 'home' }) {
   const tabs = [
     { id: 'home', label: 'Home', icon: 'home', route: '/' },
-    { id: 'add', label: 'Add', icon: 'add', route: '/add' },
     { id: 'profile', label: 'Profile', icon: 'person', route: '/stats' },
   ];
 
@@ -32,22 +31,6 @@ export function BottomNav({ activeTab = 'home' }) {
     <View style={[styles.navContainer, shadows.active]}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
-        if (tab.id === 'add') {
-          return (
-            <TouchableOpacity
-              key={tab.id}
-              style={[styles.centerAddButton, shadows.active]}
-              onPress={() => handlePress(tab)}
-              activeOpacity={0.8}
-            >
-              <MaterialIcons
-                name="add"
-                size={28}
-                color={colors.white}
-              />
-            </TouchableOpacity>
-          );
-        }
         return (
           <TouchableOpacity
             key={tab.id}
@@ -132,19 +115,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     color: colors.secondary,
     fontWeight: '600',
-  },
-  centerAddButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: -20, // Float slightly above the tab bar line
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
 });
