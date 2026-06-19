@@ -49,9 +49,6 @@ export default function Layout() {
           <NativeTabs.Trigger name="index">
             <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
           </NativeTabs.Trigger>
-          <NativeTabs.Trigger name="add">
-            <NativeTabs.Trigger.Label>+</NativeTabs.Trigger.Label>
-          </NativeTabs.Trigger>
           <NativeTabs.Trigger name="stats">
             <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
           </NativeTabs.Trigger>
@@ -72,7 +69,6 @@ export default function Layout() {
       >
         <Tabs.Screen name="index" />
         <Tabs.Screen name="stats" />
-        <Tabs.Screen name="add" />
         <Tabs.Screen
           name="book/[id]"
           options={{

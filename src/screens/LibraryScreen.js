@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   TextInput,
   SafeAreaView,
+  Animated,
+  Platform,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
@@ -24,8 +26,174 @@ export default function LibraryScreen({
   totalPagesRead = 1200,
   onSelectBook,
   onAddBook,
+  onStartSession,
+  onAddPhoto,
 }) {
   const goalProgress = goalCount > 0 ? finishedBooksCount / goalCount : 0;
+
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Animated values
+  const anim1 = useRef(new Animated.Value(0)).current;
+  const anim2 = useRef(new Animated.Value(0)).current;
+  const anim3 = useRef(new Animated.Value(0)).current;
+  const mainRotate = useRef(new Animated.Value(0)).current;
+  const backdropOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isExpanded) {
+      Animated.parallel([
+        Animated.timing(mainRotate, {
+          toValue: 1,
+          duration: 350,
+          useNativeDriver: true,
+        }),
+        Animated.timing(backdropOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.stagger(250, [
+          Animated.spring(anim1, {
+            toValue: 1,
+            tension: 10,
+            friction: 7,
+            useNativeDriver: true,
+          }),
+          Animated.spring(anim2, {
+            toValue: 1,
+            tension: 10,
+            friction: 7,
+            useNativeDriver: true,
+          }),
+          Animated.spring(anim3, {
+            toValue: 1,
+            tension: 10,
+            friction: 7,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(mainRotate, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(backdropOpacity, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.stagger(150, [
+          Animated.timing(anim3, {
+            toValue: 0,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+          Animated.timing(anim2, {
+            toValue: 0,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+          Animated.timing(anim1, {
+            toValue: 0,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start();
+    }
+  }, [isExpanded]);
+
+  const handleClose = (callback) => {
+    setIsExpanded(false);
+    if (callback) {
+      setTimeout(callback, 300);
+    }
+  };
+
+  const rotation = mainRotate.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '135deg'],
+  });
+
+  // Calculate coordinates for the arc fanning out from the bottom-right (center of FAB)
+  // Radius of arc = 90
+  // Button 1 (top, 90 degrees): dx = 0, dy = -90
+  const sub1TranslateX = 0;
+  const sub1TranslateY = anim1.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -90],
+  });
+
+  // Button 2 (diagonal, 135 degrees): dx = -63.6, dy = -63.6 (curves vertically first, then horizontally)
+  const sub2TranslateX = anim2.interpolate({
+    inputRange: [0, 0.4, 1],
+    outputRange: [0, -10, -63.6],
+  });
+  const sub2TranslateY = anim2.interpolate({
+    inputRange: [0, 0.8, 1],
+    outputRange: [0, -55, -63.6],
+  });
+
+  // Button 3 (left, 180 degrees): dx = -90, dy = 0 (curves vertically in the middle of its path)
+  const sub3TranslateX = anim3.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -90],
+  });
+  const sub3TranslateY = anim3.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, -20, 0],
+  });
+
+  // Scale and opacity interpolations
+  const sub1Scale = anim1.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 1],
+  });
+  const sub2Scale = anim2.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 1],
+  });
+  const sub3Scale = anim3.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 1],
+  });
+
+  const subButtons = [
+    {
+      id: 'photo',
+      icon: 'add-a-photo',
+      label: 'Add Photo',
+      translateX: sub1TranslateX,
+      translateY: sub1TranslateY,
+      scale: sub1Scale,
+      opacity: anim1,
+      onPress: () => handleClose(onAddPhoto),
+    },
+    {
+      id: 'session',
+      icon: 'play-arrow',
+      label: 'Start Session',
+      translateX: sub2TranslateX,
+      translateY: sub2TranslateY,
+      scale: sub2Scale,
+      opacity: anim2,
+      onPress: () => handleClose(onStartSession),
+    },
+    {
+      id: 'book',
+      icon: 'library-add',
+      label: 'Add Book',
+      translateX: sub3TranslateX,
+      translateY: sub3TranslateY,
+      scale: sub3Scale,
+      opacity: anim3,
+      onPress: () => handleClose(onAddBook),
+    },
+  ];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -138,9 +306,63 @@ export default function LibraryScreen({
         </View>
       </ScrollView>
 
-      {/* Floating Action Button */}
-      <TouchableOpacity style={[styles.fab, shadows.active]} onPress={onAddBook} activeOpacity={0.8}>
-        <MaterialIcons name="add" size={32} color={colors.white} />
+      {/* Backdrop for expanded FAB */}
+      {isExpanded && (
+        <Animated.View
+          style={[
+            styles.backdrop,
+            {
+              opacity: backdropOpacity,
+            },
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.backdropPressable}
+            activeOpacity={1}
+            onPress={() => setIsExpanded(false)}
+          />
+        </Animated.View>
+      )}
+
+      {/* Sub-buttons for FAB */}
+      {subButtons.map((btn) => (
+        <Animated.View
+          key={btn.id}
+          style={[
+            styles.subButtonContainer,
+            {
+              opacity: btn.opacity,
+              transform: [
+                { translateX: btn.translateX },
+                { translateY: btn.translateY },
+                { scale: btn.scale },
+              ],
+            },
+          ]}
+          pointerEvents={isExpanded ? 'auto' : 'none'}
+        >
+          <View style={styles.subButtonLabelContainer}>
+            <Text style={styles.subButtonLabel}>{btn.label}</Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.subButton, shadows.active]}
+            onPress={btn.onPress}
+            activeOpacity={0.8}
+          >
+            <MaterialIcons name={btn.icon} size={20} color={colors.white} />
+          </TouchableOpacity>
+        </Animated.View>
+      ))}
+
+      {/* Main Floating Action Button */}
+      <TouchableOpacity
+        style={[styles.fab, shadows.active]}
+        onPress={() => setIsExpanded(!isExpanded)}
+        activeOpacity={0.8}
+      >
+        <Animated.View style={{ transform: [{ rotate: rotation }] }}>
+          <MaterialIcons name="add" size={32} color={colors.white} />
+        </Animated.View>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -368,5 +590,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 50,
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(250, 246, 240, 0.85)',
+    zIndex: 40,
+  },
+  backdropPressable: {
+    flex: 1,
+  },
+  subButtonContainer: {
+    position: 'absolute',
+    bottom: 106,
+    right: 30, // centered relative to the 56px fab
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    zIndex: 45,
+  },
+  subButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primaryContainer,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  subButtonLabelContainer: {
+    backgroundColor: 'rgba(13, 13, 13, 0.85)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: radii.md,
+    marginRight: 12,
+  },
+  subButtonLabel: {
+    color: colors.white,
+    fontSize: 12,
+    fontFamily: 'Inter_500Medium',
   },
 });

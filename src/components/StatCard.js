@@ -22,7 +22,6 @@ export function BottomNav({ activeTab = 'home', state, descriptors, navigation }
 
   const tabs = [
     { id: 'home', label: 'Home', icon: 'home', route: '/' },
-    { id: 'add', label: 'Add', icon: 'add', route: '/add' },
     { id: 'profile', label: 'Profile', icon: 'person', route: '/stats' },
   ];
 
@@ -32,10 +31,9 @@ export function BottomNav({ activeTab = 'home', state, descriptors, navigation }
     const routeName = state.routes[state.index].name;
     if (routeName === 'index') currentActiveTab = 'home';
     else if (routeName === 'stats') currentActiveTab = 'profile';
-    else if (routeName === 'add') currentActiveTab = 'add';
 
-    // Hide bottom tab bar on detail screens (e.g. book/[id]) or when add modal is open
-    if (routeName === 'book/[id]' || routeName === 'add') {
+    // Hide bottom tab bar on detail screens (e.g. book/[id])
+    if (routeName === 'book/[id]') {
       return null;
     }
   }
@@ -46,8 +44,6 @@ export function BottomNav({ activeTab = 'home', state, descriptors, navigation }
         navigation.navigate('index');
       } else if (tab.id === 'profile') {
         navigation.navigate('stats');
-      } else if (tab.id === 'add') {
-        navigation.navigate('add');
       }
     } else {
       router.push(tab.route);
@@ -58,22 +54,6 @@ export function BottomNav({ activeTab = 'home', state, descriptors, navigation }
     <View style={[styles.navContainer, shadows.active]}>
       {tabs.map((tab) => {
         const isActive = currentActiveTab === tab.id;
-        if (tab.id === 'add') {
-          return (
-            <TouchableOpacity
-              key={tab.id}
-              style={[styles.centerAddButton, shadows.active]}
-              onPress={() => handlePress(tab)}
-              activeOpacity={0.8}
-            >
-              <MaterialIcons
-                name="add"
-                size={28}
-                color={colors.white}
-              />
-            </TouchableOpacity>
-          );
-        }
         return (
           <TouchableOpacity
             key={tab.id}
@@ -158,19 +138,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     color: colors.secondary,
     fontWeight: '600',
-  },
-  centerAddButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: -20, // Float slightly above the tab bar line
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
 });
