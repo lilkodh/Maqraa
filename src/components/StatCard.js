@@ -101,9 +101,15 @@ export function BottomNav({ activeTab = 'home', state, descriptors, navigation }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.95)',
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderRightWidth: 2.5,
+    borderRightColor: 'rgba(181, 137, 0, 0.22)',
+    borderBottomWidth: 4,
+    borderBottomColor: 'rgba(181, 137, 0, 0.3)',
     padding: spacing.containerPadding,
     borderRadius: radii.xl,
     flex: 1,
@@ -115,17 +121,19 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   valueText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 28,
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 30,
     color: colors.textPrimary,
     fontWeight: 'bold',
     marginTop: spacing.sm,
   },
   titleText: {
-    fontFamily: 'Inter_300Light',
-    fontSize: 12,
+    fontFamily: 'CourierPrime_400Regular',
+    fontSize: 11,
     color: colors.textSecondary,
     marginTop: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   // Navigation styles
   navContainer: {
