@@ -19,7 +19,7 @@ export default function ProgressRing({ progress = 0.6, size = 96, strokeWidth = 
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="rgba(0, 108, 75, 0.1)"
+          stroke="rgba(181, 137, 0, 0.1)"
           strokeWidth={strokeWidth}
           fill="transparent"
         />

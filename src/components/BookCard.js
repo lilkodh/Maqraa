@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   },
   verticalProgressBg: {
     height: 6,
-    backgroundColor: 'rgba(0, 108, 75, 0.1)',
+    backgroundColor: 'rgba(181, 137, 0, 0.1)',
     borderRadius: radii.full,
     overflow: 'hidden',
     marginTop: 4,
@@ -122,9 +122,9 @@ const styles = StyleSheet.create({
   // Horizontal display (for lists/history if needed)
   horizontalCard: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    borderColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: radii.xl,
     padding: spacing.md,
     marginBottom: spacing.sm,
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   progressBarBackground: {
     flex: 1,
     height: 6,
-    backgroundColor: 'rgba(0, 108, 75, 0.1)',
+    backgroundColor: 'rgba(181, 137, 0, 0.1)',
     borderRadius: radii.full,
     overflow: 'hidden',
   },

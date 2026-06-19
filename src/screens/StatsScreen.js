@@ -270,9 +270,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   chartCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    borderColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: 20,
     padding: spacing.containerPadding,
     marginBottom: spacing.lg,
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   barFillInactive: {
-    backgroundColor: 'rgba(0, 108, 75, 0.15)',
+    backgroundColor: 'rgba(181, 137, 0, 0.15)',
   },
   barLabel: {
     fontFamily: 'Inter_600SemiBold',
@@ -337,9 +337,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   historyRow: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    borderColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: 20,
     padding: spacing.md,
     flexDirection: 'row',
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   historyBadgeMint: {
-    backgroundColor: 'rgba(0, 108, 75, 0.08)',
+    backgroundColor: 'rgba(181, 137, 0, 0.08)',
     borderRadius: radii.full,
     paddingHorizontal: 8,
     paddingVertical: 2,

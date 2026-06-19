@@ -1,8 +1,8 @@
 export const colors = {
   background: '#FAF6F0', // Warm Cream Base
   surface: '#FFFFFF', // Pure White Cards
-  primary: '#006C4B', // Mint Green (Primary brand)
-  primaryContainer: '#4CAF85', // Mint Green (FAB/Progress)
+  primary: '#B58900', // Dark Yellow / Mustard (Primary brand)
+  primaryContainer: '#E5A93C', // Warm Amber (FAB/Progress)
   secondary: '#3E59AC', // Majorelle Blue (Headers/Active Nav)
   tertiary: '#9C440F', // Terracotta (Arabic tags)
   textPrimary: '#0D0D0D', // Ink Dark
@@ -89,16 +89,16 @@ export const typography = {
 
 export const shadows = {
   card: {
-    shadowColor: '#0D0D0D',
+    shadowColor: '#B58900',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 16,
     elevation: 3,
   },
   active: {
-    shadowColor: '#0D0D0D',
+    shadowColor: '#B58900',
     shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.3,
     shadowRadius: 24,
     elevation: 5,
   },
