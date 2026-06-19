@@ -78,9 +78,8 @@ export default function StatsScreen({
             <Text style={styles.chartSubtitle}>Books finished per month</Text>
             <View style={styles.chartBarsRow}>
               {monthlyData.map((data, index) => {
-                const isActive = data.month === 'SEP'; // September is active
-                const maxCount = Math.max(...monthlyData.map(d => d.count)) || 1;
-                const barHeightPct = (data.count / maxCount) * 100;
+                const isActive = data.isActive || false;
+                const barHeightPct = data.heightPct || 0;
 
                 return (
                   <View key={data.month} style={styles.chartBarWrapper}>
@@ -120,7 +119,7 @@ export default function StatsScreen({
                   <View style={styles.historyTextDetails}>
                     <Text style={styles.historyBookTitle}>{item.title}</Text>
                     <Text style={styles.historyBookFinished}>
-                      Finished {new Date(item.timestamp).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      Finished {item.formattedDate || '18 Jun 2026'}
                     </Text>
                     <View style={styles.historyBadgesRow}>
                       <View style={styles.historyBadgeMint}>

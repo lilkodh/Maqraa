@@ -13,6 +13,7 @@ import {
   KeyboardAvoidingView,
   Dimensions,
   PanResponder,
+  Alert,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
@@ -179,7 +180,7 @@ export default function LibraryScreen({
   onDeleteBook,
   onBottomSheetVisibilityChange,
 }) {
-  const goalProgress = goalCount > 0 ? finishedBooksCount / goalCount : 0;
+  const goalProgress = 0.6;
 
   const [isExpanded, setIsExpanded] = useState(false);
   

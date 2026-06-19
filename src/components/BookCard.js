@@ -5,7 +5,7 @@ import { colors, radii, spacing, typography, shadows } from '../utils/theme';
 export default function BookCard({ book, onPress, horizontal = false }) {
   if (!book) return null;
 
-  const progressPercent = Math.round((book.readPages / book.totalPages) * 100) || 0;
+  const progressPercent = book.progressPercent || 0;
   const isArabic = book.language === 'Arabic';
 
   if (horizontal) {

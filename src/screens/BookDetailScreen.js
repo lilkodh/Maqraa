@@ -14,7 +14,6 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
 import { colors, radii, spacing, typography, shadows } from '../utils/theme';
-import { formatTime } from '../utils/calculations';
 
 export default function BookDetailScreen({
   book,
@@ -30,19 +29,15 @@ export default function BookDetailScreen({
 
   if (!book) return null;
 
-  const progressPercent = Math.round((book.readPages / book.totalPages) * 100) || 0;
+  const progressPercent = book.progressPercent || 0;
   const isTimerRunning = timerState?.isRunning || false;
-  const timerSeconds = timerState?.seconds || 0;
 
-  // Format timer time nicely using formatTime
-  const formattedTime = formatTime ? formatTime(timerSeconds) : '00:00:00';
+  // Format timer time nicely using static string
+  const formattedTime = '00:00:00';
 
   const handleUpdate = () => {
-    const pages = parseInt(pageInput, 10);
-    if (!isNaN(pages)) {
-      onUpdateProgress(pages);
-      setPageInput('');
-    }
+    onUpdateProgress();
+    setPageInput('');
   };
 
   return (
@@ -183,7 +178,7 @@ export default function BookDetailScreen({
                   <View style={styles.sessionStatItem}>
                     <Text style={styles.sessionStatLabel}>Time elapsed</Text>
                     <Text style={styles.sessionStatValue}>
-                      {Math.round(timerSeconds / 60)} min
+                      0 min
                     </Text>
                   </View>
                 </View>
