@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Keyboard, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { colors, radii, spacing, shadows } from '../utils/theme';
@@ -16,20 +16,64 @@ export function StatCard({ title, value, iconName, iconColor = colors.primary })
   );
 }
 
-export function BottomNav({ activeTab = 'home' }) {
+export function BottomNav({ activeTab = 'home', state, descriptors, navigation }) {
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => setIsKeyboardVisible(true)
+    );
+    const hideSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setIsKeyboardVisible(false)
+    );
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  if (isKeyboardVisible) {
+    return null;
+  }
+
+  const isTabBar = !!state;
   const tabs = [
     { id: 'home', label: 'Home', icon: 'home', route: '/' },
     { id: 'profile', label: 'Profile', icon: 'person', route: '/stats' },
   ];
 
+  let currentActiveTab = activeTab;
+
+  if (isTabBar) {
+    const routeName = state.routes[state.index].name;
+    if (routeName === 'index') currentActiveTab = 'home';
+    else if (routeName === 'stats') currentActiveTab = 'profile';
+
+    // Hide bottom tab bar on detail screens (e.g. book/[id]) or remove-books screen
+    if (routeName === 'book/[id]' || routeName === 'remove-books') {
+      return null;
+    }
+  }
+
   const handlePress = (tab) => {
-    router.push(tab.route);
+    if (isTabBar) {
+      if (tab.id === 'home') {
+        navigation.navigate('index');
+      } else if (tab.id === 'profile') {
+        navigation.navigate('stats');
+      }
+    } else {
+      router.push(tab.route);
+    }
   };
 
   return (
     <View style={[styles.navContainer, shadows.active]}>
       {tabs.map((tab) => {
-        const isActive = activeTab === tab.id;
+        const isActive = currentActiveTab === tab.id;
         return (
           <TouchableOpacity
             key={tab.id}
@@ -51,6 +95,7 @@ export function BottomNav({ activeTab = 'home' }) {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   card: {

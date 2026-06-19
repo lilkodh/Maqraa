@@ -19,7 +19,8 @@ import Svg, { Path } from 'react-native-svg';
 import { colors, radii, spacing, typography, shadows } from '../utils/theme';
 import BookCard from '../components/BookCard';
 import ProgressRing from '../components/ProgressRing';
-import { StatCard, BottomNav } from '../components/StatCard';
+import { StatCard } from '../components/StatCard';
+import { router } from 'expo-router';
 
 export default function LibraryScreen({
   books = [],
@@ -33,12 +34,13 @@ export default function LibraryScreen({
   onStartSession,
   onAddPhoto,
   onPickCoverImage,
+  onDeleteBook,
 }) {
   const goalProgress = goalCount > 0 ? finishedBooksCount / goalCount : 0;
 
   const [isExpanded, setIsExpanded] = useState(false);
   
-  // Add Book Modal States
+  // Modal States
   const [isAddBookVisible, setIsAddBookVisible] = useState(false);
   const [newBookTitle, setNewBookTitle] = useState('');
   const [newBookAuthor, setNewBookAuthor] = useState('');
@@ -49,6 +51,7 @@ export default function LibraryScreen({
   const anim1 = useRef(new Animated.Value(0)).current;
   const anim2 = useRef(new Animated.Value(0)).current;
   const anim3 = useRef(new Animated.Value(0)).current;
+  const anim4 = useRef(new Animated.Value(0)).current;
   const mainRotate = useRef(new Animated.Value(0)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
 
@@ -65,7 +68,7 @@ export default function LibraryScreen({
           duration: 300,
           useNativeDriver: true,
         }),
-        Animated.stagger(250, [
+        Animated.stagger(150, [
           Animated.spring(anim1, {
             toValue: 1,
             tension: 10,
@@ -79,6 +82,12 @@ export default function LibraryScreen({
             useNativeDriver: true,
           }),
           Animated.spring(anim3, {
+            toValue: 1,
+            tension: 10,
+            friction: 7,
+            useNativeDriver: true,
+          }),
+          Animated.spring(anim4, {
             toValue: 1,
             tension: 10,
             friction: 7,
@@ -98,20 +107,25 @@ export default function LibraryScreen({
           duration: 250,
           useNativeDriver: true,
         }),
-        Animated.stagger(150, [
+        Animated.stagger(100, [
+          Animated.timing(anim4, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }),
           Animated.timing(anim3, {
             toValue: 0,
-            duration: 250,
+            duration: 200,
             useNativeDriver: true,
           }),
           Animated.timing(anim2, {
             toValue: 0,
-            duration: 250,
+            duration: 200,
             useNativeDriver: true,
           }),
           Animated.timing(anim1, {
             toValue: 0,
-            duration: 250,
+            duration: 200,
             useNativeDriver: true,
           }),
         ]),
@@ -167,30 +181,41 @@ export default function LibraryScreen({
   };
 
   // Calculate coordinates for the arc fanning out from the bottom-right (center of FAB)
-  // Radius of arc = 90
-  // Button 1 (top, 90 degrees): dx = 0, dy = -90
+  // Radius of arc = 110 (widened to accommodate 4 buttons)
+  
+  // Button 1 (top, 90 degrees): dx = 0, dy = -110
   const sub1TranslateX = 0;
   const sub1TranslateY = anim1.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -90],
+    outputRange: [0, -110],
   });
 
-  // Button 2 (diagonal, 135 degrees): dx = -63.6, dy = -63.6 (curves vertically first, then horizontally)
+  // Button 2 (top-diagonal, 120 degrees): dx = -55, dy = -95.3
   const sub2TranslateX = anim2.interpolate({
     inputRange: [0, 0.4, 1],
-    outputRange: [0, -10, -63.6],
+    outputRange: [0, -10, -55],
   });
   const sub2TranslateY = anim2.interpolate({
     inputRange: [0, 0.8, 1],
-    outputRange: [0, -55, -63.6],
+    outputRange: [0, -70, -95.3],
   });
 
-  // Button 3 (left, 180 degrees): dx = -90, dy = 0 (curves vertically in the middle of its path)
+  // Button 3 (left-diagonal, 150 degrees): dx = -95.3, dy = -55
   const sub3TranslateX = anim3.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -90],
+    inputRange: [0, 0.4, 1],
+    outputRange: [0, -40, -95.3],
   });
   const sub3TranslateY = anim3.interpolate({
+    inputRange: [0, 0.8, 1],
+    outputRange: [0, -35, -55],
+  });
+
+  // Button 4 (left, 180 degrees): dx = -110, dy = 0
+  const sub4TranslateX = anim4.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -110],
+  });
+  const sub4TranslateY = anim4.interpolate({
     inputRange: [0, 0.5, 1],
     outputRange: [0, -20, 0],
   });
@@ -205,6 +230,10 @@ export default function LibraryScreen({
     outputRange: [0.3, 1],
   });
   const sub3Scale = anim3.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 1],
+  });
+  const sub4Scale = anim4.interpolate({
     inputRange: [0, 1],
     outputRange: [0.3, 1],
   });
@@ -240,6 +269,16 @@ export default function LibraryScreen({
       opacity: anim3,
       onPress: () => handleClose(() => setIsAddBookVisible(true)),
     },
+    {
+      id: 'remove',
+      icon: 'delete-sweep',
+      label: 'Remove Book',
+      translateX: sub4TranslateX,
+      translateY: sub4TranslateY,
+      scale: sub4Scale,
+      opacity: anim4,
+      onPress: () => handleClose(() => router.push('/remove-books')),
+    },
   ];
 
   return (
@@ -257,7 +296,7 @@ export default function LibraryScreen({
           </View>
           <View style={styles.profileText}>
             <Text style={styles.welcomeText}>Good morning,</Text>
-            <Text style={styles.userName}>Youssef</Text>
+            <Text style={styles.userName}>Khalid Drihem</Text>
           </View>
         </View>
         <TouchableOpacity style={styles.headerSearchButton} activeOpacity={0.7}>
@@ -513,9 +552,6 @@ export default function LibraryScreen({
           </KeyboardAvoidingView>
         </SafeAreaView>
       </Modal>
-
-      {/* Shared Bottom Nav Component */}
-      <BottomNav activeTab="home" />
     </SafeAreaView>
   );
 }

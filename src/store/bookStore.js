@@ -155,6 +155,10 @@ const useBookStore = create(
         }],
       })),
       
+      deleteBook: (bookId) => set((state) => ({
+        books: state.books.filter((b) => b.id !== bookId),
+      })),
+      
       updateProgress: (bookId, readPages) => set((state) => {
         const books = state.books.map((b) => {
           if (b.id === bookId) {

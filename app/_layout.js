@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { Stack } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { View, ActivityIndicator } from 'react-native';
+import { BottomNav } from '../src/components/StatCard';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
@@ -42,16 +43,28 @@ export default function Layout() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
-      <Stack
+      <Tabs
+        tabBar={(props) => <BottomNav {...props} />}
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: '#FAF6F0' },
         }}
       >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="stats" />
-        <Stack.Screen name="book/[id]" />
-      </Stack>
+        <Tabs.Screen name="index" />
+        <Tabs.Screen name="stats" />
+        <Tabs.Screen
+          name="book/[id]"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="remove-books"
+          options={{
+            href: null,
+          }}
+        />
+      </Tabs>
     </SafeAreaProvider>
   );
 }
+

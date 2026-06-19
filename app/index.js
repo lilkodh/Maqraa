@@ -17,6 +17,7 @@ export default function HomeRoute() {
   const activeBookId = useBookStore((state) => state.activeBookId);
   const profilePhoto = useBookStore((state) => state.profilePhoto);
   const setProfilePhoto = useBookStore((state) => state.setProfilePhoto);
+  const deleteBook = useBookStore((state) => state.deleteBook);
 
   // Derive metrics
   const streakCount = getStreakCount ? getStreakCount() : 12;
@@ -33,6 +34,11 @@ export default function HomeRoute() {
   const handleAddBook = (bookDetails) => {
     addBook(bookDetails);
     console.log('Book added manually:', bookDetails.title);
+  };
+
+  const handleDeleteBook = (bookId) => {
+    deleteBook(bookId);
+    console.log('Book removed manually:', bookId);
   };
 
   const handleStartSession = () => {
@@ -94,6 +100,7 @@ export default function HomeRoute() {
       onStartSession={handleStartSession}
       onAddPhoto={handleAddPhoto}
       onPickCoverImage={handlePickCoverImage}
+      onDeleteBook={handleDeleteBook}
     />
   );
 }
