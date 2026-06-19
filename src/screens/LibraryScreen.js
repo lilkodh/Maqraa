@@ -465,6 +465,7 @@ export default function LibraryScreen({
             style={styles.modalKeyboardAvoiding}
           >
             <View style={styles.modalContent}>
+              <View style={styles.bottomSheetHandle} />
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Add New Book</Text>
                 <TouchableOpacity onPress={() => setIsAddBookVisible(false)} style={styles.modalCloseButton} activeOpacity={0.7}>
@@ -560,6 +561,7 @@ export default function LibraryScreen({
       >
         <SafeAreaView style={styles.modalOverlay}>
           <View style={styles.modalContent}>
+            <View style={styles.bottomSheetHandle} />
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Remove Books</Text>
               <TouchableOpacity onPress={() => setIsRemoveBookVisible(false)} style={styles.modalCloseButton} activeOpacity={0.7}>
@@ -895,9 +897,17 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     paddingHorizontal: 24,
-    paddingTop: 24,
+    paddingTop: 16,
     paddingBottom: Platform.OS === 'ios' ? 40 : 24,
     maxHeight: '90%',
+  },
+  bottomSheetHandle: {
+    width: 40,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: 'rgba(110, 122, 114, 0.3)',
+    alignSelf: 'center',
+    marginBottom: 16,
   },
   modalHeader: {
     flexDirection: 'row',
