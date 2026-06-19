@@ -52,8 +52,8 @@ export function BottomNav({ activeTab = 'home', state, descriptors, navigation }
     if (routeName === 'index') currentActiveTab = 'home';
     else if (routeName === 'stats') currentActiveTab = 'profile';
 
-    // Hide bottom tab bar on detail screens (e.g. book/[id]) or remove-books screen
-    if (routeName === 'book/[id]' || routeName === 'remove-books') {
+    // Hide bottom tab bar on detail screens (e.g. book/[id])
+    if (routeName === 'book/[id]') {
       return null;
     }
   }

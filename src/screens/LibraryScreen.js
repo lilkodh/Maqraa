@@ -46,6 +46,7 @@ export default function LibraryScreen({
   const [newBookAuthor, setNewBookAuthor] = useState('');
   const [newBookPages, setNewBookPages] = useState('');
   const [newBookCover, setNewBookCover] = useState(null);
+  const [isRemoveBookVisible, setIsRemoveBookVisible] = useState(false);
 
   // Animated values
   const anim1 = useRef(new Animated.Value(0)).current;
@@ -277,7 +278,7 @@ export default function LibraryScreen({
       translateY: sub4TranslateY,
       scale: sub4Scale,
       opacity: anim4,
-      onPress: () => handleClose(() => router.push('/remove-books')),
+      onPress: () => handleClose(() => setIsRemoveBookVisible(true)),
     },
   ];
 
@@ -547,6 +548,72 @@ export default function LibraryScreen({
               </ScrollView>
             </View>
           </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Remove Book Modal */}
+      <Modal
+        visible={isRemoveBookVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setIsRemoveBookVisible(false)}
+      >
+        <SafeAreaView style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Remove Books</Text>
+              <TouchableOpacity onPress={() => setIsRemoveBookVisible(false)} style={styles.modalCloseButton} activeOpacity={0.7}>
+                <MaterialIcons name="close" size={24} color={colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.removeListForm}>
+              {books.length === 0 ? (
+                <View style={styles.emptyRemoveContainer}>
+                  <MaterialIcons name="library-books" size={48} color={colors.textSecondary} style={{ opacity: 0.5 }} />
+                  <Text style={styles.emptyRemoveText}>No books in library to remove.</Text>
+                </View>
+              ) : (
+                books.map((b) => (
+                  <View key={b.id} style={[styles.removeBookRow, shadows.card]}>
+                    <View style={styles.removeBookInfo}>
+                      <View style={styles.removeBookCoverContainer}>
+                        <Image source={{ uri: b.coverUrl }} style={styles.removeBookCover} resizeMode="cover" />
+                      </View>
+                      <View style={styles.removeBookTextDetails}>
+                        <Text style={styles.removeBookTitle} numberOfLines={1}>{b.title}</Text>
+                        <Text style={styles.removeBookAuthor} numberOfLines={1}>{b.author}</Text>
+                      </View>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.removeBookTrashButton}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        Alert.alert(
+                          "Confirm Removal",
+                          `Are you sure you want to remove '${b.title}' from your library?`,
+                          [
+                            { text: "Cancel", style: "cancel" },
+                            { text: "Remove", style: "destructive", onPress: () => onDeleteBook(b.id) }
+                          ]
+                        );
+                      }}
+                    >
+                      <MaterialIcons name="delete" size={22} color={colors.error} />
+                    </TouchableOpacity>
+                  </View>
+                ))
+              )}
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.modalDoneButton}
+              onPress={() => setIsRemoveBookVisible(false)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.modalDoneText}>Done</Text>
+            </TouchableOpacity>
+          </View>
         </SafeAreaView>
       </Modal>
     </SafeAreaView>
@@ -971,6 +1038,94 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   modalSaveText: {
+    fontSize: 15,
+    fontFamily: 'Inter_600SemiBold',
+    fontWeight: '600',
+    color: colors.white,
+  },
+  removeListForm: {
+    paddingBottom: 24,
+  },
+  emptyRemoveContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  emptyRemoveText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 15,
+    color: colors.textSecondary,
+    marginTop: 12,
+  },
+  removeBookRow: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: radii.lg,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  removeBookInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 12,
+  },
+  removeBookCoverContainer: {
+    width: 40,
+    height: 56,
+    borderRadius: radii.sm,
+    overflow: 'hidden',
+    backgroundColor: colors.surfaceContainer,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  removeBookCover: {
+    width: '100%',
+    height: '100%',
+  },
+  removeBookTextDetails: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  removeBookTitle: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    color: colors.textPrimary,
+    fontWeight: '600',
+  },
+  removeBookAuthor: {
+    fontFamily: 'Inter_300Light',
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  removeBookTrashButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(186, 26, 26, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalDoneButton: {
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: radii.full,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+    shadowColor: '#006C4B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  modalDoneText: {
     fontSize: 15,
     fontFamily: 'Inter_600SemiBold',
     fontWeight: '600',

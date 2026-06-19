@@ -57,12 +57,6 @@ export default function Layout() {
             href: null,
           }}
         />
-        <Tabs.Screen
-          name="remove-books"
-          options={{
-            href: null,
-          }}
-        />
       </Tabs>
     </SafeAreaProvider>
   );
