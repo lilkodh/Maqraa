@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   TextInput,
   SafeAreaView,
+  Platform,
+  Animated,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
@@ -26,6 +28,166 @@ export default function LibraryScreen({
   onAddBook,
 }) {
   const goalProgress = goalCount > 0 ? finishedBooksCount / goalCount : 0;
+
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Animated values
+  const anim1 = useRef(new Animated.Value(0)).current;
+  const anim2 = useRef(new Animated.Value(0)).current;
+  const anim3 = useRef(new Animated.Value(0)).current;
+  const mainRotate = useRef(new Animated.Value(0)).current;
+  const backdropOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isExpanded) {
+      Animated.parallel([
+        Animated.timing(mainRotate, {
+          toValue: 1,
+          duration: 350,
+          useNativeDriver: true,
+        }),
+        Animated.timing(backdropOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.stagger(150, [
+          Animated.spring(anim1, {
+            toValue: 1,
+            tension: 15,
+            friction: 6,
+            useNativeDriver: true,
+          }),
+          Animated.spring(anim2, {
+            toValue: 1,
+            tension: 15,
+            friction: 6,
+            useNativeDriver: true,
+          }),
+          Animated.spring(anim3, {
+            toValue: 1,
+            tension: 15,
+            friction: 6,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(mainRotate, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(backdropOpacity, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.stagger(100, [
+          Animated.timing(anim3, {
+            toValue: 0,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+          Animated.timing(anim2, {
+            toValue: 0,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+          Animated.timing(anim1, {
+            toValue: 0,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start();
+    }
+  }, [isExpanded]);
+
+  const rotation = mainRotate.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '135deg'],
+  });
+
+  // Calculate coordinates for the arc from bottom-right (center of FAB)
+  // Radius of arc = 95
+  const sub1TranslateX = 0;
+  const sub1TranslateY = anim1.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -95],
+  });
+
+  const sub2TranslateX = anim2.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -67.2],
+  });
+  const sub2TranslateY = anim2.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -67.2],
+  });
+
+  const sub3TranslateX = anim3.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -95],
+  });
+  const sub3TranslateY = 0;
+
+  // Scale and opacity interpolations
+  const sub1Scale = anim1.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 1],
+  });
+  const sub2Scale = anim2.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 1],
+  });
+  const sub3Scale = anim3.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 1],
+  });
+
+  const subButtons = [
+    {
+      id: 'manual',
+      icon: 'edit',
+      label: 'Add Manually',
+      translateX: sub1TranslateX,
+      translateY: sub1TranslateY,
+      scale: sub1Scale,
+      opacity: anim1,
+      onPress: () => {
+        setIsExpanded(false);
+        onAddBook();
+      },
+    },
+    {
+      id: 'scan',
+      icon: 'photo-camera',
+      label: 'Scan Barcode',
+      translateX: sub2TranslateX,
+      translateY: sub2TranslateY,
+      scale: sub2Scale,
+      opacity: anim2,
+      onPress: () => {
+        setIsExpanded(false);
+        console.log('FAB scan barcode pressed');
+      },
+    },
+    {
+      id: 'search',
+      icon: 'search',
+      label: 'Search Book',
+      translateX: sub3TranslateX,
+      translateY: sub3TranslateY,
+      scale: sub3Scale,
+      opacity: anim3,
+      onPress: () => {
+        setIsExpanded(false);
+        console.log('FAB search book pressed');
+      },
+    },
+  ];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -138,13 +300,67 @@ export default function LibraryScreen({
         </View>
       </ScrollView>
 
-      {/* Floating Action Button */}
-      <TouchableOpacity style={[styles.fab, shadows.active]} onPress={onAddBook} activeOpacity={0.8}>
-        <MaterialIcons name="add" size={32} color={colors.white} />
+      {/* Backdrop for expanded FAB */}
+      {isExpanded && (
+        <Animated.View
+          style={[
+            styles.backdrop,
+            {
+              opacity: backdropOpacity,
+            },
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.backdropPressable}
+            activeOpacity={1}
+            onPress={() => setIsExpanded(false)}
+          />
+        </Animated.View>
+      )}
+
+      {/* Sub-buttons for FAB */}
+      {subButtons.map((btn) => (
+        <Animated.View
+          key={btn.id}
+          style={[
+            styles.subButtonContainer,
+            {
+              opacity: btn.opacity,
+              transform: [
+                { translateX: btn.translateX },
+                { translateY: btn.translateY },
+                { scale: btn.scale },
+              ],
+            },
+          ]}
+          pointerEvents={isExpanded ? 'auto' : 'none'}
+        >
+          <View style={styles.subButtonLabelContainer}>
+            <Text style={styles.subButtonLabel}>{btn.label}</Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.subButton, shadows.active]}
+            onPress={btn.onPress}
+            activeOpacity={0.8}
+          >
+            <MaterialIcons name={btn.icon} size={20} color={colors.white} />
+          </TouchableOpacity>
+        </Animated.View>
+      ))}
+
+      {/* Main Floating Action Button */}
+      <TouchableOpacity
+        style={[styles.fab, shadows.active]}
+        onPress={() => setIsExpanded(!isExpanded)}
+        activeOpacity={0.8}
+      >
+        <Animated.View style={{ transform: [{ rotate: rotation }] }}>
+          <MaterialIcons name="add" size={32} color={colors.white} />
+        </Animated.View>
       </TouchableOpacity>
 
       {/* Shared Bottom Nav Component */}
-      <BottomNav activeTab="home" />
+      {Platform.OS !== 'ios' && <BottomNav activeTab="home" />}
     </SafeAreaView>
   );
 }
@@ -371,5 +587,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 50,
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(250, 246, 240, 0.85)',
+    zIndex: 40,
+  },
+  backdropPressable: {
+    flex: 1,
+  },
+  subButtonContainer: {
+    position: 'absolute',
+    bottom: 106,
+    right: 30, // centered relative to the 56px fab (24px edge + 6px offset)
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    zIndex: 45,
+  },
+  subButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primaryContainer,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  subButtonLabelContainer: {
+    backgroundColor: 'rgba(13, 13, 13, 0.85)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: radii.md,
+    marginRight: 12,
+  },
+  subButtonLabel: {
+    color: colors.white,
+    fontSize: 12,
+    fontFamily: 'Inter_500Medium',
   },
 });

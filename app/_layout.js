@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import {
   Inter_300Light,
   Inter_400Regular,
@@ -36,6 +37,38 @@ export default function Layout() {
       <View style={{ flex: 1, backgroundColor: '#FAF6F0', justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#006C4B" />
       </View>
+    );
+  }
+
+  if (Platform.OS === 'ios') {
+    return (
+      <SafeAreaProvider>
+        <StatusBar style="dark" />
+        <NativeTabs
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <NativeTabs.Screen
+            name="index"
+            options={{
+              title: 'Home',
+            }}
+          />
+          <NativeTabs.Screen
+            name="stats"
+            options={{
+              title: 'Profile',
+            }}
+          />
+          <NativeTabs.Screen
+            name="book/[id]"
+            options={{
+              href: null,
+            }}
+          />
+        </NativeTabs>
+      </SafeAreaProvider>
     );
   }
 

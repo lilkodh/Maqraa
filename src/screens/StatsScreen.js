@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
   SafeAreaView,
+  Platform,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, radii, spacing, typography, shadows } from '../utils/theme';
@@ -153,7 +154,7 @@ export default function StatsScreen({
         </View>
       </ScrollView>
 
-      <BottomNav activeTab="profile" />
+      {Platform.OS !== 'ios' && <BottomNav activeTab="profile" />}
     </SafeAreaView>
   );
 }
