@@ -217,10 +217,10 @@ const styles = StyleSheet.create({
     borderColor: '#0D0D0D',
   },
   userName: {
-    fontFamily: 'EBGaramond_700Bold',
-    fontSize: 26,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 20,
     color: colors.white,
-    fontWeight: '700',
+    fontWeight: 'bold',
   },
   membershipText: {
     fontFamily: 'Inter_300Light',
@@ -245,8 +245,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   headerStatValue: {
-    fontFamily: 'EBGaramond_700Bold',
-    fontSize: 28,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 24,
     color: colors.white,
     fontWeight: 'bold',
   },
@@ -263,10 +263,10 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
   },
   sectionTitle: {
-    fontFamily: 'EBGaramond_700Bold',
-    fontSize: 26,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 20,
     color: colors.textPrimary,
-    fontWeight: '700',
+    fontWeight: 'bold',
     marginBottom: spacing.md,
   },
   chartCard: {
@@ -382,8 +382,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   historyBookTitle: {
-    fontFamily: 'EBGaramond_600SemiBold',
-    fontSize: 16,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
     color: colors.textPrimary,
     fontWeight: '600',
   },

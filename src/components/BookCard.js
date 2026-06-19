@@ -102,8 +102,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   verticalTitle: {
-    fontFamily: 'EBGaramond_600SemiBold',
-    fontSize: 16,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
     color: colors.textPrimary,
     fontWeight: '600',
   },
@@ -162,8 +162,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontFamily: 'EBGaramond_600SemiBold',
-    fontSize: 17,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 15,
     color: colors.textPrimary,
     fontWeight: '600',
   },

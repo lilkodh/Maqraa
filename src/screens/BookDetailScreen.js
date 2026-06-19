@@ -290,11 +290,11 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   bookTitle: {
-    fontFamily: 'EBGaramond_700Bold',
-    fontSize: 28,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 22,
     color: colors.white,
     marginTop: 20,
-    fontWeight: '700',
+    fontWeight: 'bold',
     textAlign: 'center',
   },
   bookAuthor: {
@@ -346,10 +346,10 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   progressPercent: {
-    fontFamily: 'EBGaramond_700Bold',
-    fontSize: 38,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 34,
     color: colors.primary,
-    fontWeight: '700',
+    fontWeight: 'bold',
   },
   progressDetails: {
     fontFamily: 'Inter_500Medium',
@@ -464,10 +464,10 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   timerText: {
-    fontFamily: 'JetBrainsMono_500Medium',
+    fontFamily: 'Inter_700Bold',
     fontSize: 42,
     color: colors.primary,
-    fontWeight: '500',
+    fontWeight: 'bold',
     letterSpacing: -1,
     marginBottom: spacing.lg,
   },
@@ -521,10 +521,10 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   sessionStatValue: {
-    fontFamily: 'EBGaramond_700Bold',
-    fontSize: 26,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 20,
     color: colors.textPrimary,
-    fontWeight: '700',
+    fontWeight: 'bold',
     marginTop: 4,
   },
   dividerContainer: {

@@ -804,10 +804,10 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   userName: {
-    fontFamily: 'EBGaramond_700Bold',
-    fontSize: 26,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 20,
     color: colors.primary,
-    fontWeight: '700',
+    fontWeight: 'bold',
   },
   headerSearchButton: {
     width: 40,
@@ -915,10 +915,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   goalTitle: {
-    fontFamily: 'EBGaramond_700Bold',
-    fontSize: 24,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 20,
     color: colors.textPrimary,
-    fontWeight: '700',
+    fontWeight: 'bold',
   },
   goalSubtitle: {
     fontFamily: 'Inter_300Light',
@@ -958,10 +958,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   sectionTitle: {
-    fontFamily: 'EBGaramond_700Bold',
-    fontSize: 26,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 22,
     color: colors.textPrimary,
-    fontWeight: '700',
+    fontWeight: 'bold',
   },
   showMoreButton: {
     fontFamily: 'Inter_500Medium',
@@ -979,10 +979,10 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   sectionTitleStats: {
-    fontFamily: 'EBGaramond_700Bold',
-    fontSize: 26,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 22,
     color: colors.textPrimary,
-    fontWeight: '700',
+    fontWeight: 'bold',
     paddingHorizontal: spacing.marginEdge,
     marginBottom: spacing.md,
   },

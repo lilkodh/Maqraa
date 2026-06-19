@@ -13,19 +13,6 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
-import {
-  PlayfairDisplay_600SemiBold,
-  PlayfairDisplay_700Bold,
-} from '@expo-google-fonts/playfair-display';
-import { JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
-import { CourierPrime_400Regular } from '@expo-google-fonts/courier-prime';
-import {
-  EBGaramond_400Regular,
-  EBGaramond_500Medium,
-  EBGaramond_600SemiBold,
-  EBGaramond_700Bold,
-  EBGaramond_400Regular_Italic,
-} from '@expo-google-fonts/eb-garamond';
 
 export default function Layout() {
   const [fontsLoaded] = useFonts({
@@ -34,15 +21,6 @@ export default function Layout() {
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
-    PlayfairDisplay_600SemiBold,
-    PlayfairDisplay_700Bold,
-    JetBrainsMono_500Medium,
-    CourierPrime_400Regular,
-    EBGaramond_400Regular,
-    EBGaramond_500Medium,
-    EBGaramond_600SemiBold,
-    EBGaramond_700Bold,
-    EBGaramond_400Regular_Italic,
   });
 
   const isBottomSheetOpen = useBookStore((state) => state.isBottomSheetOpen);

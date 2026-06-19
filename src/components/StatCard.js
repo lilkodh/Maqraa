@@ -121,8 +121,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   valueText: {
-    fontFamily: 'EBGaramond_700Bold',
-    fontSize: 34,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 30,
     color: colors.textPrimary,
     fontWeight: 'bold',
     marginTop: spacing.sm,
