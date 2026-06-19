@@ -36,23 +36,23 @@ export default function AddScreen({
         duration: 300,
         useNativeDriver: true,
       }),
-      Animated.stagger(150, [
+      Animated.stagger(250, [
         Animated.spring(anim1, {
           toValue: 1,
-          tension: 15,
-          friction: 6,
+          tension: 10,
+          friction: 7,
           useNativeDriver: true,
         }),
         Animated.spring(anim2, {
           toValue: 1,
-          tension: 15,
-          friction: 6,
+          tension: 10,
+          friction: 7,
           useNativeDriver: true,
         }),
         Animated.spring(anim3, {
           toValue: 1,
-          tension: 15,
-          friction: 6,
+          tension: 10,
+          friction: 7,
           useNativeDriver: true,
         }),
       ]),
@@ -71,20 +71,20 @@ export default function AddScreen({
         duration: 250,
         useNativeDriver: true,
       }),
-      Animated.stagger(100, [
+      Animated.stagger(150, [
         Animated.timing(anim3, {
           toValue: 0,
-          duration: 200,
+          duration: 250,
           useNativeDriver: true,
         }),
         Animated.timing(anim2, {
           toValue: 0,
-          duration: 200,
+          duration: 250,
           useNativeDriver: true,
         }),
         Animated.timing(anim1, {
           toValue: 0,
-          duration: 200,
+          duration: 250,
           useNativeDriver: true,
         }),
       ]),
@@ -110,13 +110,14 @@ export default function AddScreen({
   // Coordinates for the symmetrical arc from the bottom-center (center of floating + button)
   // Radius = 95
   // Button 1 (top-left, 135 degrees): dx = -67.2, dy = -67.2
+  // We use different input/output mappings to curve the translation path into an arc
   const sub1TranslateX = anim1.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -67.2],
+    inputRange: [0, 0.4, 1],
+    outputRange: [0, -10, -67.2],
   });
   const sub1TranslateY = anim1.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -67.2],
+    inputRange: [0, 0.8, 1],
+    outputRange: [0, -60, -67.2],
   });
 
   // Button 2 (top-center, 90 degrees): dx = 0, dy = -95
@@ -127,13 +128,14 @@ export default function AddScreen({
   });
 
   // Button 3 (top-right, 45 degrees): dx = 67.2, dy = -67.2
+  // We use different input/output mappings to curve the translation path into an arc
   const sub3TranslateX = anim3.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 67.2],
+    inputRange: [0, 0.4, 1],
+    outputRange: [0, 10, 67.2],
   });
   const sub3TranslateY = anim3.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -67.2],
+    inputRange: [0, 0.8, 1],
+    outputRange: [0, -60, -67.2],
   });
 
   // Scale and Opacity

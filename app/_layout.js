@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
-import { Stack } from 'expo-router';
-import { View, ActivityIndicator } from 'react-native';
+import { Stack, Tabs } from 'expo-router';
+import { View, ActivityIndicator, Platform } from 'react-native';
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { BottomNav } from '../src/components/StatCard';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
@@ -39,19 +41,45 @@ export default function Layout() {
     );
   }
 
+  if (Platform.OS === 'ios') {
+    return (
+      <SafeAreaProvider>
+        <StatusBar style="dark" />
+        <NativeTabs>
+          <NativeTabs.Trigger name="index">
+            <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+          </NativeTabs.Trigger>
+          <NativeTabs.Trigger name="add">
+            <NativeTabs.Trigger.Label>+</NativeTabs.Trigger.Label>
+          </NativeTabs.Trigger>
+          <NativeTabs.Trigger name="stats">
+            <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
+          </NativeTabs.Trigger>
+          <NativeTabs.Trigger name="book/[id]" hidden={true} />
+        </NativeTabs>
+      </SafeAreaProvider>
+    );
+  }
+
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
-      <Stack
+      <Tabs
+        tabBar={(props) => <BottomNav {...props} />}
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: '#FAF6F0' },
         }}
       >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="stats" />
-        <Stack.Screen name="book/[id]" />
-      </Stack>
+        <Tabs.Screen name="index" />
+        <Tabs.Screen name="stats" />
+        <Tabs.Screen name="add" />
+        <Tabs.Screen
+          name="book/[id]"
+          options={{
+            href: null,
+          }}
+        />
+      </Tabs>
     </SafeAreaProvider>
   );
 }

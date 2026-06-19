@@ -16,21 +16,64 @@ export function StatCard({ title, value, iconName, iconColor = colors.primary })
   );
 }
 
-export function BottomNav({ activeTab = 'home' }) {
+export function BottomNav({ activeTab = 'home', state, descriptors, navigation }) {
+  // If state is passed, we are using it as a React Navigation custom tab bar
+  const isTabBar = !!state;
+
   const tabs = [
     { id: 'home', label: 'Home', icon: 'home', route: '/' },
+    { id: 'add', label: 'Add', icon: 'add', route: '/add' },
     { id: 'profile', label: 'Profile', icon: 'person', route: '/stats' },
   ];
 
+  let currentActiveTab = activeTab;
+
+  if (isTabBar) {
+    const routeName = state.routes[state.index].name;
+    if (routeName === 'index') currentActiveTab = 'home';
+    else if (routeName === 'stats') currentActiveTab = 'profile';
+    else if (routeName === 'add') currentActiveTab = 'add';
+
+    // Hide bottom tab bar on detail screens (e.g. book/[id]) or when add modal is open
+    if (routeName === 'book/[id]' || routeName === 'add') {
+      return null;
+    }
+  }
+
   const handlePress = (tab) => {
-    // Navigate using router
-    router.push(tab.route);
+    if (isTabBar) {
+      if (tab.id === 'home') {
+        navigation.navigate('index');
+      } else if (tab.id === 'profile') {
+        navigation.navigate('stats');
+      } else if (tab.id === 'add') {
+        navigation.navigate('add');
+      }
+    } else {
+      router.push(tab.route);
+    }
   };
 
   return (
     <View style={[styles.navContainer, shadows.active]}>
       {tabs.map((tab) => {
-        const isActive = activeTab === tab.id;
+        const isActive = currentActiveTab === tab.id;
+        if (tab.id === 'add') {
+          return (
+            <TouchableOpacity
+              key={tab.id}
+              style={[styles.centerAddButton, shadows.active]}
+              onPress={() => handlePress(tab)}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons
+                name="add"
+                size={28}
+                color={colors.white}
+              />
+            </TouchableOpacity>
+          );
+        }
         return (
           <TouchableOpacity
             key={tab.id}
@@ -115,5 +158,19 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     color: colors.secondary,
     fontWeight: '600',
+  },
+  centerAddButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -20, // Float slightly above the tab bar line
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
 });

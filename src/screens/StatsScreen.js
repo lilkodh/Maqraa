@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, radii, spacing, typography, shadows } from '../utils/theme';
-import { BottomNav } from '../components/StatCard';
 
 export default function StatsScreen({
   streakCount = 12,
@@ -152,8 +151,6 @@ export default function StatsScreen({
           </View>
         </View>
       </ScrollView>
-
-      <BottomNav activeTab="profile" />
     </SafeAreaView>
   );
 }
