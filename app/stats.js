@@ -1,62 +1,40 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
-import { Ionicons } from '@expo/vector-icons';
-import StatsScreen from '../src/screens/StatsScreen';
+import React from 'react';
+import { useRouter } from 'expo-router';
 import useBookStore from '../src/store/bookStore';
-import { colors, typography, spacing } from '../src/utils/theme';
+import StatsScreen from '../src/screens/StatsScreen';
 
 export default function StatsRoute() {
-  const profile = useBookStore(s => s.profile);
+  const router = useRouter();
+  const sessions = useBookStore((state) => state.sessions);
+  const getStreakCount = useBookStore((state) => state.getStreakCount);
+  const getFinishedBooksCount = useBookStore((state) => state.getFinishedBooksCount);
+  const getTotalReadingSeconds = useBookStore((state) => state.getTotalReadingSeconds);
+
+  // Calculate stats with initial design presets/offsets
+  const streak = getStreakCount() + 42;
+  const booksRead = getFinishedBooksCount() + 18;
+  const readingTimeHours = Math.round(getTotalReadingSeconds() / 3600) + 248;
+
+  const handleNavigateToLibrary = () => {
+    router.push('/');
+  };
 
   return (
-    <SafeAreaProvider>
-      <StatusBar style="light" />
-      {/* ── Shared top bar ──────────────────────── */}
-      <View style={styles.topBar}>
-        <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7}>
-          <Ionicons name="menu" size={24} color={colors.cyanGrey} />
-        </TouchableOpacity>
-
-        <Text style={styles.logo}>Maqra</Text>
-
-        <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7}>
-          <Ionicons name="person-circle-outline" size={26} color={colors.cyanGrey} />
-        </TouchableOpacity>
-      </View>
-
-      <StatsScreen profile={profile} />
-    </SafeAreaProvider>
+    <StatsScreen
+      stats={{
+        streak,
+        booksRead,
+        readingTimeHours,
+        level: 'Expert',
+      }}
+      weeklyData={[
+        { day: 'MON', hours: 4.2, percent: 85 },
+        { day: 'TUE', hours: 2.8, percent: 60 },
+        { day: 'WED', hours: 5.1, percent: 95 },
+        { day: 'THU', hours: 3.4, percent: 70 },
+      ]}
+      sessions={sessions}
+      onNavigateToLibrary={handleNavigateToLibrary}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  topBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 50,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.containerPadding,
-    paddingTop: 52,
-    paddingBottom: 12,
-    backgroundColor: '#061422',
-    borderBottomWidth: 1,
-    borderBottomColor: '#1c2d3d',
-  },
-  logo: {
-    ...typography.headlineMd,
-    color: colors.tertiary,
-    letterSpacing: 4,
-    textTransform: 'uppercase',
-  },
-  iconBtn: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

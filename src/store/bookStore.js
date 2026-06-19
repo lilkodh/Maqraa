@@ -1,176 +1,218 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { calculateStreak } from '../utils/calculations';
 
-const SAMPLE_BOOKS = [
+const SEED_BOOKS = [
   {
-    id: '1',
-    title: "The Alchemist's Shadow",
-    author: 'Evelyn St. Claire',
-    cover: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBKLqAmujkYlqrVdw23aeKNSm-imn5lUHvYiPj2nPpmp84YwcYIKzDKoeMi5Pizo10mxA7OWp4VHme1h3SQoKWlleeNCyx8k5DfY9DpYl9sKffPoHTJJzYJkkSPzZrxIDs-ocp0DX2TKr3edAnIp_o_KI5ucc3uKuHziBxonRp1D_Y_dZa-cHS7AEbvnf36gIowbUu2QVOqvT-cxxI94hCbGVkztleFMllU5z7I5AmWm5zCDprvMlUBGUlT1dBZ1XELnzBEK17aLBef',
-    progress: 60,
-    totalPages: 340,
-    currentPage: 204,
+    id: 'al-muqaddima',
+    title: 'Al-Muqaddima',
+    author: 'Ibn Khaldun',
+    coverUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCNLyIrs0FUzRRyg8gdmivMajyrI223qMpbYgfLjPOVK-NBPhl01hqLOwNZa_xkoA7K9Pg3l_emf_Qv-2wCbo1_tps-vKpMS969PCdAPj2nVJCdiTPFW2SPRVaBc5AffVTzSCIQQUYVxvolSa1qww3wR0Ic8drlU45wP4lc2fRhL0SGBh7LRkuqElZTWLWNsycAp3z9ka9qDFLsr6JueFa9_uCaOQEQ_8_AoWnxgTKQenFyqi51CGWs0qMM1Xyr7x6a_N-W-YNW92LO',
+    totalPages: 450,
+    readPages: 202,
+    status: 'in_progress',
+    rating: 5.0,
+    genre: ['Philosophy', 'History'],
+    language: 'Arabic',
+    synopsis: 'A foundational treatise on the philosophy of history, sociology, and economics, written in the 14th century.',
+  },
+  {
+    id: 'al-fitna',
+    title: 'Al-Fitna',
+    author: 'Dr. Taha Hussein',
+    coverUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAomg-D6O_zg_1m9x3aG_SdY7J6dsiZEutH20oxPOZNeEgUeYGYUzlCLTtPc4ybfe1kx1bNqBsFknPZMf_ZPj5ZuRzZkThK_WX5L3e4OO-Fcv73UZcgOOdCPxusyGwhzoeFUDO3b3D0r6nLpWd9rGUSuVKmpAwxpvXW9za7XwOO3orP8Zo0BVZI0oXBbRLpZUcRYH-dIX2W6heEzJYVxv1LHysuAbcnQ66YijVhBXzRE_vJaXJ4kh-z3MRRQR06jAmEzy-tnCTGzaiX',
+    totalPages: 380,
+    readPages: 38,
     status: 'in_progress',
     rating: 4.5,
-    genre: ['Fiction', 'Mystery'],
-    language: 'English',
-    startedDate: 'June 12',
-    sessionTime: 1427,
-    synopsis: 'A mesmerizing journey through a world where shadows hold ancient secrets, and one alchemist must uncover the truth before darkness consumes everything.',
-  },
-  {
-    id: '2',
-    title: 'تاريخ الأندلس',
-    author: 'د. أحمد المنصور',
-    cover: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDqoTcIuAB3Ek1-CUFltuEkHLjWvTHotzkK5VeKRv5ZZizhK6iJNwP4PyJqSDebrzhhrpgeXOAhkpd2GtDMny7KH3GnsHu7MdPMThm9pcSklD8Z_3Y4iiZPz8xaqGCD_7kNrcZJzXKwmwOIuB02koT6R88r5nnpFy26FbSHUKmCD8X0bkvlJ5ox3y080hjTcs_Vks06aiAesm1lkGzRsApwwo45cH1pltc5wHYCrz0a8tZluOegnZkK2mFj8v034OQoVnfeSmDsR1fe',
-    progress: 45,
-    totalPages: 512,
-    currentPage: 230,
-    status: 'in_progress',
-    rating: 4.8,
-    genre: ['تاريخ', 'أكاديمي'],
+    genre: ['History', 'Philosophy'],
     language: 'Arabic',
-    startedDate: 'May 28',
-    sessionTime: 0,
-    synopsis: 'هذا العمل المرجعي يستكشف الذروة الثقافية والعلمية لشبه الجزيرة الأيبيرية تحت الحكم الإسلامي، واصلاً بين التاريخ القديم والآفاق المعاصرة.',
+    synopsis: 'An in-depth analysis of the political upheavals in early Islamic history by the legendary dean of Arabic literature.',
   },
   {
-    id: '3',
-    title: 'Verdant Echoes',
-    author: 'Thomas Thorne',
-    cover: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAxv2dWvTgLKqk15Hf2DNavKrcuJRImlG2R2N3G-VwDpgQRpVeJQZYuiJFF7sGrs5lA7hdHsfFHyHBkHK1InLs-z9fRwpllUnp6aoHhx8Fe0SXVDUlzIvwYbY7XEzi_-zmMhQvRvTo2IYd4_S8LDLPQTJCrrGaJy4NX1Z_gnMLeS6w3FPI2gyVyw_Qu58CLkWL4Aci0ztmWxYmqw0f-p7WQLHXeZOwd5x5rCtcao3-OJRlws0cM_LUplkRM-uupqKcSLMNPJ4y03M4v',
-    progress: 75,
-    totalPages: 290,
-    currentPage: 218,
-    status: 'in_progress',
-    rating: 4.2,
-    genre: ['Nature', 'Poetry'],
-    language: 'English',
-    startedDate: 'June 1',
-    sessionTime: 0,
-    synopsis: 'A lyrical exploration of ancient forests and the living memory they carry across centuries.',
-  },
-  {
-    id: '4',
-    title: 'Empire of Dust',
-    author: 'Marcus Aurel',
-    cover: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBs9DJvrTBUjbc5mkEnLr9qcX0wEPfOpzLIx0FWoXs_cfq1UTgGYd-56RIh2PtoSHqXrDt63JZ2IcwaUFQZjhH7i2CUtbRBQQFWyMV5QtfTLKnqrL1rq376wwFKbGo-ZP41wzyKV-sdJhuF0BNhPsF4GupU3ESjzBgwPjOnuTkK-boFTDJMEeDqg7d6HH5JaaQN3BoqJ2OnlR9_n2sSoyrA0_CQ3Ut8MIloMCGecPETtQA7Lp3zF6UtQ5xxD1UQR_vWhsTHE-OAU4BV',
-    progress: 0,
-    totalPages: 445,
-    currentPage: 0,
+    id: 'mystical-poetry',
+    title: 'Mystical Poetry of Fez',
+    author: 'Sidi Ali al-Jamal',
+    coverUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBY-U1bd4ACqLOCi8NbBKeA1RG_6NjBkZfezoi82Fw80uTmgxUkbV4HX_Tu0_y0yWwdiQJ5Gchi1H2D-q35kCBSQfC0Nqw0Sw0JfJgedcKoQLndfdvWA2bFfLwAvpZ_4bLh3uL71YfVPS7Fx7wKpqsK83NJry1TIDcpXuIFt1yjw2-f6KNBEuAfZhyCaZZ87MBJotVTxjNPTGqNeApi23ajA2FZkEFy5ViES00fNKFidUHxslnegYAyrJEENouzYH4ChZ920nSw55kN',
+    totalPages: 200,
+    readPages: 0,
     status: 'to_read',
-    rating: 0,
-    genre: ['History', 'War'],
-    language: 'English',
-    startedDate: null,
-    sessionTime: 0,
-    synopsis: 'The rise and fall of an ancient empire told through the eyes of those who built it — and those who watched it crumble.',
+    rating: 4.8,
+    genre: ['Poetry', 'Philosophy'],
+    language: 'Arabic',
+    synopsis: 'A curated anthology of Sufi poetic verses written in the spiritual capital of Morocco during the 18th century.',
+  },
+];
+
+const SEED_SESSIONS = [
+  {
+    id: 's1',
+    bookId: 'al-muqaddima',
+    bookTitle: 'Al-Muqaddima',
+    durationSeconds: 2700, // 45 min
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+    notes: 'Deep focus immersion. Completed Chapter 4. Marked 3 insights in the Sanctuary.',
   },
   {
-    id: '5',
-    title: 'Neon Solace',
-    author: 'Zara Vance',
-    cover: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCLeN0Xh3oP7uJRVgQ8VuVHmaRqsH7Kl4R4p0wl1BRXbXs8kAZZ4iT3Oez4bZsQ3hKsK2OHBQivUN_gOipGKaZpu5a9uH8qkskUqYw3R5_JDdTDoiESJV-H00hnV-dTAqjxYDwrYDgIwJyBmr4bZVbT25RimBoJI7F6ObLqPQLnxF1VVTrNqJe0r4uRA7hTSsOUvNr1Ll3MO0NcMNrRsnBgINf7CfPxK2vV6iY_UR3Ca20ropQiR5BuxLUEnEBJxNqebaBAZk7i6v8w',
-    progress: 100,
-    totalPages: 198,
-    currentPage: 198,
-    status: 'finished',
-    rating: 4.6,
-    genre: ['Sci-Fi', 'Literary'],
-    language: 'English',
-    startedDate: 'April 10',
-    sessionTime: 0,
-    synopsis: 'In a city of perpetual night, one engineer discovers that comfort lives not in the neon glow above, but in the quiet humanity below.',
+    id: 's2',
+    bookId: 'al-fitna',
+    bookTitle: 'Al-Fitna',
+    durationSeconds: 4320, // 1h 12m
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // Yesterday
+    notes: 'Reflective session. Reviewing previous annotations. Connected Zellige progress tile #14.',
   },
   {
-    id: '6',
-    title: 'Astral Cartography',
-    author: 'Dr. Julian Ray',
-    cover: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDsdFuqFM_hh5bfHedzhWhUe39OyoQGkVUVHYmsL-uC_PLicwuGprarLMC2XjjR5_kMhYZ2gwCnoTK3zHik7EHVqhIFpOCUGmrMXT7uvgV_mSJKIovUrn9YH0d_W8hJr4Xi2klXbqE1VpU2fBnaT6sLOwswvYEuUceZx_sjpiu6sMAaOOOE3Y1GiSePYsT6ixvzPvDhNjmRN--duiMWsu1sRQfQpcgaeOByT62fxUxJVjARYpaPrKid3zBUcB8jZ_X7YqPlxO8tzJxg',
-    progress: 10,
-    totalPages: 380,
-    currentPage: 38,
-    status: 'in_progress',
-    rating: 4.0,
-    genre: ['Science', 'Space'],
-    language: 'English',
-    startedDate: 'June 15',
-    sessionTime: 0,
-    synopsis: 'A star-by-star guide to the ancient art of celestial navigation, reframed for the modern deep-space age.',
+    id: 's3',
+    bookId: 'mystical-poetry',
+    bookTitle: 'Mystical Poetry of Fez',
+    durationSeconds: 1800, // 30 min
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(), // 2 days ago
+    notes: 'Visual analysis. Analyzed 12 architectural plates from the 14th century Fez collection.',
   },
 ];
 
 const useBookStore = create(
   persist(
     (set, get) => ({
-      books: SAMPLE_BOOKS,
-      activeFilter: 'all', // 'all' | 'to_read' | 'in_progress' | 'finished'
-      readingGoal: 20,
-      profile: {
-        name: 'Amir Al-Hassan',
-        title: 'Scholar of the Lunar Archives',
-        booksRead: 42,
-        currentStreak: 15,
-        pagesThisMonth: 1280,
-        readingTimeHours: 54,
-        monthlyData: [
-          { month: 'Jan', books: 8 },
-          { month: 'Feb', books: 5 },
-          { month: 'Mar', books: 12 },
-          { month: 'Apr', books: 3 },
-          { month: 'May', books: 7 },
-          { month: 'Jun', books: 7 },
-        ],
+      books: SEED_BOOKS,
+      sessions: SEED_SESSIONS,
+      activeBookId: 'al-muqaddima',
+      targetGoal: 20,
+      
+      // Timer state
+      timerState: {
+        isRunning: false,
+        seconds: 0,
+        startTime: null,
       },
-
-      setFilter: (filter) => set({ activeFilter: filter }),
-
-      getFilteredBooks: () => {
-        const { books, activeFilter } = get();
-        if (activeFilter === 'all') return books;
-        if (activeFilter === 'to_read') return books.filter(b => b.status === 'to_read');
-        if (activeFilter === 'in_progress') return books.filter(b => b.status === 'in_progress');
-        if (activeFilter === 'finished') return books.filter(b => b.status === 'finished');
-        return books;
-      },
-
-      getCurrentlyReading: () => {
-        const { books } = get();
-        return books.find(b => b.status === 'in_progress') || null;
-      },
-
-      getBookById: (id) => {
-        return get().books.find(b => b.id === id) || null;
-      },
-
-      getBooksFinishedCount: () => {
-        return get().books.filter(b => b.status === 'finished').length;
-      },
-
-      markCompleted: (id) => set((state) => ({
-        books: state.books.map(b =>
-          b.id === id ? { ...b, status: 'finished', progress: 100, currentPage: b.totalPages } : b
-        ),
+      
+      // Actions
+      addBook: (book) => set((state) => ({
+        books: [...state.books, {
+          id: String(Date.now()),
+          readPages: 0,
+          status: 'to_read',
+          rating: 0,
+          genre: [],
+          language: 'Arabic',
+          synopsis: '',
+          ...book,
+        }],
+      })),
+      
+      updateProgress: (bookId, readPages) => set((state) => {
+        const books = state.books.map((b) => {
+          if (b.id === bookId) {
+            const pages = Math.min(b.totalPages, Math.max(0, readPages));
+            const status = pages === b.totalPages ? 'completed' : pages > 0 ? 'in_progress' : 'to_read';
+            return { ...b, readPages: pages, status };
+          }
+          return b;
+        });
+        return { books };
+      }),
+      
+      toggleBookCompletion: (bookId) => set((state) => {
+        const books = state.books.map((b) => {
+          if (b.id === bookId) {
+            const isCompleted = b.status === 'completed';
+            const status = isCompleted ? 'in_progress' : 'completed';
+            const readPages = isCompleted ? Math.round(b.totalPages * 0.9) : b.totalPages;
+            return { ...b, readPages, status };
+          }
+          return b;
+        });
+        return { books };
+      }),
+      
+      setActiveBookId: (bookId) => set({ activeBookId: bookId }),
+      
+      // Timer controls
+      startTimer: () => set((state) => {
+        if (state.timerState.isRunning) return {};
+        return {
+          timerState: {
+            isRunning: true,
+            seconds: state.timerState.seconds,
+            startTime: Date.now(),
+          },
+        };
+      }),
+      
+      pauseTimer: () => set((state) => {
+        if (!state.timerState.isRunning) return {};
+        const elapsed = Math.round((Date.now() - state.timerState.startTime) / 1000);
+        return {
+          timerState: {
+            isRunning: false,
+            seconds: state.timerState.seconds + elapsed,
+            startTime: null,
+          },
+        };
+      }),
+      
+      stopTimer: (notes = '') => set((state) => {
+        let totalElapsed = state.timerState.seconds;
+        if (state.timerState.isRunning && state.timerState.startTime) {
+          totalElapsed += Math.round((Date.now() - state.timerState.startTime) / 1000);
+        }
+        
+        if (totalElapsed <= 0) {
+          return {
+            timerState: { isRunning: false, seconds: 0, startTime: null }
+          };
+        }
+        
+        const activeBook = state.books.find(b => b.id === state.activeBookId);
+        const newSession = {
+          id: String(Date.now()),
+          bookId: state.activeBookId,
+          bookTitle: activeBook ? activeBook.title : 'Unknown Book',
+          durationSeconds: totalElapsed,
+          timestamp: new Date().toISOString(),
+          notes: notes || 'Completed reading session.',
+        };
+        
+        return {
+          sessions: [newSession, ...state.sessions],
+          timerState: {
+            isRunning: false,
+            seconds: 0,
+            startTime: null,
+          },
+        };
+      }),
+      
+      setTimerSeconds: (seconds) => set((state) => ({
+        timerState: {
+          ...state.timerState,
+          seconds,
+        }
       })),
 
-      updateProgress: (id, currentPage) => set((state) => ({
-        books: state.books.map(b => {
-          if (b.id !== id) return b;
-          const progress = Math.round((currentPage / b.totalPages) * 100);
-          return { ...b, currentPage, progress };
-        }),
-      })),
-
-      updateSessionTime: (id, seconds) => set((state) => ({
-        books: state.books.map(b =>
-          b.id === id ? { ...b, sessionTime: b.sessionTime + seconds } : b
-        ),
-      })),
+      // Streak & metrics helper functions
+      getStreakCount: () => {
+        return calculateStreak(get().sessions);
+      },
+      
+      getFinishedBooksCount: () => {
+        return get().books.filter(b => b.status === 'completed').length;
+      },
+      
+      getTotalReadingSeconds: () => {
+        return get().sessions.reduce((acc, s) => acc + s.durationSeconds, 0);
+      },
     }),
     {
-      name: 'maqra-storage',
+      name: 'maqra-book-store-v2',
       storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        books: state.books,
+        sessions: state.sessions,
+        activeBookId: state.activeBookId,
+        targetGoal: state.targetGoal,
+      }),
     }
   )
 );

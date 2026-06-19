@@ -1,567 +1,619 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
-  TouchableOpacity,
-  Image,
   StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  SafeAreaView,
   Dimensions,
+  TextInput,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { colors, radii, spacing, typography } from '../utils/theme';
 import ProgressRing from '../components/ProgressRing';
-import { colors, typography, spacing, radii, glassMorphism, shadows } from '../utils/theme';
+import { formatTime } from '../utils/calculations';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-// ── Star rating ──────────────────────────────────────────────
-const StarIcon = ({ filled }) => (
-  <MaterialCommunityIcons
-    name={filled === 'half' ? 'star-half-full' : filled ? 'star' : 'star-outline'}
-    size={16}
-    color={colors.tertiaryFixedDim}
-  />
-);
-
-const RatingRow = ({ rating, isArabic }) => {
-  const stars = [];
-  for (let i = 1; i <= 5; i++) {
-    if (rating >= i)         stars.push(<StarIcon key={i} filled />);
-    else if (rating >= i - 0.5) stars.push(<StarIcon key={i} filled="half" />);
-    else                     stars.push(<StarIcon key={i} />);
-  }
-  return (
-    <View style={{ flexDirection: isArabic ? 'row-reverse' : 'row', alignItems: 'center', gap: 2 }}>
-      {stars}
-      <Text style={styles.ratingValue}>{rating > 0 ? ` ${rating}` : ''}</Text>
-    </View>
-  );
-};
-
-/**
- * BookDetailScreen — Presentation layer
- * Props passed from app/book/[id].js route.
- */
-const BookDetailScreen = ({
+export default function BookDetailScreen({
   book,
-  onBack,
-  onMarkCompleted,
-  onStartTimer,
-  onPauseTimer,
-  onStopTimer,
-  timerSeconds,
-  timerRunning,
-}) => {
-  const insets = useSafeAreaInsets();
+  timerSeconds = 0,
+  timerRunning = false,
+  onStartTimer = () => {},
+  onPauseTimer = () => {},
+  onStopTimer = () => {},
+  onToggleCompletion = () => {},
+  onBackPress = () => {},
+  onNavigateToLibrary = () => {},
+  onNavigateToStats = () => {},
+}) {
+  const [sessionNotes, setSessionNotes] = useState('');
 
-  if (!book) return null;
+  if (!book) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>No book selected.</Text>
+        <TouchableOpacity style={styles.backButton} onPress={onBackPress}>
+          <Text style={styles.backButtonText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
-  const isArabic = book.language === 'Arabic';
+  const progressPercent = Math.round((book.readPages / book.totalPages) * 100);
 
-  const formatTimer = (s) => {
-    const h   = Math.floor(s / 3600).toString().padStart(2, '0');
-    const m   = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
-    const sec = (s % 60).toString().padStart(2, '0');
-    return `${h}:${m}:${sec}`;
+  // Render stars based on rating
+  const renderStars = () => {
+    const stars = [];
+    const rating = book.rating || 0;
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <Text
+          key={i}
+          style={[
+            styles.star,
+            { color: i <= rating ? colors.secondary : 'rgba(255,255,255,0.15)' },
+          ]}
+        >
+          ★
+        </Text>
+      );
+    }
+    return stars;
   };
 
-  const pagesLeft = book.totalPages - book.currentPage;
-  const sessionMinutes = Math.floor(timerSeconds / 60);
+  const handleStop = () => {
+    onStopTimer(sessionNotes);
+    setSessionNotes('');
+  };
 
   return (
-    <View style={styles.root}>
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 120 }]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* ── Hero / Floating Cover ──────────────── */}
-        <View style={styles.heroWrapper}>
+    <View style={styles.container}>
+      {/* Background Dark Void */}
+      <LinearGradient
+        colors={['#000f21', '#00142a']}
+        style={StyleSheet.absoluteFillObject}
+      />
 
-          {/* Back button */}
-          <Animated.View entering={FadeInDown.duration(500)} style={[styles.backBtn, { top: insets.top + 8 }]}>
-            <TouchableOpacity
-              onPress={onBack}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
-              activeOpacity={0.8}
-            >
-              <Ionicons name={isArabic ? "arrow-forward" : "arrow-back"} size={18} color={colors.onSurface} />
-              <Text style={styles.backBtnText}>{isArabic ? 'رجوع' : 'Back'}</Text>
-            </TouchableOpacity>
-          </Animated.View>
-
-          {/* Floating cover */}
-          <Animated.View entering={FadeInDown.duration(600).delay(80)} style={styles.floatingCoverWrapper}>
-            <Image
-              source={{ uri: book.cover }}
-              style={styles.floatingCover}
-              resizeMode="cover"
-            />
-            <View style={[styles.coverSpine, isArabic && { left: undefined, right: 0 }]} />
-          </Animated.View>
+      <SafeAreaView style={styles.safeArea}>
+        {/* Top App Bar */}
+        <View style={styles.topBar}>
+          <TouchableOpacity style={styles.iconBtn} onPress={onBackPress}>
+            <Text style={styles.iconText}>←</Text>
+          </TouchableOpacity>
+          <Text style={styles.topBarTitle}>Maqra</Text>
+          <TouchableOpacity style={styles.iconBtn}>
+            <Text style={styles.iconText}>🔖</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* ── Content area ────────────────────────── */}
-        <View style={styles.content}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Cinematic Hero Backdrop */}
+          <View style={styles.heroSection}>
+            {/* Blurry Cover Image Backdrop */}
+            {book.coverUrl && (
+              <Image
+                source={{ uri: book.coverUrl }}
+                style={StyleSheet.absoluteFillObject}
+                blurRadius={20}
+              />
+            )}
+            <View style={styles.heroOverlay} />
 
-          {/* Identity + progress ring */}
-          <Animated.View entering={FadeInDown.duration(600).delay(150)} style={[styles.identityRow, isArabic && { flexDirection: 'row-reverse' }]}>
-            <ProgressRing
-              size={100}
-              progress={book.progress}
-              strokeWidth={6}
-              label={`${book.progress}%`}
-              labelStyle={{ fontSize: 16 }}
-            />
-            <View style={[styles.identityText, isArabic && { alignItems: 'flex-end' }]}>
-              <Text style={[styles.bookTitle, isArabic && { textAlign: 'right', writingDirection: 'rtl' }]} numberOfLines={2}>{book.title}</Text>
-              <Text style={[styles.bookAuthor, isArabic && { textAlign: 'right', writingDirection: 'rtl' }]}>{isArabic ? 'بقلم ' : 'By '}{book.author}</Text>
-              <RatingRow rating={book.rating} isArabic={isArabic} />
-              <View style={[styles.tagsRow, isArabic && { flexDirection: 'row-reverse' }]}>
-                {book.language && (
-                  <View style={styles.tag}><Text style={styles.tagText}>{isArabic && book.language === 'Arabic' ? 'العربية' : book.language}</Text></View>
-                )}
-                {book.genre?.map((g) => (
-                  <View key={g} style={styles.tag}><Text style={styles.tagText}>{g}</Text></View>
-                ))}
-              </View>
-            </View>
-          </Animated.View>
-
-          {/* ══════════════════════════════════════════════════════
-               BIG READING TIMER CARD
-          ══════════════════════════════════════════════════════ */}
-          <Animated.View entering={FadeInDown.duration(600).delay(220)} style={styles.timerCardOuter}>
-            <View style={[glassMorphism.cardLiquid, styles.timerCard]}>
-              {/* Top row: label + running status */}
-              <View style={styles.timerHeaderRow}>
-                <View style={styles.timerLabelGroup}>
-                  <MaterialCommunityIcons
-                    name="timer-outline"
-                    size={16}
-                    color={colors.primaryFixedDim}
-                  />
-                  <Text style={styles.timerLabel}>SESSION TIMER</Text>
-                </View>
-                <View style={[
-                  styles.timerStatusPill,
-                  timerRunning ? styles.timerStatusActive : styles.timerStatusIdle,
-                ]}>
-                  <View style={[
-                    styles.timerStatusDot,
-                    { backgroundColor: timerRunning ? colors.emeraldSuccess : colors.outline },
-                  ]} />
-                  <Text style={[
-                    styles.timerStatusText,
-                    { color: timerRunning ? colors.emeraldSuccess : colors.outline },
-                  ]}>
-                    {timerRunning ? 'Running' : 'Paused'}
-                  </Text>
-                </View>
-              </View>
-
-              {/* BIG timer display */}
-              <Text style={styles.timerDisplay}>{formatTimer(timerSeconds)}</Text>
-
-              {/* Session info sub-row */}
-              <View style={styles.timerInfoRow}>
-                <View style={styles.timerInfoChip}>
-                  <MaterialCommunityIcons name="clock-fast" size={13} color={colors.cyanGrey} />
-                  <Text style={styles.timerInfoText}>{sessionMinutes}m this session</Text>
-                </View>
-                <View style={styles.timerInfoChip}>
-                  <MaterialCommunityIcons name="book-open-page-variant" size={13} color={colors.cyanGrey} />
-                  <Text style={styles.timerInfoText}>{pagesLeft} pages left</Text>
-                </View>
-              </View>
-
-              {/* Divider */}
-              <View style={styles.timerDivider} />
-
-              {/* Controls row — centered, larger buttons */}
-              <View style={styles.timerControls}>
-                {/* Stop */}
-                <TouchableOpacity
-                  onPress={onStopTimer}
-                  style={[styles.timerBtnSecondary]}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="stop" size={22} color={colors.cyanGrey} />
-                  <Text style={styles.timerBtnSecondaryLabel}>Stop</Text>
-                </TouchableOpacity>
-
-                 <TouchableOpacity
-                  onPress={onStartTimer}
-                  style={styles.timerBtnPlay}
-                  activeOpacity={0.85}
-                >
-                  <View style={styles.timerBtnPlaySolid}>
-                    <Ionicons name="play" size={28} color={colors.onPrimary} />
+            {/* Floating Book Cover (3D perspective tilt) */}
+            <View style={styles.coverContainer}>
+              <View style={styles.bookCoverWrapper}>
+                {book.coverUrl ? (
+                  <Image source={{ uri: book.coverUrl }} style={styles.coverImage} />
+                ) : (
+                  <View style={styles.fallbackCover}>
+                    <Text style={styles.fallbackText}>{book.title[0]}</Text>
                   </View>
-                </TouchableOpacity>
-
-                {/* Pause */}
-                <TouchableOpacity
-                  onPress={onPauseTimer}
-                  style={[styles.timerBtnSecondary]}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="pause" size={22} color={colors.cyanGrey} />
-                  <Text style={styles.timerBtnSecondaryLabel}>Pause</Text>
-                </TouchableOpacity>
+                )}
+                <View style={styles.spineShadow} />
               </View>
             </View>
-          </Animated.View>
-
-          {/* ── Meta stats 2×2 ──────────────────────── */}
-          <View style={styles.metaGrid}>
-            {[
-              { label: isArabic ? 'الصفحات المتبقية' : 'Pages Left',  value: pagesLeft.toString(), icon: 'book-open-page-variant' },
-              { label: isArabic ? 'معدل السرعة' : 'Avg. Speed',  value: isArabic ? '٢.٥ د/ص' : '2.5m/p',             icon: 'speedometer' },
-              { label: isArabic ? 'بدأت في' : 'Started',     value: isArabic && book.startedDate === 'May 28' ? '٢٨ مايو' : (book.startedDate || '—'), icon: 'calendar-start' },
-              { label: isArabic ? 'الهدف التالي' : 'Next Goal',   value: isArabic ? 'الفصل ٨' : 'Ch. 8',              icon: 'flag-outline' },
-            ].map((item, index) => (
-              <Animated.View
-                key={item.label}
-                entering={FadeInDown.duration(500).delay(280 + index * 60)}
-                style={[glassMorphism.cardLiquid, styles.metaCard, isArabic && { alignItems: 'flex-end' }]}
-              >
-                <MaterialCommunityIcons name={item.icon} size={16} color={colors.primaryFixedDim} style={{ marginBottom: 6 }} />
-                <Text style={[styles.metaLabel, isArabic && { textAlign: 'right', writingDirection: 'rtl' }]}>{item.label}</Text>
-                <Text style={[styles.metaValue, isArabic && { textAlign: 'right', writingDirection: 'rtl' }]}>{item.value}</Text>
-              </Animated.View>
-            ))}
           </View>
 
-          {/* ── Synopsis ────────────────────────────── */}
-          {book.synopsis && (
-            <Animated.View entering={FadeInDown.duration(600).delay(450)} style={[styles.synopsisSection, isArabic && { alignItems: 'flex-end' }]}>
-              <Text style={[styles.synopsisTitle, isArabic && { textAlign: 'right', writingDirection: 'rtl' }]}>
-                {isArabic ? 'نبذة عن الطبعة' : 'About this edition'}
-              </Text>
-              <Text style={[styles.synopsisText, isArabic && { textAlign: 'right', writingDirection: 'rtl' }]}>{book.synopsis}</Text>
-            </Animated.View>
-          )}
-        </View>
-      </ScrollView>
+          {/* Progress Ring Overlay */}
+          <View style={styles.progressRingSection}>
+            <ProgressRing
+              size={140}
+              strokeWidth={8}
+              progress={progressPercent}
+              subText="Reading"
+            />
+          </View>
 
-      {/* ── Pinned CTA ──────────────────────────── */}
-      {book.status !== 'finished' && (
-        <Animated.View entering={FadeInDown.duration(600).delay(500)} style={[styles.ctaWrapper, { paddingBottom: insets.bottom + 16, backgroundColor: colors.background }]}>
-          <TouchableOpacity
-            onPress={onMarkCompleted}
-            style={styles.completedBtn}
-            activeOpacity={0.85}
-          >
-            <View style={[styles.completedBtnSolid, isArabic && { flexDirection: 'row-reverse' }]}>
-              <Ionicons name="checkmark-circle-outline" size={20} color={colors.ivoryWhite} style={isArabic ? { marginLeft: 8 } : { marginRight: 8 }} />
-              <Text style={styles.completedBtnText}>{isArabic ? 'تحديد كمقروء' : 'Mark as Completed'}</Text>
+          {/* Metadata Section */}
+          <View style={styles.metadataSection}>
+            <Text style={styles.title}>{book.title}</Text>
+            <Text style={styles.author}>{book.author}</Text>
+            
+            {/* Star Matrix */}
+            <View style={styles.starContainer}>{renderStars()}</View>
+
+            {/* Language & Genre chips */}
+            <View style={styles.chipRow}>
+              <View style={styles.chip}>
+                <Text style={styles.chipText}>{book.language || 'Arabic'}</Text>
+              </View>
+              {book.genre &&
+                book.genre.map((g) => (
+                  <View key={g} style={styles.chip}>
+                    <Text style={styles.chipText}>{g}</Text>
+                  </View>
+                ))}
             </View>
+          </View>
+
+          {/* Leather-Bound Timer (Claymorphic) */}
+          <View style={styles.timerSection}>
+            <View style={styles.timerCard}>
+              <Text style={styles.timerLabel}>Session Timer</Text>
+              <Text style={styles.timerValue}>{formatTime(timerSeconds)}</Text>
+              
+              <View style={styles.timerActions}>
+                <TouchableOpacity
+                  style={[styles.timerBtn, styles.timerBtnStart]}
+                  onPress={onStartTimer}
+                  disabled={timerRunning}
+                >
+                  <Text style={styles.timerBtnTextStart}>Start</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.timerBtn}
+                  onPress={onPauseTimer}
+                  disabled={!timerRunning}
+                >
+                  <Text style={styles.timerBtnText}>Pause</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.timerBtn}
+                  onPress={handleStop}
+                >
+                  <Text style={styles.timerBtnTextStop}>Stop</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Session notes input inside the timer well */}
+              <TextInput
+                style={styles.notesInput}
+                placeholder="Log thoughts / sanctuary insights..."
+                placeholderTextColor="rgba(255, 255, 255, 0.3)"
+                value={sessionNotes}
+                onChangeText={setSessionNotes}
+              />
+            </View>
+          </View>
+
+          {/* Master Action Completion CTA */}
+          <View style={styles.actionSection}>
+            <TouchableOpacity
+              style={[
+                styles.completionBtn,
+                book.status === 'completed' && styles.completionBtnActive,
+              ]}
+              onPress={onToggleCompletion}
+            >
+              <Text style={styles.completionBtnIcon}>✓</Text>
+              <Text style={styles.completionBtnText}>
+                {book.status === 'completed' ? 'Completed' : 'Mark as Completed'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Synopsis Preview (Librarian's Note) */}
+          <View style={styles.synopsisSection}>
+            <Text style={styles.synopsisTitle}>The Librarian's Note</Text>
+            <Text style={styles.synopsisText}>
+              {book.synopsis ||
+                'A transformative journey through the shifting sands of the Andalusian desert, where every word is a tile in a vast philosophical mosaic. This volume explores the intersection of destiny and choice...'}
+            </Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+
+      {/* Floating Glass Bottom Tab Nav Bar */}
+      <View style={styles.bottomNavContainer}>
+        <View style={styles.glassNav}>
+          <TouchableOpacity style={styles.navItem} onPress={onNavigateToLibrary}>
+            <Text style={styles.navIcon}>📖</Text>
+            <Text style={styles.navText}>Library</Text>
           </TouchableOpacity>
-        </Animated.View>
-      )}
+          <TouchableOpacity style={[styles.navItem, styles.navItemActive]}>
+            <Text style={[styles.navIcon, styles.navIconActive]}>🧘</Text>
+            <Text style={[styles.navText, styles.navTextActive]}>Sanctuary</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem} onPress={onNavigateToStats}>
+            <Text style={styles.navIcon}>📊</Text>
+            <Text style={styles.navText}>Stats</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  scroll: { flex: 1 },
-  scrollContent: {},
-
-  // ── Hero ──────────────────────────────────────────────────
-  heroWrapper: {
-    height: 320,
-    overflow: 'hidden',
-    position: 'relative',
-    backgroundColor: '#0e1d2a',
+  container: {
+    flex: 1,
+    backgroundColor: '#000f21',
   },
-  backBtn: {
-    position: 'absolute',
-    left: spacing.containerPadding,
-    zIndex: 10,
-    backgroundColor: '#13212e',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: radii.full,
-    borderWidth: 1,
-    borderColor: '#1c2d3d',
-    flexDirection: 'row',
+  safeArea: {
+    flex: 1,
+  },
+  errorContainer: {
+    flex: 1,
+    backgroundColor: '#000f21',
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'center',
   },
-  backBtnText: {
-    ...typography.labelMd,
+  errorText: {
+    fontFamily: typography.bodyLg.fontFamily,
     color: colors.onSurface,
+    fontSize: 18,
+    marginBottom: 20,
   },
-  floatingCoverWrapper: {
-    position: 'absolute',
-    bottom: 16,
-    alignSelf: 'center',
-    width: 130,
-    height: 195,
-    borderRadius: radii.sm,
-    overflow: 'hidden',
-    ...shadows.card,
-    transform: [{ rotate: '-1deg' }],
-  },
-  floatingCover: { width: '100%', height: '100%' },
-  coverSpine: {
-    position: 'absolute',
-    top: 0, left: 0, bottom: 0,
-    width: 5,
-    backgroundColor: '#000000',
-  },
-
-  curveDivider: {
-    height: 2,
-    marginHorizontal: spacing.containerPadding,
-    borderRadius: 1,
-  },
-
-  // ── Content ───────────────────────────────────────────────
-  content: {
-    paddingHorizontal: spacing.containerPadding,
-    paddingTop: 20,
-    gap: 20,
-  },
-
-  // ── Identity ─────────────────────────────────────────────
-  identityRow: {
-    flexDirection: 'row',
-    gap: 16,
-    alignItems: 'flex-start',
-  },
-  identityText: { flex: 1 },
-  bookTitle: {
-    ...typography.headlineLgMobile,
-    color: colors.ivoryWhite,
-    marginBottom: 4,
-  },
-  bookAuthor: {
-    ...typography.bodyLg,
-    color: colors.cyanGrey,
-    fontStyle: 'italic',
-    marginBottom: 8,
-  },
-  ratingValue: {
-    ...typography.labelMd,
-    color: colors.outline,
-    marginLeft: 4,
-  },
-  tagsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginTop: 8,
-  },
-  tag: {
-    ...glassMorphism.cardLiquid,
-    paddingHorizontal: 14,
-    paddingVertical: 4,
+  backButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: colors.primaryContainer,
     borderRadius: radii.full,
   },
-  tagText: {
-    ...typography.labelMd,
-    fontSize: 12,
-    color: colors.primaryFixed,
+  backButtonText: {
+    fontFamily: typography.labelMd.fontFamily,
+    color: colors.onPrimaryContainer,
   },
-
-  // ══════════════════════════════════════════════════════════
-  // BIG TIMER CARD
-  // ══════════════════════════════════════════════════════════
-  timerCardOuter: {
-    position: 'relative',
-    marginVertical: 4,
-  },
-
-  timerCard: {
-    borderRadius: radii.xl,
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 24,
-    overflow: 'hidden',
-    gap: 0,
-  },
-
-  // Header row
-  timerHeaderRow: {
+  topBar: {
+    height: 60,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    paddingHorizontal: spacing.marginMobile,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
-  timerLabelGroup: {
-    flexDirection: 'row',
+  topBarTitle: {
+    fontFamily: typography.headlineLgMobile.fontFamily,
+    fontSize: 20,
+    fontWeight: '800',
+    color: colors.secondaryContainer,
+    textShadowColor: 'rgba(238,152,0,0.5)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+  },
+  iconBtn: {
+    padding: 8,
+  },
+  iconText: {
+    fontSize: 22,
+    color: colors.secondary,
+  },
+  scrollContent: {
+    paddingBottom: 120,
+  },
+  heroSection: {
+    height: 240,
+    width: '100%',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 15, 33, 0.7)',
+  },
+  coverContainer: {
+    ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'flex-end',
+    paddingBottom: 20,
   },
-  timerLabel: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: colors.primaryFixedDim,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
+  bookCoverWrapper: {
+    width: 140,
+    height: 200,
+    borderRadius: radii.sm,
+    overflow: 'hidden',
+    borderLeftWidth: 4,
+    borderLeftColor: 'rgba(0, 0, 0, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 10, height: 15 },
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    elevation: 10,
+    transform: [{ rotate: '-2deg' }],
   },
-  timerStatusPill: {
-    flexDirection: 'row',
+  coverImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  fallbackCover: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: colors.surfaceBright,
     alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: radii.full,
-    borderWidth: 1,
+    justifyContent: 'center',
   },
-  timerStatusActive: {
-    backgroundColor: '#0f3a2c',
-    borderColor: '#10B981',
+  fallbackText: {
+    fontFamily: typography.headlineLg.fontFamily,
+    fontSize: 32,
+    color: colors.secondary,
   },
-  timerStatusIdle: {
-    backgroundColor: '#1c2d3d',
-    borderColor: '#3b494c',
-  },
-  timerStatusDot: {
+  spineShadow: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
     width: 6,
-    height: 6,
-    borderRadius: 3,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
   },
-  timerStatusText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 11,
+  progressRingSection: {
+    alignItems: 'center',
+    marginTop: -70,
+    zIndex: 30,
   },
-
-  // ── THE BIG DISPLAY ───────────────────────────────────────
-  timerDisplay: {
-    fontFamily: 'JetBrainsMono_500Medium',
-    fontSize: 64,
-    color: colors.onSurface,
-    letterSpacing: -2,
+  metadataSection: {
+    alignItems: 'center',
+    paddingHorizontal: spacing.marginMobile,
+    marginTop: 20,
+  },
+  title: {
+    fontFamily: typography.displayLg.fontFamily,
+    fontSize: 26,
+    fontWeight: '700',
+    color: colors.primary,
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  author: {
+    fontFamily: typography.bodyLg.fontFamily,
+    fontSize: 16,
+    color: colors.onSurfaceVariant,
     textAlign: 'center',
     marginBottom: 12,
   },
-
-  // Info row
-  timerInfoRow: {
+  starContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
-    marginBottom: 20,
+    marginBottom: 16,
   },
-  timerInfoChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+  star: {
+    fontSize: 20,
+    marginHorizontal: 2,
   },
-  timerInfoText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: colors.cyanGrey,
-  },
-
-  timerDivider: {
-    height: 1,
-    backgroundColor: '#1c2d3d',
-    marginBottom: 20,
-  },
-
-  // ── Controls ──────────────────────────────────────────────
-  timerControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 28,
-  },
-  timerBtnPlay: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    overflow: 'hidden',
-  },
-  timerBtnPlaySolid: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primaryFixedDim,
-  },
-  timerBtnSecondary: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    ...glassMorphism.cardLiquid,
-  },
-  timerBtnSecondaryLabel: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 10,
-    color: colors.cyanGrey,
-    letterSpacing: 0.3,
-  },
-
-  // ── Meta grid ─────────────────────────────────────────────
-  metaGrid: {
+  chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    justifyContent: 'center',
+    gap: 8,
   },
-  metaCard: {
-    width: (SCREEN_WIDTH - spacing.containerPadding * 2 - 10) / 2 - 5,
-    borderRadius: radii.md,
-    padding: 14,
-  },
-  metaLabel: {
-    ...typography.labelMd,
-    fontSize: 11,
-    color: colors.cyanGrey,
-    marginBottom: 4,
-  },
-  metaValue: {
-    ...typography.headlineMd,
-    fontSize: 20,
-    color: colors.onSurface,
-  },
-
-  // ── Synopsis ──────────────────────────────────────────────
-  synopsisSection: { gap: 8 },
-  synopsisTitle: {
-    ...typography.headlineMd,
-    color: colors.ivoryWhite,
-  },
-  synopsisText: {
-    ...typography.bodyLg,
-    color: colors.outline,
-    lineHeight: 26,
-  },
-
-  // ── Pinned CTA ────────────────────────────────────────────
-  ctaWrapper: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingTop: 32,
-    paddingHorizontal: spacing.containerPadding,
-  },
-  completedBtn: {
+  chip: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
     borderRadius: radii.full,
-    overflow: 'hidden',
+    backgroundColor: colors.surfaceBright,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
-  completedBtnSolid: {
-    paddingVertical: 16,
+  chipText: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 11,
+    color: colors.primary,
+  },
+  timerSection: {
+    paddingHorizontal: spacing.marginMobile,
+    marginTop: 24,
+  },
+  timerCard: {
+    backgroundColor: 'rgba(0, 15, 33, 0.5)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: radii.xl,
+    padding: 24,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.4,
+    shadowRadius: 30,
+    elevation: 8,
+  },
+  timerLabel: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 11,
+    color: colors.onSurfaceVariant,
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    marginBottom: 8,
+    opacity: 0.6,
+  },
+  timerValue: {
+    fontFamily: typography.labelMd.fontFamily,
+    fontSize: 40,
+    color: colors.primary,
+    letterSpacing: 2,
+    fontWeight: '700',
+    textShadowColor: 'rgba(225, 243, 255, 0.3)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
+    marginBottom: 20,
+  },
+  timerActions: {
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: colors.emeraldSuccess,
+    gap: 12,
+    width: '100%',
+    marginBottom: 16,
   },
-  completedBtnText: {
-    ...typography.headlineMd,
+  timerBtn: {
+    flex: 1,
+    maxWidth: 90,
+    height: 40,
+    borderRadius: radii.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timerBtnStart: {
+    backgroundColor: colors.primaryContainer,
+    borderColor: 'rgba(189, 216, 233, 0.2)',
+  },
+  timerBtnTextStart: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.onPrimaryContainer,
+    textTransform: 'uppercase',
+  },
+  timerBtnText: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 12,
+    color: colors.onSurface,
+    textTransform: 'uppercase',
+  },
+  timerBtnTextStop: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 12,
+    color: colors.onSurfaceVariant,
+    textTransform: 'uppercase',
+  },
+  notesInput: {
+    width: '100%',
+    height: 40,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: radii.full,
+    paddingHorizontal: 16,
+    color: colors.onSurface,
+    fontFamily: typography.bodyMd.fontFamily,
+    fontSize: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.03)',
+  },
+  actionSection: {
+    paddingHorizontal: spacing.marginMobile,
+    marginTop: 20,
+  },
+  completionBtn: {
+    height: 56,
+    borderRadius: radii.full,
+    backgroundColor: colors.surfaceBright,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    elevation: 4,
+  },
+  completionBtnActive: {
+    backgroundColor: colors.tertiaryContainer,
+    borderColor: 'rgba(94, 236, 176, 0.2)',
+    shadowColor: 'rgba(94, 236, 176, 0.3)',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 6,
+  },
+  completionBtnIcon: {
     fontSize: 18,
-    color: colors.ivoryWhite,
+    fontWeight: 'bold',
+    color: colors.primary,
+    marginRight: 8,
+  },
+  completionBtnText: {
+    fontFamily: typography.labelMd.fontFamily,
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+  },
+  synopsisSection: {
+    paddingHorizontal: spacing.marginMobile,
+    marginTop: 32,
+  },
+  synopsisTitle: {
+    fontFamily: typography.headlineMd.fontFamily,
+    fontSize: 18,
+    color: colors.primary,
+    marginBottom: 8,
+  },
+  synopsisText: {
+    fontFamily: typography.bodyLg.fontFamily,
+    fontSize: 15,
+    lineHeight: 24,
+    color: colors.onSurfaceVariant,
+    opacity: 0.8,
+  },
+  bottomNavContainer: {
+    position: 'absolute',
+    bottom: 24,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 500,
+  },
+  glassNav: {
+    width: '90%',
+    maxWidth: 400,
+    height: 72,
+    backgroundColor: 'rgba(0, 15, 33, 0.85)',
+    borderRadius: radii.full,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  navItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: radii.full,
+  },
+  navItemActive: {
+    backgroundColor: colors.tertiaryContainer,
+    shadowColor: 'rgba(94, 236, 176, 0.4)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  navIcon: {
+    fontSize: 20,
+    opacity: 0.6,
+  },
+  navIconActive: {
+    opacity: 1,
+  },
+  navText: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 9,
+    color: 'rgba(255, 255, 255, 0.4)',
+    marginTop: 2,
+    textTransform: 'uppercase',
+  },
+  navTextActive: {
+    color: colors.onTertiaryContainer,
+    fontWeight: '700',
   },
 });
-
-export default BookDetailScreen;

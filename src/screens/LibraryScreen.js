@@ -1,415 +1,526 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import {
   View,
   Text,
-  ScrollView,
-  TouchableOpacity,
   StyleSheet,
+  ScrollView,
   Image,
+  TouchableOpacity,
+  SafeAreaView,
+  FlatList,
   Dimensions,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { colors, radii, spacing, typography } from '../utils/theme';
 import BookCard from '../components/BookCard';
 import ProgressRing from '../components/ProgressRing';
-import EmptyState from '../components/Emptystate';
-import { colors, typography, spacing, radii, glassMorphism, shadows } from '../utils/theme';
+import Emptystate from '../components/Emptystate';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const FILTERS = [
-  { key: 'all',         label: 'All' },
-  { key: 'in_progress', label: 'In Progress' },
-  { key: 'to_read',    label: 'To Read' },
-  { key: 'finished',   label: 'Finished' },
-];
+const { width } = Dimensions.get('window');
 
-/**
- * LibraryScreen — Presentation layer
- * Props passed from app/index.js route.
- */
-const LibraryScreen = ({
-  books,
-  filteredBooks,
-  activeFilter,
-  currentlyReading,
-  booksFinished,
-  readingGoal,
-  onFilterChange,
-  onBookPress,
-  onResumeReading,
-}) => {
-  const insets = useSafeAreaInsets();
-  const goalProgress = Math.round((booksFinished / readingGoal) * 100);
-  const isArabicFeatured = currentlyReading?.language === 'Arabic';
-  const featuredTextAlign = isArabicFeatured ? { textAlign: 'right', writingDirection: 'rtl' } : {};
+export default function LibraryScreen({
+  books = [],
+  activeFilter = 'All',
+  onFilterChange = () => {},
+  onBookPress = () => {},
+  activeBook = null,
+  goal = { current: 12, target: 20 },
+  onNavigateToStats = () => {},
+}) {
+  const categories = ['All', 'Philosophy', 'Poetry', 'History', 'Science'];
 
-  const renderBookCard = useCallback(({ item }) => (
-    <View style={styles.bookCardWrapper}>
-      <BookCard book={item} onPress={() => onBookPress(item.id)} />
-    </View>
-  ), [onBookPress]);
+  // Filter books locally based on filter prop
+  const filteredBooks = books.filter((b) => {
+    if (activeFilter === 'All') return true;
+    return b.genre && b.genre.includes(activeFilter);
+  });
+
+  // Pick books for the 3D shelf
+  const leftShelfBook = books.find(b => b.id === 'al-fitna');
+  const centerShelfBook = activeBook || books.find(b => b.id === 'al-muqaddima');
+  const rightShelfBook = books.find(b => b.id === 'mystical-poetry');
 
   return (
-    <View style={styles.root}>
+    <View style={styles.container}>
+      {/* Background S-Curve Gradient & Pattern */}
+      <LinearGradient
+        colors={['#00142a', '#001c38', '#000f21']}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={StyleSheet.absoluteFillObject}
+      />
+      
+      {/* Decorative Zellige lattice approximation lines */}
+      <View style={styles.latticePattern} pointerEvents="none" />
 
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingTop: insets.top + 72, paddingBottom: insets.bottom + 100 },
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* ── Filter tabs ─────────────────────────── */}
-        <Animated.View entering={FadeInDown.duration(500)}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterRow}
-            style={styles.filterScroll}
-          >
-            {FILTERS.map((f) => {
-              const isActive = activeFilter === f.key;
-              return (
-                <TouchableOpacity
-                  key={f.key}
-                  onPress={() => onFilterChange(f.key)}
-                  style={[styles.filterPill, isActive && styles.filterPillActive]}
-                  activeOpacity={0.75}
-                >
-                  <Text style={[styles.filterLabel, isActive && styles.filterLabelActive]}>
-                    {f.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </Animated.View>
-
-        {/* ── Curved divider ──────────────────────── */}
-        <View style={styles.dividerWrapper}>
-          <LinearGradient
-            colors={[colors.primaryContainer, colors.tertiaryFixedDim]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.divider}
-          />
-        </View>
-
-        {/* ── Currently Reading feature card ──────── */}
-        {currentlyReading && (
-          <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Currently Reading</Text>
-              <View style={styles.goalRingWrapper}>
-                <ProgressRing
-                  size={56}
-                  progress={goalProgress}
-                  strokeWidth={4}
-                  label={`${booksFinished}/${readingGoal}`}
-                />
-              </View>
-            </View>
-
-            {/* Featured card — liquid glass */}
-            <View style={styles.featuredCard}>
-              <View style={[glassMorphism.cardLiquid, styles.featuredInner, isArabicFeatured && { flexDirection: 'row-reverse' }]}>
-
-                {/* Cover */}
-                <View style={styles.featuredCoverWrapper}>
-                  <Image
-                    source={{ uri: currentlyReading.cover }}
-                    style={styles.featuredCover}
-                    resizeMode="cover"
-                  />
-                  <View style={[styles.featuredSpine, isArabicFeatured && { left: undefined, right: 0 }]} />
-                </View>
-
-                {/* Info */}
-                <View style={[styles.featuredInfo, isArabicFeatured && { alignItems: 'flex-end' }]}>
-                  <Text style={[styles.featuredSince, featuredTextAlign]}>
-                    {isArabicFeatured ? `قراءة منذ ${currentlyReading.startedDate}` : `Reading Since ${currentlyReading.startedDate}`}
-                  </Text>
-                  <Text style={[styles.featuredTitle, featuredTextAlign]} numberOfLines={2}>
-                    {currentlyReading.title}
-                  </Text>
-                  <Text style={[styles.featuredAuthor, featuredTextAlign]}>
-                    {isArabicFeatured ? 'بقلم ' : 'By '}{currentlyReading.author}
-                  </Text>
-
-                  {/* Progress ring + page count */}
-                  <View style={[styles.featuredProgressRow, isArabicFeatured && { flexDirection: 'row-reverse' }]}>
-                    <ProgressRing
-                      size={48}
-                      progress={currentlyReading.progress}
-                      strokeWidth={4}
-                      label={`${currentlyReading.progress}%`}
-                    />
-                    <Text style={styles.featuredPages}>
-                      {isArabicFeatured ? `صفحة ${currentlyReading.currentPage} / ${currentlyReading.totalPages}` : `${currentlyReading.currentPage} / ${currentlyReading.totalPages} pages`}
-                    </Text>
-                  </View>
-
-                  {/* CTA */}
-                  <TouchableOpacity
-                    style={[styles.resumeBtn, isArabicFeatured && { alignSelf: 'flex-end' }]}
-                    onPress={() => onResumeReading(currentlyReading.id)}
-                    activeOpacity={0.85}
-                  >
-                    <LinearGradient
-                      colors={[colors.primaryContainer, colors.secondaryContainer]}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={[styles.resumeBtnGradient, isArabicFeatured && { flexDirection: 'row-reverse' }]}
-                    >
-                      <MaterialCommunityIcons
-                        name="book-open-variant"
-                        size={14}
-                        color={colors.onPrimaryFixed}
-                        style={isArabicFeatured ? { marginLeft: 6 } : { marginRight: 6 }}
-                      />
-                      <Text style={styles.resumeBtnText}>
-                        {isArabicFeatured ? 'متابعة القراءة' : 'Resume Reading'}
-                      </Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </Animated.View>
-        )}
-
-        {/* ── Your Collection grid ────────────────── */}
-        <Animated.View entering={FadeInDown.duration(600).delay(150)} style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitleMd}>Your Collection</Text>
-            <Text style={styles.viewAll}>View All →</Text>
-          </View>
-
-          {filteredBooks.length === 0 ? (
-            <EmptyState
-              title="No books here"
-              message="Try a different filter or add some books to your library."
-            />
-          ) : (
-            <View style={styles.bookGrid}>
-              {filteredBooks.map((book, index) => (
-                <Animated.View
-                  key={book.id}
-                  entering={FadeInDown.duration(500).delay(200 + index * 60)}
-                  style={styles.bookCardWrapper}
-                >
-                  <BookCard book={book} onPress={() => onBookPress(book.id)} />
-                </Animated.View>
-              ))}
+      <SafeAreaView style={styles.safeArea}>
+        {/* Dynamic Island Header */}
+        <View style={styles.header}>
+          <Text style={styles.logo}>Maqra</Text>
+          
+          {/* Dynamic Island Shape (Reading Status) */}
+          {centerShelfBook && (
+            <View style={styles.dynamicIsland}>
+              <View style={styles.pulseDot} />
+              <Text style={styles.dynamicIslandText} numberOfLines={1}>
+                Reading: {centerShelfBook.title}
+              </Text>
             </View>
           )}
-        </Animated.View>
 
-        {/* ── Quick stats strip ───────────────────── */}
-        <Animated.View entering={FadeInDown.duration(600).delay(350)} style={styles.statsStrip}>
-          <View style={[glassMorphism.cardLiquid, styles.statPill]}>
-            <MaterialCommunityIcons name="timer-outline" size={18} color={colors.primaryFixedDim} style={{ marginBottom: 4 }} />
-            <Text style={styles.statPillValue}>148.5</Text>
-            <Text style={styles.statPillLabel}>hrs read</Text>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.actionButton}>
+              <Text style={styles.actionIcon}>🔍</Text>
+            </TouchableOpacity>
           </View>
-          <View style={[glassMorphism.cardStreak, styles.statPill]}>
-            <MaterialCommunityIcons name="fire" size={18} color={colors.tertiaryFixedDim} style={{ marginBottom: 4 }} />
-            <Text style={[styles.statPillValue, { color: colors.tertiaryFixedDim }]}>
-              {currentlyReading ? '12' : '—'}
-            </Text>
-            <Text style={styles.statPillLabel}>day streak</Text>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Headline */}
+          <View style={styles.titleSection}>
+            <Text style={styles.screenTitle}>My Library</Text>
           </View>
-        </Animated.View>
-      </ScrollView>
+
+          {/* Swipeable Pill Bar */}
+          <View style={styles.pillContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.pillScroll}
+            >
+              {categories.map((cat) => {
+                const isActive = activeFilter === cat;
+                return (
+                  <TouchableOpacity
+                    key={cat}
+                    style={[
+                      styles.pillButton,
+                      isActive && styles.pillButtonActive,
+                    ]}
+                    onPress={() => onFilterChange(cat)}
+                  >
+                    <Text
+                      style={[
+                        styles.pillText,
+                        isActive && styles.pillTextActive,
+                      ]}
+                    >
+                      {cat}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          {/* 3D Shelf Hub */}
+          <View style={styles.shelfSection}>
+            {/* Wooden shelf detail line */}
+            <View style={styles.shelfBeam} />
+
+            <View style={styles.shelfRow}>
+              {/* Left Book */}
+              {leftShelfBook && (
+                <TouchableOpacity
+                  style={[styles.shelfBookWrapper, styles.leftBookTransform]}
+                  onPress={() => onBookPress(leftShelfBook.id)}
+                  activeOpacity={0.8}
+                >
+                  <Image source={{ uri: leftShelfBook.coverUrl }} style={styles.shelfBookImage} />
+                  <View style={styles.bookShadow} />
+                </TouchableOpacity>
+              )}
+
+              {/* Central Featured Book */}
+              {centerShelfBook && (
+                <View style={styles.centerBookContainer}>
+                  {/* Sapphire Aura Glow */}
+                  <View style={styles.auraGlow} />
+                  <TouchableOpacity
+                    style={[styles.shelfBookWrapper, styles.centerBookTransform]}
+                    onPress={() => onBookPress(centerShelfBook.id)}
+                    activeOpacity={0.8}
+                  >
+                    <Image source={{ uri: centerShelfBook.coverUrl }} style={[styles.shelfBookImage, styles.centerBookImage]} />
+                  </TouchableOpacity>
+                  {/* Reflection mockup */}
+                  <View style={styles.bookReflection} />
+                </View>
+              )}
+
+              {/* Right Book */}
+              {rightShelfBook && (
+                <TouchableOpacity
+                  style={[styles.shelfBookWrapper, styles.rightBookTransform]}
+                  onPress={() => onBookPress(rightShelfBook.id)}
+                  activeOpacity={0.8}
+                >
+                  <Image source={{ uri: rightShelfBook.coverUrl }} style={styles.shelfBookImage} />
+                  <View style={styles.bookShadow} />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Goal Loop Ring Floating */}
+            <View style={styles.goalGaugeContainer}>
+              <ProgressRing
+                size={85}
+                strokeWidth={5}
+                progress={(goal.current / goal.target) * 100}
+                centerText={`${goal.current}/${goal.target}`}
+                subText="Goal"
+              />
+            </View>
+          </View>
+
+          {/* Ledger Title */}
+          <View style={styles.ledgerHeader}>
+            <Text style={styles.ledgerTitle}>Shelf Books</Text>
+            <Text style={styles.ledgerSubtitle}>[{filteredBooks.length}]</Text>
+          </View>
+
+          {/* Books List */}
+          <View style={styles.booksList}>
+            {filteredBooks.length > 0 ? (
+              filteredBooks.map((item) => (
+                <BookCard
+                  key={item.id}
+                  book={item}
+                  onPress={() => onBookPress(item.id)}
+                />
+              ))
+            ) : (
+              <Emptystate message={`No books found under ${activeFilter}.`} />
+            )}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+
+      {/* Floating Glass Bottom Tab Nav Bar */}
+      <View style={styles.bottomNavContainer}>
+        <View style={styles.glassNav}>
+          <TouchableOpacity style={[styles.navItem, styles.navItemActive]}>
+            <Text style={[styles.navIcon, styles.navIconActive]}>📖</Text>
+            <Text style={[styles.navText, styles.navTextActive]}>Library</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem} onPress={onNavigateToStats}>
+            <Text style={styles.navIcon}>📊</Text>
+            <Text style={styles.navText}>Stats</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  root: {
+  container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#00142a',
   },
-  scroll: { flex: 1 },
-  scrollContent: {
-    paddingHorizontal: spacing.containerPadding,
+  safeArea: {
+    flex: 1,
   },
-
-  // Filter tabs
-  filterScroll: { marginBottom: 4 },
-  filterRow: {
+  latticePattern: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.03,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#fff',
+    borderStyle: 'dashed',
+  },
+  header: {
+    height: 60,
     flexDirection: 'row',
-    gap: 10,
-    paddingRight: spacing.containerPadding,
+    alignItems: 'center',
+    justifyContent: 'between',
+    paddingHorizontal: spacing.marginMobile,
+    zIndex: 100,
   },
-  filterPill: {
+  logo: {
+    fontFamily: typography.headlineLgMobile.fontFamily,
+    fontSize: 22,
+    fontWeight: '800',
+    color: colors.secondary,
+    textShadowColor: 'rgba(238,152,0,0.4)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+  },
+  dynamicIsland: {
+    position: 'absolute',
+    left: width / 2 - 70,
+    width: 140,
+    height: 32,
+    backgroundColor: '#000',
+    borderRadius: radii.full,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  pulseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.secondary,
+    marginRight: 6,
+  },
+  dynamicIslandText: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 8,
+    color: colors.onSurface,
+    textTransform: 'uppercase',
+  },
+  headerActions: {
+    marginLeft: 'auto',
+  },
+  actionButton: {
+    width: 36,
+    height: 36,
+    borderRadius: radii.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  actionIcon: {
+    fontSize: 16,
+    color: colors.onSurfaceVariant,
+  },
+  scrollContent: {
+    paddingBottom: 120,
+  },
+  titleSection: {
+    paddingHorizontal: spacing.marginMobile,
+    marginTop: spacing.unit * 2,
+    marginBottom: spacing.unit * 3,
+  },
+  screenTitle: {
+    fontFamily: typography.displayLg.fontFamily,
+    fontSize: 32,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  pillContainer: {
+    paddingLeft: spacing.marginMobile,
+    marginBottom: spacing.gutter,
+  },
+  pillScroll: {
+    paddingRight: spacing.marginMobile,
+  },
+  pillButton: {
     paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: radii.full,
-    ...glassMorphism.cardLiquid,
-    borderRadius: radii.full,
+    backgroundColor: 'rgba(0, 15, 33, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+    marginRight: 10,
   },
-  filterPillActive: {
-    backgroundColor: '#0c2a39',
-    borderColor: colors.primaryFixedDim,
-    shadowColor: '#00daf3',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
+  pillButtonActive: {
+    backgroundColor: colors.primaryContainer,
+    borderColor: 'rgba(175, 202, 219, 0.2)',
+    shadowColor: 'rgba(175,202,219,0.5)',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
     elevation: 4,
   },
-  filterLabel: {
-    ...typography.labelMd,
-    color: colors.cyanGrey,
+  pillText: {
+    fontFamily: typography.labelMd.fontFamily,
+    fontSize: 12,
+    color: colors.onSurfaceVariant,
   },
-  filterLabelActive: {
-    color: colors.primaryFixedDim,
+  pillTextActive: {
+    color: colors.onPrimaryContainer,
+    fontWeight: '600',
   },
-
-  // Divider
-  dividerWrapper: { marginVertical: 16 },
-  divider: {
-    height: 2,
-    borderRadius: 1,
-    opacity: 0.9,
-    shadowColor: '#00daf3',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-
-  // Section
-  section: { marginBottom: spacing.sectionGap },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    ...typography.headlineLgMobile,
-    color: colors.onSurface,
-  },
-  sectionTitleMd: {
-    ...typography.headlineMd,
-    color: colors.onSurface,
-  },
-  goalRingWrapper: {},
-  viewAll: {
-    ...typography.labelMd,
-    color: colors.primaryFixedDim,
-  },
-
-  // Featured card (liquid glass)
-  featuredCard: {
+  shelfSection: {
+    marginVertical: spacing.gutter,
+    height: 250,
+    justifyContent: 'flex-end',
     position: 'relative',
+    overflow: 'visible',
   },
-  featuredInner: {
-    borderRadius: radii.lg,
-    padding: 20,
+  shelfBeam: {
+    position: 'absolute',
+    bottom: 50,
+    left: spacing.marginMobile,
+    right: spacing.marginMobile,
+    height: 6,
+    backgroundColor: '#3d2b1f',
+    borderRadius: radii.full,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.8,
+    shadowRadius: 15,
+    elevation: 6,
+  },
+  shelfRow: {
     flexDirection: 'row',
-    gap: 16,
-    alignItems: 'center',
-    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    height: '100%',
+    paddingBottom: 56,
   },
-  featuredCoverWrapper: {
-    width: 100,
-    height: 150,
+  shelfBookWrapper: {
     borderRadius: radii.sm,
     overflow: 'hidden',
-    flexShrink: 0,
-    ...shadows.card,
+    shadowColor: '#000',
+    shadowOffset: { width: 10, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+    elevation: 8,
   },
-  featuredCover: { width: '100%', height: '100%' },
-  featuredSpine: {
+  shelfBookImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  leftBookTransform: {
+    width: 80,
+    height: 120,
+    transform: [{ rotateY: '20deg' }],
+    opacity: 0.85,
+    borderLeftWidth: 3,
+    borderLeftColor: '#1a110a',
+  },
+  rightBookTransform: {
+    width: 80,
+    height: 120,
+    transform: [{ rotateY: '-20deg' }],
+    opacity: 0.85,
+    borderRightWidth: 3,
+    borderRightColor: '#1a110a',
+  },
+  centerBookContainer: {
+    width: 120,
+    height: 180,
+    marginHorizontal: 20,
+    zIndex: 10,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  centerBookTransform: {
+    width: 120,
+    height: 180,
+    transform: [{ perspective: 1200 }, { rotateY: '-15deg' }, { translateZ: 50 }],
+    borderLeftWidth: 4,
+    borderLeftColor: '#2a1700',
+  },
+  centerBookImage: {
+    borderRadius: radii.sm,
+  },
+  auraGlow: {
     position: 'absolute',
-    top: 0, left: 0, bottom: 0,
-    width: 5,
-    backgroundColor: '#000000',
-  },
-  featuredInfo: { flex: 1 },
-  featuredSince: {
-    ...typography.dataMono,
-    fontSize: 10,
-    color: colors.primaryContainer,
-    textTransform: 'uppercase',
-    letterSpacing: 1.2,
-    marginBottom: 4,
-  },
-  featuredTitle: {
-    ...typography.headlineMd,
-    color: colors.ivoryWhite,
-    marginBottom: 4,
-  },
-  featuredAuthor: {
-    ...typography.bodyMd,
-    color: colors.cyanGrey,
-    marginBottom: 12,
-  },
-  featuredProgressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 14,
-  },
-  featuredPages: {
-    ...typography.dataMono,
-    fontSize: 11,
-    color: colors.cyanGrey,
-  },
-  resumeBtn: {
+    inset: -20,
+    backgroundColor: 'rgba(175, 202, 219, 0.12)',
     borderRadius: radii.full,
-    overflow: 'hidden',
-    alignSelf: 'flex-start',
+    filter: 'blur(30px)',
   },
-  resumeBtnGradient: {
+  bookReflection: {
+    position: 'absolute',
+    bottom: -35,
+    width: 120,
+    height: 35,
+    backgroundColor: 'rgba(175, 202, 219, 0.05)',
+    transform: [{ scaleY: -1 }],
+    opacity: 0.3,
+  },
+  bookShadow: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+  },
+  goalGaugeContainer: {
+    position: 'absolute',
+    bottom: 70,
+    right: 25,
+    zIndex: 20,
+  },
+  ledgerHeader: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    paddingHorizontal: spacing.marginMobile,
+    marginTop: spacing.gutter,
+    marginBottom: spacing.unit,
+  },
+  ledgerTitle: {
+    fontFamily: typography.headlineMd.fontFamily,
+    fontSize: 20,
+    color: colors.primary,
+  },
+  ledgerSubtitle: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 12,
+    color: colors.onSurfaceVariant,
+    marginLeft: 8,
+  },
+  booksList: {
+    paddingHorizontal: spacing.marginMobile,
+  },
+  bottomNavContainer: {
+    position: 'absolute',
+    bottom: 24,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 500,
+  },
+  glassNav: {
+    width: '90%',
+    maxWidth: 400,
+    height: 72,
+    backgroundColor: 'rgba(0, 15, 33, 0.85)',
+    borderRadius: radii.full,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  navItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
     paddingHorizontal: 16,
-    paddingVertical: 9,
-    flexDirection: 'row',
-    alignItems: 'center',
+    borderRadius: radii.full,
   },
-  resumeBtnText: {
-    ...typography.labelMd,
-    color: colors.onPrimaryFixed,
-    fontFamily: 'Inter_600SemiBold',
+  navItemActive: {
+    backgroundColor: colors.tertiaryContainer,
+    shadowColor: 'rgba(94, 236, 176, 0.4)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 4,
   },
-
-  // Book grid
-  bookGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
+  navIcon: {
+    fontSize: 20,
+    opacity: 0.6,
   },
-  bookCardWrapper: {
-    width: (SCREEN_WIDTH - spacing.containerPadding * 2 - 16) / 2,
+  navIconActive: {
+    opacity: 1,
   },
-
-  // Stats strip
-  statsStrip: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 8,
+  navText: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 9,
+    color: 'rgba(255, 255, 255, 0.4)',
+    marginTop: 2,
+    textTransform: 'uppercase',
   },
-  statPill: {
-    flex: 1,
-    borderRadius: radii.md,
-    padding: 16,
-    alignItems: 'center',
-  },
-  statPillValue: {
-    ...typography.headlineMd,
-    color: colors.primaryFixedDim,
-    marginBottom: 2,
-  },
-  statPillLabel: {
-    ...typography.labelMd,
-    fontSize: 11,
-    color: colors.cyanGrey,
+  navTextActive: {
+    color: colors.onTertiaryContainer,
+    fontWeight: '700',
   },
 });
-
-export default LibraryScreen;

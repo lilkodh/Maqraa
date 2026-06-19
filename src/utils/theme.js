@@ -1,82 +1,52 @@
-// ============================================================
-// Maqra Design System — Theme Tokens
-// Source: Maqra Stitch Design System (projects/13351498328700285086)
-// Style: Luxury Glassmorphism / OLED Deep Navy / Moroccan Zellige
-// ============================================================
-
 export const colors = {
-  // Core surfaces (Espresso / Coffee theme)
-  background:               '#150b05',
-  surface:                  '#150b05',
-  surfaceDim:               '#150b05',
-  surfaceBright:            '#2f1d13',
-  surfaceContainerLowest:   '#0c0603',
-  surfaceContainerLow:      '#1c120a',
-  surfaceContainer:         '#22160d',
-  surfaceContainerHigh:     '#2d1f14',
-  surfaceContainerHighest:  '#382a1d',
-  surfaceVariant:           '#382a1d',
+  background: '#00142a',
+  surface: '#00142a',
+  surfaceDim: '#00142a',
+  surfaceBright: '#223a58',
+  surfaceContainerLowest: '#000f21',
+  surfaceContainerLow: '#001c38',
+  surfaceContainer: '#03203c',
+  surfaceContainerHigh: '#112b47',
+  surfaceContainerHighest: '#1d3653',
+  onSurface: '#d3e4ff',
+  onSurfaceVariant: '#c2c7cb',
+  primary: '#e1f3ff', // Neon Sapphire
+  onPrimary: '#193341',
+  primaryContainer: '#bdd8e9',
+  onPrimaryContainer: '#455f6d',
+  secondary: '#ffb95f', // Antique Gold
+  onSecondary: '#472a00',
+  secondaryContainer: '#ee9800',
+  onSecondaryContainer: '#5b3800',
+  tertiary: '#bbffda', // Moorish Emerald
+  onTertiary: '#003824',
+  tertiaryContainer: '#5eecb0',
+  onTertiaryContainer: '#006847',
+  outline: '#8c9195',
+  outlineVariant: '#42474b',
+};
 
-  // On-surface text
-  onSurface:                '#fdfbf7',
-  onSurfaceVariant:         '#dfd2c4',
-  inverseSurface:           '#fdfbf7',
-  inverseOnSurface:         '#24170e',
+export const radii = {
+  sm: 8,
+  default: 16,
+  md: 24,
+  lg: 32,
+  xl: 48,
+  full: 9999,
+};
 
-  // Primary (Glowing White)
-  primary:                  '#ffffff',
-  onPrimary:                '#261408',
-  primaryContainer:         '#d8a47f', // glowing caramel
-  onPrimaryContainer:       '#4a1e05',
-  inverseP:                 '#7c4422',
-  primaryFixed:             '#ffdcc6',
-  primaryFixedDim:          '#d8a47f',
-  onPrimaryFixed:           '#2c1202',
-  onPrimaryFixedVariant:    '#602d0f',
-
-  // Secondary (Latte Brown)
-  secondary:                '#e6cfbe',
-  onSecondary:              '#382212',
-  secondaryContainer:       '#503724',
-  onSecondaryContainer:     '#f5dfcf',
-  secondaryFixed:           '#f7e8dd',
-  secondaryFixedDim:        '#e6cfbe',
-  onSecondaryFixed:         '#261306',
-  onSecondaryFixedVariant:  '#503724',
-
-  // Tertiary (Antique Ivory/Gold)
-  tertiary:                 '#ffe9d3',
-  onTertiary:               '#472a00',
-  tertiaryContainer:        '#ffc681',
-  onTertiaryContainer:      '#7e4e00',
-  tertiaryFixed:            '#ffddb8',
-  tertiaryFixedDim:         '#ffb95f',
-  onTertiaryFixed:          '#2a1700',
-  onTertiaryFixedVariant:   '#653e00',
-
-  // Outline
-  outline:                  '#a49386',
-  outlineVariant:           '#503e33',
-
-  // Error
-  error:                    '#ffb4ab',
-  onError:                  '#690005',
-  errorContainer:           '#93000a',
-  onErrorContainer:         '#ffdad6',
-
-  // Named brand colors
-  ivoryWhite:               '#fdfbf7',
-  cyanGrey:                 '#bdae9f', // latte
-  emeraldSuccess:           '#10B981',
-  oledBlack:                '#080402',
+export const spacing = {
+  unit: 8,
+  gutter: 24,
+  marginMobile: 20,
+  marginDesktop: 64,
 };
 
 export const typography = {
   displayLg: {
     fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 48,
-    lineHeight: 56,
-    letterSpacing: -0.96,
+    fontSize: 56,
+    lineHeight: 64,
   },
   headlineLg: {
     fontFamily: 'PlayfairDisplay_700Bold',
@@ -104,94 +74,22 @@ export const typography = {
     lineHeight: 24,
   },
   labelMd: {
-    fontFamily: 'Inter_500Medium',
+    fontFamily: 'JetBrainsMono_500Medium',
     fontSize: 14,
     lineHeight: 20,
-    letterSpacing: 0.14,
+    letterSpacing: 0.7,
   },
-  dataMono: {
+  labelSm: {
     fontFamily: 'JetBrainsMono_500Medium',
-    fontSize: 16,
-    lineHeight: 24,
-    letterSpacing: 0.8,
-  },
-};
-
-export const spacing = {
-  base: 8,
-  gutter: 16,
-  containerPadding: 24,
-  sectionGap: 40,
-};
-
-export const radii = {
-  sm: 8,
-  md: 16,
-  lg: 24,
-  xl: 32,
-  full: 9999,
-};
-
-export const glassMorphism = {
-  // Level 1 card style - clean solid flat
-  card: {
-    backgroundColor: '#0e1d2a',
-    borderWidth: 1,
-    borderColor: '#1c2d3d',
-  },
-  // Level 2 active card style
-  cardActive: {
-    backgroundColor: '#13212e',
-    borderWidth: 1,
-    borderColor: '#00daf3',
-  },
-  // Level 3 liquid card style - simplified flat card
-  cardLiquid: {
-    backgroundColor: '#0e1d2a',
-    borderWidth: 1.5,
-    borderColor: '#1c2d3d',
-  },
-  // Gold-tinted streak card - simplified flat border
-  cardStreak: {
-    backgroundColor: '#13212e',
-    borderWidth: 1.5,
-    borderColor: '#ffb95f',
-  },
-  // Solid navigation bar
-  nav: {
-    backgroundColor: '#0e1d2a',
-    borderWidth: 1,
-    borderColor: '#1c2d3d',
-  },
-};
-
-export const shadows = {
-  cyanGlow: {
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  goldGlow: {
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  emeraldGlow: {
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  card: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 2,
+    fontSize: 12,
+    lineHeight: 16,
+    letterSpacing: 0.96,
   },
 };
 
 export default {
   colors,
-  typography,
-  spacing,
   radii,
-  glassMorphism,
-  shadows,
+  spacing,
+  typography,
 };

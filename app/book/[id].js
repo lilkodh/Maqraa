@@ -1,79 +1,98 @@
-import { useState, useEffect, useRef } from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import BookDetailScreen from '../../src/screens/BookDetailScreen';
 import useBookStore from '../../src/store/bookStore';
+import BookDetailScreen from '../../src/screens/BookDetailScreen';
 
 export default function BookDetailRoute() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  
+  const books = useBookStore((state) => state.books);
+  const activeBookId = useBookStore((state) => state.activeBookId);
+  const setActiveBookId = useBookStore((state) => state.setActiveBookId);
+  
+  const timerState = useBookStore((state) => state.timerState);
+  const startTimer = useBookStore((state) => state.startTimer);
+  const pauseTimer = useBookStore((state) => state.pauseTimer);
+  const stopTimer = useBookStore((state) => state.stopTimer);
+  const toggleBookCompletion = useBookStore((state) => state.toggleBookCompletion);
 
-  // ── Store reads / writes ─────────────────────────────────────
-  const getBookById      = useBookStore(s => s.getBookById);
-  const markCompleted    = useBookStore(s => s.markCompleted);
-  const updateSessionTime = useBookStore(s => s.updateSessionTime);
+  const book = books.find((b) => b.id === id) || null;
 
-  const book = getBookById(id);
+  // Local seconds tracking for rendering and store syncing
+  const [localSeconds, setLocalSeconds] = useState(timerState.seconds);
 
-  // ── Local timer state (belongs in route, not screen) ────────
-  const [timerSeconds, setTimerSeconds] = useState(book?.sessionTime ?? 0);
-  const [timerRunning, setTimerRunning] = useState(false);
-  const intervalRef = useRef(null);
-  const timerSecondsRef = useRef(timerSeconds);
-
-  // Sync ref with state
+  // Sync active book ID when entering this detail screen
   useEffect(() => {
-    timerSecondsRef.current = timerSeconds;
-  }, [timerSeconds]);
-
-  useEffect(() => {
-    if (timerRunning) {
-      intervalRef.current = setInterval(() => {
-        setTimerSeconds(s => s + 1);
-      }, 1000);
-    } else {
-      clearInterval(intervalRef.current);
+    if (book && activeBookId !== book.id) {
+      setActiveBookId(book.id);
     }
-    return () => clearInterval(intervalRef.current);
-  }, [timerRunning]);
+  }, [book, activeBookId]);
 
-  // Persist on unmount
+  // Keep localSeconds in sync with store timerState
   useEffect(() => {
-    return () => {
-      const currentSeconds = timerSecondsRef.current;
-      const initialSeconds = book?.sessionTime ?? 0;
-      if (id && currentSeconds > initialSeconds) {
-        updateSessionTime(id, currentSeconds - initialSeconds);
-      }
-    };
-  }, [id, book?.sessionTime]);
+    setLocalSeconds(timerState.seconds);
+  }, [timerState.seconds]);
 
-  if (!book) {
-    router.back();
-    return null;
-  }
+  // Active ticking effect when running
+  useEffect(() => {
+    let interval = null;
+    if (timerState.isRunning && timerState.startTime) {
+      const updateSeconds = () => {
+        const elapsed = Math.round((Date.now() - timerState.startTime) / 1000);
+        setLocalSeconds(timerState.seconds + elapsed);
+      };
+      
+      updateSeconds();
+      interval = setInterval(updateSeconds, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timerState.isRunning, timerState.startTime, timerState.seconds]);
+
+  const handleStart = () => {
+    startTimer();
+  };
+
+  const handlePause = () => {
+    pauseTimer();
+  };
+
+  const handleStop = (notes) => {
+    stopTimer(notes);
+  };
+
+  const handleToggleCompletion = () => {
+    if (book) {
+      toggleBookCompletion(book.id);
+    }
+  };
+
+  const handleBack = () => {
+    router.push('/');
+  };
+
+  const handleNavigateToLibrary = () => {
+    router.push('/');
+  };
+
+  const handleNavigateToStats = () => {
+    router.push('/stats');
+  };
 
   return (
-    <SafeAreaProvider>
-      <StatusBar style="light" />
-      <BookDetailScreen
-        book={book}
-        timerSeconds={timerSeconds}
-        timerRunning={timerRunning}
-        onBack={() => router.back()}
-        onMarkCompleted={() => {
-          setTimerRunning(false);
-          markCompleted(id);
-          router.back();
-        }}
-        onStartTimer={() => setTimerRunning(true)}
-        onPauseTimer={() => setTimerRunning(false)}
-        onStopTimer={() => {
-          setTimerRunning(false);
-          setTimerSeconds(0);
-        }}
-      />
-    </SafeAreaProvider>
+    <BookDetailScreen
+      book={book}
+      timerSeconds={localSeconds}
+      timerRunning={timerState.isRunning}
+      onStartTimer={handleStart}
+      onPauseTimer={handlePause}
+      onStopTimer={handleStop}
+      onToggleCompletion={handleToggleCompletion}
+      onBackPress={handleBack}
+      onNavigateToLibrary={handleNavigateToLibrary}
+      onNavigateToStats={handleNavigateToStats}
+    />
   );
 }

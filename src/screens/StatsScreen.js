@@ -2,380 +2,514 @@ import React from 'react';
 import {
   View,
   Text,
+  StyleSheet,
   ScrollView,
   Image,
-  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
   Dimensions,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { colors, radii, spacing, typography } from '../utils/theme';
 import StatCard from '../components/StatCard';
-import { colors, typography, spacing, radii, glassMorphism, shadows } from '../utils/theme';
+import { formatDurationFriendly } from '../utils/calculations';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const AVATAR_URI = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC48zS_omS_vZ9dNPLiIPHgCvDD7mO9a14RmLKKwbc0OUt3Q1Q78-GGblj0ddqcyKpsx8YJgmzdz8X1nPqBOyT0WA-Hs1pPKEQmIMRamq24XM7AzZOsoQkiJPy-srLdEXkdS36ARtKrN8MaDMrlLI13ukyh7v0w9Z0gJ0fEtW-5nGmb1bFi77-OKunNl5jaKGwu1A4UjfObI-iCwjQp_WR3VFtgdAz_qJLCb2wDP5ephmigZroxnfIE3G6yMfDfSjkz0h2cfqu3wp-s';
+const { width } = Dimensions.get('window');
 
-const BAR_DATA = [
-  { month: 'January',  books: 8,  pct: 80 },
-  { month: 'February', books: 5,  pct: 50 },
-  { month: 'March',    books: 12, pct: 95 },
-  { month: 'April',    books: 3,  pct: 30 },
-];
-
-const ACHIEVEMENTS = [
-  {
-    id: 'speed',
-    label: 'Speed Reader',
-    iconName: 'lightning-bolt',
-    iconSet: 'mci',
-    unlocked: true,
-    color: colors.emeraldSuccess,
+export default function StatsScreen({
+  userProfile = {
+    name: 'Omar Al-Khayyam',
+    avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB9csWBJMtYUDUTyoW4Suq3RqXkksGEC2iUNEN_UOP62SDHzO7AwzFrEcVqDUqQhQOSu6ZOdR83bAWiZEL6D-falIWR-bAmS054VAPiALtNNYR6kWHZVjtn7ha0_eIZjoP42GGeUMaXf-Jovg_cjOzsmQnS5wdlan0MyFeKPQo_LSe0zmXSC7EPn7TJXF7I50HcD5X36wVN9xtkUYkpH0b26d_PNiqaUQFQnXt19glKgZ1YRGw_5_TGqezByEDN2VaaLdVTXq2xOZbh',
+    title: 'Sage of the Seventh Circle',
   },
-  {
-    id: 'night',
-    label: 'Night Owl',
-    iconName: 'owl',
-    iconSet: 'mci',
-    unlocked: true,
-    color: colors.tertiaryFixedDim,
+  stats = {
+    streak: 42,
+    booksRead: 18,
+    readingTimeHours: 248,
+    level: 'Expert',
   },
-  {
-    id: 'historian',
-    label: 'Historian',
-    iconName: 'lock',
-    iconSet: 'ion',
-    unlocked: false,
-    color: colors.outline,
-  },
-];
-
-/**
- * StatsScreen — Presentation layer
- * Props passed from app/stats.js route.
- */
-const StatsScreen = ({ profile }) => {
-  const insets = useSafeAreaInsets();
-
-  if (!profile) return null;
-
+  weeklyData = [
+    { day: 'MON', hours: 4.2, percent: 85 },
+    { day: 'TUE', hours: 2.8, percent: 60 },
+    { day: 'WED', hours: 5.1, percent: 95 },
+    { day: 'THU', hours: 3.4, percent: 70 },
+  ],
+  sessions = [],
+  onNavigateToLibrary = () => {},
+}) {
   return (
-    <View style={styles.root}>
+    <View style={styles.container}>
+      {/* Background Dark Void */}
+      <LinearGradient
+        colors={['#00142a', '#000f21']}
+        style={StyleSheet.absoluteFillObject}
+      />
+      <View style={styles.latticePattern} pointerEvents="none" />
 
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingTop: insets.top + 72, paddingBottom: insets.bottom + 100 },
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* ── Profile section ─────────────────────── */}
-        <Animated.View entering={FadeInDown.duration(600)} style={styles.profileSection}>
-          {/* Avatar ring */}
-          <View style={styles.avatarWrapper}>
-            <Image
-              source={{ uri: AVATAR_URI }}
-              style={styles.avatar}
-              resizeMode="cover"
-            />
-            {/* Badge */}
-            <View style={styles.avatarBadge}>
-              <MaterialCommunityIcons name="book-open-variant" size={14} color={colors.onTertiaryFixed} />
-            </View>
-          </View>
-          <Text style={styles.profileName}>{profile.name}</Text>
-          <Text style={styles.profileTitle}>{profile.title}</Text>
-        </Animated.View>
-
-        {/* ── Curved divider ──────────────────────── */}
-        <Animated.View entering={FadeInDown.duration(500).delay(100)} style={styles.dividerWrapper}>
-          <LinearGradient
-            colors={['transparent', colors.primaryFixedDim, colors.secondaryContainer, 'transparent']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.divider}
-          />
-        </Animated.View>
-
-        {/* ── Stats 2×2 grid ──────────────────────── */}
-        <View style={styles.statsGrid}>
-          <Animated.View entering={FadeInDown.duration(500).delay(150)}>
-            <StatCard
-              label="Books Read"
-              value={profile.booksRead.toString()}
-              icon={<MaterialCommunityIcons name="book-multiple" size={22} color={colors.primaryFixedDim} />}
-              style={styles.statCardItem}
-            />
-          </Animated.View>
-          <Animated.View entering={FadeInDown.duration(500).delay(200)}>
-            <StatCard
-              label="Current Streak"
-              value={profile.currentStreak.toString()}
-              unit="Days"
-              icon={<MaterialCommunityIcons name="fire" size={22} color={colors.tertiaryFixedDim} />}
-              highlight
-              style={styles.statCardItem}
-            />
-          </Animated.View>
-          <Animated.View entering={FadeInDown.duration(500).delay(250)}>
-            <StatCard
-              label="Pages This Month"
-              value={profile.pagesThisMonth.toLocaleString()}
-              icon={<MaterialCommunityIcons name="file-document-multiple-outline" size={22} color={colors.primaryFixedDim} />}
-              style={styles.statCardItem}
-            />
-          </Animated.View>
-          <Animated.View entering={FadeInDown.duration(500).delay(300)}>
-            <StatCard
-              label="Reading Time"
-              value={profile.readingTimeHours.toString()}
-              unit="hrs"
-              icon={<MaterialCommunityIcons name="timer-outline" size={22} color={colors.primaryFixedDim} />}
-              style={styles.statCardItem}
-            />
-          </Animated.View>
+      <SafeAreaView style={styles.safeArea}>
+        {/* Header Navigation */}
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.menuButton}>
+            <Text style={styles.menuIcon}>☰</Text>
+          </TouchableOpacity>
+          <Text style={styles.logo}>Maqra</Text>
+          <TouchableOpacity style={styles.searchButton}>
+            <Text style={styles.searchIcon}>🔍</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* ── Bar chart card ──────────────────────── */}
-        <Animated.View entering={FadeInDown.duration(600).delay(350)} style={[glassMorphism.cardLiquid, styles.chartCard]}>
-          <View style={styles.chartHeader}>
-            <Text style={styles.chartTitle}>Books per Month</Text>
-            <View style={styles.chartBadge}>
-              <Text style={styles.chartBadgeText}>Yearly Recap</Text>
-            </View>
-          </View>
-
-          <View style={styles.barsWrapper}>
-            {BAR_DATA.map((d) => (
-              <View key={d.month} style={styles.barItem}>
-                <View style={styles.barLabelRow}>
-                  <Text style={styles.barMonth}>{d.month}</Text>
-                  <Text style={styles.barValue}>{d.books} Books</Text>
-                </View>
-                <View style={styles.barTrack}>
-                  <LinearGradient
-                    colors={[colors.primaryFixedDim, colors.secondary]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={[styles.barFill, { width: `${d.pct}%` }]}
-                  />
-                </View>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Hero Profile Section */}
+          <View style={styles.profileHero}>
+            <View style={styles.avatarBorderGlow}>
+              <View style={styles.avatarInnerBorder}>
+                <Image source={{ uri: userProfile.avatarUrl }} style={styles.avatar} />
               </View>
-            ))}
+            </View>
+            <Text style={styles.profileName}>{userProfile.name}</Text>
+            <Text style={styles.profileTitle}>{userProfile.title}</Text>
+            
+            {/* Custom S-curve Fold mask simulation */}
+            <View style={styles.sCurveHinge} />
           </View>
-        </Animated.View>
 
-        {/* ── Achievements ────────────────────────── */}
-        <View style={styles.achievementsSection}>
-          <Animated.View entering={FadeInDown.duration(500).delay(400)}>
-            <Text style={styles.achievementsTitle}>Mastery Badges</Text>
-          </Animated.View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.achievementsScroll}
-          >
-            {ACHIEVEMENTS.map((a, index) => (
-              <Animated.View
-                key={a.id}
-                entering={FadeInDown.duration(500).delay(450 + index * 60)}
-                style={[
-                  glassMorphism.cardLiquid,
-                  styles.achievementCard,
-                  !a.unlocked && styles.achievementLocked,
-                ]}
-              >
-                <View
-                  style={[
-                    styles.achievementIcon,
-                    { borderColor: a.color + '60', backgroundColor: a.color + '18' },
-                  ]}
-                >
-                  {a.iconSet === 'ion' ? (
-                    <Ionicons name={a.iconName} size={28} color={a.unlocked ? a.color : colors.outline} />
-                  ) : (
-                    <MaterialCommunityIcons name={a.iconName} size={28} color={a.unlocked ? a.color : colors.outline} />
-                  )}
+          {/* Performance Bento Grid */}
+          <View style={styles.matrixSection}>
+            <View style={styles.matrixRow}>
+              <StatCard
+                title="Current Streak"
+                value={`${stats.streak} days`}
+                icon="🔥"
+                style={styles.cardElevated}
+              />
+              <StatCard
+                title="Books Finished"
+                value={String(stats.booksRead)}
+                icon="📖"
+              />
+            </View>
+            <View style={styles.matrixRow}>
+              <StatCard
+                title="Reading Time"
+                value={`${stats.readingTimeHours}h`}
+                icon="⏱️"
+              />
+              <StatCard
+                title="Insight Level"
+                value={stats.level}
+                icon="🏆"
+              />
+            </View>
+          </View>
+
+          {/* Zellige Graph weekly bar chart */}
+          <View style={styles.graphCard}>
+            <Text style={styles.graphTitle}>Scholarly Cadence</Text>
+            <View style={styles.graphContainer}>
+              {weeklyData.map((item) => (
+                <View key={item.day} style={styles.graphBarRow}>
+                  <View style={styles.barHeader}>
+                    <Text style={styles.barDay}>{item.day}</Text>
+                    <Text style={styles.barHours}>{item.hours} hrs</Text>
+                  </View>
+                  <View style={styles.barBg}>
+                    <LinearGradient
+                      colors={['#4E8EA2', '#7BBDE8']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={[styles.barFill, { width: `${item.percent}%` }]}
+                    />
+                  </View>
                 </View>
-                <Text
-                  style={[
-                    styles.achievementLabel,
-                    { color: a.unlocked ? colors.ivoryWhite : colors.outline },
-                  ]}
-                >
-                  {a.label}
-                </Text>
-              </Animated.View>
-            ))}
-          </ScrollView>
+              ))}
+            </View>
+          </View>
+
+          {/* Session Ledger timeline */}
+          <View style={styles.ledgerSection}>
+            <Text style={styles.ledgerTitle}>Reading Records</Text>
+            <View style={styles.ledgerTimeline}>
+              {/* Vertical line indicator */}
+              <View style={styles.timelineLine} />
+
+              {sessions.length > 0 ? (
+                sessions.map((session, index) => (
+                  <View key={session.id || index} style={styles.ledgerItem}>
+                    {/* Timeline Node dot */}
+                    <View style={styles.timelineNode}>
+                      <View style={styles.timelineDot} />
+                    </View>
+                    
+                    <View style={styles.ledgerContent}>
+                      <View style={styles.ledgerHeaderRow}>
+                        <Text style={styles.ledgerBookTitle}>{session.bookTitle}</Text>
+                        <Text style={styles.ledgerTime}>
+                          {new Date(session.timestamp).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </Text>
+                      </View>
+                      
+                      <Text style={styles.ledgerNotes}>
+                        {session.notes || 'Focused reading session.'}
+                      </Text>
+                      
+                      <View style={styles.ledgerMetaRow}>
+                        <View style={styles.metaBadge}>
+                          <Text style={styles.metaBadgeText}>
+                            ⏱️ {formatDurationFriendly(session.durationSeconds)}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.emptyTimelineText}>No session logs recorded yet.</Text>
+              )}
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+
+      {/* Floating Glass Bottom Tab Nav Bar */}
+      <View style={styles.bottomNavContainer}>
+        <View style={styles.glassNav}>
+          <TouchableOpacity style={styles.navItem} onPress={onNavigateToLibrary}>
+            <Text style={styles.navIcon}>📖</Text>
+            <Text style={styles.navText}>Library</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.navItem, styles.navItemActive]}>
+            <Text style={[styles.navIcon, styles.navIconActive]}>📊</Text>
+            <Text style={[styles.navText, styles.navTextActive]}>Stats</Text>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  scroll: { flex: 1 },
-  scrollContent: {
-    paddingHorizontal: spacing.containerPadding,
+  container: {
+    flex: 1,
+    backgroundColor: '#00142a',
   },
-
-  // Profile
-  profileSection: {
+  safeArea: {
+    flex: 1,
+  },
+  latticePattern: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.02,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#fff',
+    borderStyle: 'dashed',
+  },
+  header: {
+    height: 60,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.marginMobile,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
-  avatarWrapper: {
+  logo: {
+    fontFamily: typography.headlineLgMobile.fontFamily,
+    fontSize: 22,
+    fontWeight: '800',
+    color: colors.secondaryContainer,
+    textShadowColor: 'rgba(238,152,0,0.5)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+  },
+  menuButton: {
+    padding: 8,
+  },
+  menuIcon: {
+    fontSize: 22,
+    color: colors.secondary,
+  },
+  searchButton: {
+    padding: 8,
+  },
+  searchIcon: {
+    fontSize: 20,
+    color: colors.secondary,
+  },
+  scrollContent: {
+    paddingBottom: 120,
+  },
+  profileHero: {
+    alignItems: 'center',
+    paddingTop: 32,
+    paddingBottom: 48,
+    backgroundColor: '#001D39',
+    position: 'relative',
+  },
+  avatarBorderGlow: {
+    padding: 3,
+    borderRadius: radii.full,
+    backgroundColor: colors.secondaryContainer,
+    shadowColor: 'rgba(238, 152, 0, 0.4)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 20,
+    marginBottom: 20,
+  },
+  avatarInnerBorder: {
     width: 120,
     height: 120,
-    marginBottom: 16,
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: radii.full,
+    borderWidth: 4,
+    borderColor: '#001D39',
+    overflow: 'hidden',
   },
   avatar: {
-    width: 116,
-    height: 116,
-    borderRadius: 58,
-    borderWidth: 2,
-    borderColor: '#1c2d3d',
-  },
-  avatarBadge: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.tertiaryFixedDim,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: colors.background,
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   profileName: {
-    ...typography.headlineLgMobile,
-    color: colors.tertiaryFixedDim,
+    fontFamily: typography.headlineLg.fontFamily,
+    fontSize: 24,
+    color: colors.secondary,
     marginBottom: 4,
   },
   profileTitle: {
-    ...typography.labelMd,
-    color: colors.cyanGrey,
-    letterSpacing: 1.5,
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 10,
+    color: colors.onSurfaceVariant,
     textTransform: 'uppercase',
+    letterSpacing: 2,
   },
-
-  // Divider
-  dividerWrapper: { marginBottom: 24 },
-  divider: { height: 1.5, borderRadius: 1 },
-
-  // Stats grid
-  statsGrid: {
+  sCurveHinge: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 16,
+    backgroundColor: '#00142a',
+    borderTopLeftRadius: radii.md,
+    borderTopRightRadius: radii.md,
+  },
+  matrixSection: {
+    paddingHorizontal: spacing.marginMobile,
+    marginTop: -20,
+    gap: spacing.gutter,
+  },
+  matrixRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 20,
+    gap: spacing.gutter,
   },
-  statCardItem: {
-    width: (SCREEN_WIDTH - spacing.containerPadding * 2 - 12) / 2,
+  cardElevated: {
+    shadowColor: 'rgba(238, 152, 0, 0.3)',
+    shadowRadius: 15,
   },
-
-  // Chart
-  chartCard: {
-    borderRadius: radii.md,
-    padding: 20,
-    marginBottom: 20,
-    overflow: 'hidden',
-  },
-
-  chartHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  chartTitle: {
-    ...typography.headlineMd,
-    color: colors.ivoryWhite,
-  },
-  chartBadge: {
-    backgroundColor: '#0d2f3c',
+  graphCard: {
+    backgroundColor: 'rgba(29, 54, 83, 0.3)',
+    borderRadius: radii.xl,
     borderWidth: 1,
-    borderColor: colors.primaryFixedDim,
-    borderRadius: radii.full,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    marginHorizontal: spacing.marginMobile,
+    marginTop: spacing.gutter,
+    padding: 24,
   },
-  chartBadgeText: {
-    ...typography.dataMono,
-    fontSize: 11,
-    color: colors.primaryFixedDim,
+  graphTitle: {
+    fontFamily: typography.headlineMd.fontFamily,
+    fontSize: 18,
+    color: colors.primary,
+    marginBottom: 20,
   },
-  barsWrapper: { gap: 16 },
-  barItem: { gap: 6 },
-  barLabelRow: {
+  graphContainer: {
+    gap: 16,
+  },
+  graphBarRow: {
+    gap: 6,
+  },
+  barHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
-  barValue: {
-    ...typography.dataMono,
-    fontSize: 11,
-    color: colors.cyanGrey,
+  barDay: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 10,
+    color: colors.onSurfaceVariant,
   },
-  barTrack: {
-    height: 12,
-    backgroundColor: colors.surfaceContainer,
+  barHours: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 10,
+    color: colors.primary,
+  },
+  barBg: {
+    height: 6,
+    backgroundColor: colors.surfaceContainerHighest,
     borderRadius: radii.full,
     overflow: 'hidden',
   },
   barFill: {
     height: '100%',
     borderRadius: radii.full,
-    minWidth: 4,
   },
-  barMonth: {
-    ...typography.labelMd,
-    fontSize: 13,
-    color: colors.cyanGrey,
+  ledgerSection: {
+    paddingHorizontal: spacing.marginMobile,
+    marginTop: 32,
   },
-
-  // Achievements
-  achievementsSection: { marginBottom: 8 },
-  achievementsTitle: {
-    ...typography.headlineMd,
-    color: colors.ivoryWhite,
-    marginBottom: 14,
+  ledgerTitle: {
+    fontFamily: typography.headlineMd.fontFamily,
+    fontSize: 18,
+    color: colors.primary,
+    marginBottom: 20,
+    paddingLeft: 4,
   },
-  achievementsScroll: {
-    gap: 12,
-    paddingRight: spacing.containerPadding,
+  ledgerTimeline: {
+    position: 'relative',
+    paddingLeft: 8,
   },
-  achievementCard: {
-    width: 130,
-    borderRadius: radii.md,
-    padding: 16,
+  timelineLine: {
+    position: 'absolute',
+    left: 23,
+    top: 10,
+    bottom: 10,
+    width: 1,
+    backgroundColor: colors.secondary,
+    opacity: 0.25,
+  },
+  ledgerItem: {
+    flexDirection: 'row',
+    marginBottom: 24,
+  },
+  timelineNode: {
+    width: 32,
     alignItems: 'center',
-    gap: 10,
+    justifyContent: 'flex-start',
+    paddingTop: 4,
   },
-  achievementLocked: {
-    opacity: 0.4,
+  timelineDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.secondary,
+    shadowColor: colors.secondary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
   },
-  achievementIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+  ledgerContent: {
+    flex: 1,
+    marginLeft: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    paddingBottom: 16,
+  },
+  ledgerHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginBottom: 6,
+  },
+  ledgerBookTitle: {
+    fontFamily: typography.headlineMd.fontFamily,
+    fontSize: 16,
+    color: colors.primary,
+  },
+  ledgerTime: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 9,
+    color: colors.onSurfaceVariant,
+    textTransform: 'uppercase',
+  },
+  ledgerNotes: {
+    fontFamily: typography.bodyMd.fontFamily,
+    fontSize: 13,
+    lineHeight: 20,
+    color: colors.onSurfaceVariant,
+    opacity: 0.8,
+    marginBottom: 10,
+  },
+  ledgerMetaRow: {
+    flexDirection: 'row',
+  },
+  metaBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: radii.full,
+  },
+  metaBadgeText: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 9,
+    color: colors.tertiary,
+  },
+  emptyTimelineText: {
+    fontFamily: typography.bodyMd.fontFamily,
+    color: colors.onSurfaceVariant,
+    textAlign: 'center',
+    paddingVertical: 20,
+  },
+  bottomNavContainer: {
+    position: 'absolute',
+    bottom: 24,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 500,
+  },
+  glassNav: {
+    width: '90%',
+    maxWidth: 400,
+    height: 72,
+    backgroundColor: 'rgba(0, 15, 33, 0.85)',
+    borderRadius: radii.full,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  navItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: radii.full,
   },
-  achievementLabel: {
-    ...typography.labelMd,
-    textAlign: 'center',
+  navItemActive: {
+    backgroundColor: colors.tertiaryContainer,
+    shadowColor: 'rgba(94, 236, 176, 0.4)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  navIcon: {
+    fontSize: 20,
+    opacity: 0.6,
+  },
+  navIconActive: {
+    opacity: 1,
+  },
+  navText: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 9,
+    color: 'rgba(255, 255, 255, 0.4)',
+    marginTop: 2,
+    textTransform: 'uppercase',
+  },
+  navTextActive: {
+    color: colors.onTertiaryContainer,
+    fontWeight: '700',
   },
 });
-
-export default StatsScreen;

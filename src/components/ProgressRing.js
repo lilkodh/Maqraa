@@ -1,146 +1,92 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, TextInput } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
-import Animated, {
-  useSharedValue,
-  useAnimatedProps,
-  withTiming,
-} from 'react-native-reanimated';
-import { colors } from '../utils/theme';
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
+import { colors, typography } from '../utils/theme';
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
-
-/**
- * ProgressRing — Presentational component
- * Renders an animated glowing circular progress ring with an animated centered label.
- *
- * Props:
- *   size       {number}  — diameter in dp (default 64)
- *   progress   {number}  — 0–100
- *   strokeWidth {number} — stroke width (default 4)
- *   label      {string}  — text shown in centre (e.g. "12/20")
- *   labelStyle {object}  — optional extra label text style
- */
-const ProgressRing = ({
-  size = 64,
+export default function ProgressRing({
+  size = 120,
+  strokeWidth = 8,
   progress = 0,
-  strokeWidth = 4,
-  label = '',
-  labelStyle,
-}) => {
+  showText = true,
+  centerText = '',
+  subText = '',
+}) {
   const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
+  const circumference = radius * 2 * Math.PI;
   const clampedProgress = Math.min(100, Math.max(0, progress));
-  const center = size / 2;
-
-  // Shared value for progress animation
-  const animatedProgress = useSharedValue(0);
-
-  useEffect(() => {
-    animatedProgress.value = withTiming(clampedProgress, { duration: 800 });
-  }, [clampedProgress]);
-
-  // Animated props for the SVG Circle
-  const animatedCircleProps = useAnimatedProps(() => {
-    const strokeDashoffset = circumference - (animatedProgress.value / 100) * circumference;
-    return {
-      strokeDashoffset,
-    };
-  });
-
-  // Animated props for the centered text counter
-  const animatedTextProps = useAnimatedProps(() => {
-    let text = label;
-    if (label.endsWith('%')) {
-      text = `${Math.round(animatedProgress.value)}%`;
-    } else {
-      const match = label.match(/^(\d+)\/(\d+)$/);
-      if (match) {
-        const denominator = parseInt(match[2]);
-        const currentNumerator = Math.round((animatedProgress.value / 100) * denominator);
-        text = `${currentNumerator}/${denominator}`;
-      }
-    }
-    return {
-      text,
-    };
-  });
+  const strokeDashoffset = circumference - (clampedProgress / 100) * circumference;
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
-        {/* Track circle */}
+      <Svg width={size} height={size} style={styles.svg}>
+        <Defs>
+          <LinearGradient id="sapphireGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <Stop offset="0%" stopColor="#BDD8E9" />
+            <Stop offset="100%" stopColor="#3b82f6" />
+          </LinearGradient>
+        </Defs>
+        {/* Background Track */}
         <Circle
-          cx={center}
-          cy={center}
+          cx={size / 2}
+          cy={size / 2}
           r={radius}
-          stroke={colors.surfaceContainerHighest}
+          stroke="rgba(189, 216, 233, 0.1)"
           strokeWidth={strokeWidth}
           fill="transparent"
         />
-        {/* Animated Progress arc — rotated -90° so it starts at top */}
-        <AnimatedCircle
-          cx={center}
-          cy={center}
+        {/* Luminous Progress Circle */}
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
           r={radius}
-          stroke={colors.primaryContainer}
-          strokeWidth={strokeWidth}
-          fill="transparent"
+          stroke="url(#sapphireGrad)"
+          strokeWidth={strokeWidth + 2}
           strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
-          rotation="-90"
-          origin={`${center}, ${center}`}
-          animatedProps={animatedCircleProps}
+          fill="transparent"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </Svg>
-      {!!label && (
-        <View style={styles.labelWrapper}>
-          <View style={styles.labelInner}>
-            <AnimatedTextInput
-              style={[
-                styles.label,
-                {
-                  fontSize: Math.max(8, size * 0.16),
-                  padding: 0,
-                  margin: 0,
-                  borderWidth: 0,
-                  backgroundColor: 'transparent',
-                },
-                labelStyle,
-              ]}
-              value={label}
-              editable={false}
-              pointerEvents="none"
-              underlineColorAndroid="transparent"
-              animatedProps={animatedTextProps}
-            />
-          </View>
+      {showText && (
+        <View style={styles.textContainer}>
+          <Text style={styles.percentageText}>
+            {centerText || `${Math.round(clampedProgress)}%`}
+          </Text>
+          {subText ? <Text style={styles.subText}>{subText}</Text> : null}
         </View>
       )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
     justifyContent: 'center',
-  },
-  labelWrapper: {
-    ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
-    justifyContent: 'center',
+    position: 'relative',
   },
-  labelInner: {
+  svg: {
+    position: 'absolute',
+  },
+  textContainer: {
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  label: {
+  percentageText: {
+    fontFamily: typography.displayLg.fontFamily,
+    fontSize: 24,
+    fontWeight: '700',
     color: colors.primary,
-    fontFamily: 'JetBrainsMono_500Medium',
+    textAlign: 'center',
+  },
+  subText: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 9,
+    letterSpacing: 1,
+    color: colors.onSurfaceVariant,
+    textTransform: 'uppercase',
+    marginTop: 2,
     textAlign: 'center',
   },
 });
-
-export default ProgressRing;

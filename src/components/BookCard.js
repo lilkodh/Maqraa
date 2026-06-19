@@ -1,168 +1,130 @@
+import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors, typography, radii, glassMorphism, shadows } from '../utils/theme';
+import { colors, radii, spacing, typography } from '../utils/theme';
 
-/**
- * BookCard — Presentational component
- * Displays a book cover with title, author, and progress overlay.
- *
- * Props:
- *   book       {object}   — { id, title, author, cover, progress, status }
- *   onPress    {function} — called when card is tapped
- *   style      {object}   — optional container style override
- */
-const BookCard = ({ book, onPress, style }) => {
-  const { title, author, cover, progress, status } = book;
-
-  const statusLabel = status === 'finished'
-    ? 'Finished'
-    : status === 'in_progress'
-    ? `${progress}%`
-    : 'Unread';
-
-  const statusColor = status === 'finished'
-    ? colors.emeraldSuccess
-    : status === 'in_progress'
-    ? colors.primaryFixedDim
-    : colors.cyanGrey;
-
-  const statusBg = status === 'finished'
-    ? '#0f3a2c'
-    : status === 'in_progress'
-    ? '#0d2f3c'
-    : '#13212e';
-
-  const statusBorder = status === 'finished'
-    ? colors.emeraldSuccess
-    : status === 'in_progress'
-    ? colors.primaryFixedDim
-    : colors.outlineVariant;
-
-  const isArabic = book.language === 'Arabic';
-
-  const coverWrapperStyle = [
-    styles.coverWrapper,
-    isArabic ? { borderLeftWidth: 0, borderRightWidth: 4, borderRightColor: '#000000' } : {}
-  ];
-
-  const spineStyle = [
-    styles.spine,
-    isArabic ? { left: undefined, right: 0 } : {}
-  ];
-
-  const progressBarTrackStyle = [
-    styles.progressBarTrack,
-    isArabic ? { flexDirection: 'row-reverse' } : { flexDirection: 'row' }
-  ];
-
-  const textStyle = isArabic ? { textAlign: 'right', writingDirection: 'rtl' } : {};
+export default function BookCard({ book, onPress }) {
+  const progressPercent = Math.round((book.readPages / book.totalPages) * 100);
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[styles.container, style]}
-      activeOpacity={0.8}
-    >
-      {/* Book cover */}
-      <View style={coverWrapperStyle}>
-        <Image
-          source={{ uri: cover }}
-          style={styles.cover}
-          resizeMode="cover"
-        />
-        {/* Spine shadow */}
-        <View style={spineStyle} />
-        {/* Liquid glass status badge */}
-        <View style={[
-          styles.statusBadge,
-          { backgroundColor: statusBg, borderColor: statusBorder },
-        ]}>
-          <Text style={[styles.statusText, { color: statusColor }]}>
-            {statusLabel}
-          </Text>
-        </View>
-        {/* Progress bar at bottom */}
-        {status === 'in_progress' && (
-          <View style={progressBarTrackStyle}>
-            <View
-              style={[
-                styles.progressBarFill,
-                { width: `${progress}%` },
-              ]}
-            />
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
+      <View style={styles.coverWrapper}>
+        {book.coverUrl ? (
+          <Image source={{ uri: book.coverUrl }} style={styles.coverImage} resizeMode="cover" />
+        ) : (
+          <View style={styles.fallbackCover}>
+            <Text style={styles.fallbackText}>{book.title[0]}</Text>
           </View>
         )}
+        <View style={styles.spineShadow} />
       </View>
-
-      {/* Text info */}
-      <Text style={[styles.title, textStyle]} numberOfLines={1}>{title}</Text>
-      <Text style={[styles.author, textStyle]} numberOfLines={1}>{author}</Text>
+      <View style={styles.infoContainer}>
+        <Text style={styles.title} numberOfLines={1}>{book.title}</Text>
+        <Text style={styles.author} numberOfLines={1}>{book.author}</Text>
+        
+        {/* Luminous progress bar indicator */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBarBg}>
+            <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
+          </View>
+          <Text style={styles.progressText}>{progressPercent}%</Text>
+        </View>
+      </View>
     </TouchableOpacity>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
+  card: {
+    backgroundColor: colors.surfaceContainer,
+    borderRadius: radii.md,
+    padding: spacing.unit * 1.5,
+    marginVertical: spacing.unit,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    elevation: 5,
   },
   coverWrapper: {
-    aspectRatio: 2 / 3,
+    width: 60,
+    height: 90,
     borderRadius: radii.sm,
     overflow: 'hidden',
-    marginBottom: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#000000',
-    ...shadows.card,
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: '#2a1700', // Skeuomorphic book spine edge
   },
-  cover: {
+  coverImage: {
     width: '100%',
     height: '100%',
   },
-  spine: {
+  fallbackCover: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: colors.surfaceBright,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fallbackText: {
+    fontFamily: typography.headlineLg.fontFamily,
+    fontSize: 24,
+    color: colors.secondary,
+  },
+  spineShadow: {
     position: 'absolute',
-    top: 0,
     left: 0,
+    top: 0,
     bottom: 0,
     width: 4,
-    backgroundColor: '#000000',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
-  statusBadge: {
-    position: 'absolute',
-    bottom: 20,
-    left: 8,
-    right: 8,
+  infoContainer: {
+    flex: 1,
+    marginLeft: spacing.gutter,
+    justifyContent: 'center',
+  },
+  title: {
+    fontFamily: typography.headlineMd.fontFamily,
+    fontSize: 18,
+    color: colors.primary,
+    marginBottom: 4,
+  },
+  author: {
+    fontFamily: typography.bodyMd.fontFamily,
+    fontSize: 14,
+    color: colors.onSurfaceVariant,
+    marginBottom: spacing.unit,
+  },
+  progressContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
+  },
+  progressBarBg: {
+    flex: 1,
+    height: 4,
+    backgroundColor: colors.surfaceContainerHighest,
     borderRadius: radii.full,
-    paddingVertical: 3,
-  },
-  statusText: {
-    ...typography.dataMono,
-    fontSize: 10,
-    letterSpacing: 0.6,
-  },
-  progressBarTrack: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: '#1d2b39',
+    overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: colors.primaryFixedDim,
-    borderRadius: 2,
+    backgroundColor: '#3b82f6', // Neon Sapphire shade
+    borderRadius: radii.full,
   },
-  title: {
-    ...typography.labelMd,
-    color: colors.onSurface,
-    marginBottom: 2,
-  },
-  author: {
-    ...typography.bodyMd,
-    fontSize: 12,
-    color: colors.cyanGrey,
+  progressText: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 10,
+    color: colors.onSurfaceVariant,
+    marginLeft: 8,
+    minWidth: 25,
+    textAlign: 'right',
   },
 });
-
-export default BookCard;
