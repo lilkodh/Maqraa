@@ -16,7 +16,7 @@ import Svg, { Path } from 'react-native-svg';
 import { colors, radii, spacing, typography, shadows } from '../utils/theme';
 import BookCard from '../components/BookCard';
 import ProgressRing from '../components/ProgressRing';
-import { StatCard } from '../components/StatCard';
+import { StatCard, BottomNav } from '../components/StatCard';
 
 export default function LibraryScreen({
   books = [],
@@ -364,6 +364,9 @@ export default function LibraryScreen({
           <MaterialIcons name="add" size={32} color={colors.white} />
         </Animated.View>
       </TouchableOpacity>
+
+      {/* Shared Bottom Nav Component */}
+      <BottomNav activeTab="home" />
     </SafeAreaView>
   );
 }

@@ -14,6 +14,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
 import { colors, radii, spacing, typography, shadows } from '../utils/theme';
+import { BottomNav } from '../components/StatCard';
 import { formatTime } from '../utils/calculations';
 
 export default function BookDetailScreen({
@@ -217,6 +218,8 @@ export default function BookDetailScreen({
             </View>
           </View>
         </ScrollView>
+
+        <BottomNav activeTab="home" />
       </SafeAreaView>
     </KeyboardAvoidingView>
   );
