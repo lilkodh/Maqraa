@@ -44,29 +44,14 @@ export default function Layout() {
     return (
       <SafeAreaProvider>
         <StatusBar style="dark" />
-        <NativeTabs
-          screenOptions={{
-            headerShown: false,
-          }}
-        >
-          <NativeTabs.Screen
-            name="index"
-            options={{
-              title: 'Home',
-            }}
-          />
-          <NativeTabs.Screen
-            name="stats"
-            options={{
-              title: 'Profile',
-            }}
-          />
-          <NativeTabs.Screen
-            name="book/[id]"
-            options={{
-              href: null,
-            }}
-          />
+        <NativeTabs>
+          <NativeTabs.Trigger name="index">
+            <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+          </NativeTabs.Trigger>
+          <NativeTabs.Trigger name="stats">
+            <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
+          </NativeTabs.Trigger>
+          <NativeTabs.Trigger name="book/[id]" hidden={true} />
         </NativeTabs>
       </SafeAreaProvider>
     );
