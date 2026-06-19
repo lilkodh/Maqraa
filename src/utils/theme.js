@@ -9,21 +9,21 @@ export const colors = {
   surfaceContainerHigh: '#112b47',
   surfaceContainerHighest: '#1d3653',
   onSurface: '#d3e4ff',
-  onSurfaceVariant: '#c2c7cb',
-  primary: '#e1f3ff', // Neon Sapphire
-  onPrimary: '#193341',
-  primaryContainer: '#bdd8e9',
-  onPrimaryContainer: '#455f6d',
-  secondary: '#ffb95f', // Antique Gold
-  onSecondary: '#472a00',
-  secondaryContainer: '#ee9800',
-  onSecondaryContainer: '#5b3800',
-  tertiary: '#bbffda', // Moorish Emerald
-  onTertiary: '#003824',
-  tertiaryContainer: '#5eecb0',
-  onTertiaryContainer: '#006847',
-  outline: '#8c9195',
-  outlineVariant: '#42474b',
+  onSurfaceVariant: '#bbcabf',
+  primary: '#4edea3', // Moorish Emerald
+  onPrimary: '#003824',
+  primaryContainer: '#10b981',
+  onPrimaryContainer: '#00422b',
+  secondary: '#afcadb', // Sapphire Blue
+  onSecondary: '#193341',
+  secondaryContainer: '#334c5a',
+  onSecondaryContainer: '#a2bccd',
+  tertiary: '#ffb95f', // Antique Gold
+  onTertiary: '#472a00',
+  tertiaryContainer: '#e29100',
+  onTertiaryContainer: '#523200',
+  outline: '#86948a',
+  outlineVariant: '#3c4a42',
 };
 
 export const radii = {
@@ -45,18 +45,14 @@ export const spacing = {
 export const typography = {
   displayLg: {
     fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 56,
-    lineHeight: 64,
+    fontSize: 40,
+    lineHeight: 48,
+    letterSpacing: -0.8,
   },
   headlineLg: {
     fontFamily: 'PlayfairDisplay_700Bold',
     fontSize: 32,
     lineHeight: 40,
-  },
-  headlineLgMobile: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 28,
-    lineHeight: 36,
   },
   headlineMd: {
     fontFamily: 'PlayfairDisplay_600SemiBold',
@@ -73,17 +69,17 @@ export const typography = {
     fontSize: 16,
     lineHeight: 24,
   },
-  labelMd: {
+  metadataSm: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    lineHeight: 18,
+    letterSpacing: 0.13,
+  },
+  timerMono: {
     fontFamily: 'JetBrainsMono_500Medium',
     fontSize: 14,
     lineHeight: 20,
     letterSpacing: 0.7,
-  },
-  labelSm: {
-    fontFamily: 'JetBrainsMono_500Medium',
-    fontSize: 12,
-    lineHeight: 16,
-    letterSpacing: 0.96,
   },
 };
 

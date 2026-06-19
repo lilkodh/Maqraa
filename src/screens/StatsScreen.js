@@ -10,32 +10,59 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialIcons } from '@expo/vector-icons';
 import { colors, radii, spacing, typography } from '../utils/theme';
-import StatCard from '../components/StatCard';
-import { formatDurationFriendly } from '../utils/calculations';
 
 const { width } = Dimensions.get('window');
 
 export default function StatsScreen({
   userProfile = {
-    name: 'Omar Al-Khayyam',
-    avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB9csWBJMtYUDUTyoW4Suq3RqXkksGEC2iUNEN_UOP62SDHzO7AwzFrEcVqDUqQhQOSu6ZOdR83bAWiZEL6D-falIWR-bAmS054VAPiALtNNYR6kWHZVjtn7ha0_eIZjoP42GGeUMaXf-Jovg_cjOzsmQnS5wdlan0MyFeKPQo_LSe0zmXSC7EPn7TJXF7I50HcD5X36wVN9xtkUYkpH0b26d_PNiqaUQFQnXt19glKgZ1YRGw_5_TGqezByEDN2VaaLdVTXq2xOZbh',
-    title: 'Sage of the Seventh Circle',
+    name: 'Amine Benjelloun',
+    avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDjpAr4IKyJplTS54j4KCvLpahxMkvxHtoUgizC1lG3XMw4oLMVhY6o36jwGf9nn9FeXJS-YfqZbVjyPJ-EsDFIeikibwKpIgqfH9AqUxOgTG3MIegmriwcQmaLzj3FHolcpNLIrllXm_o_xa1tp2jwYczZeCl1VJ7lgD9-t2iBks_yjrdZAYQ1kX2mP0pITSLOOpXugDboDF9RJd15YmaMyAZrwUsI28HJQNZ8PyP9s1vSJByYHHEOxReravT6ujW_HzcpEdI8Yiw',
+    title: 'Master Librarian • Level 42',
   },
   stats = {
-    streak: 42,
-    booksRead: 18,
-    readingTimeHours: 248,
-    level: 'Expert',
+    streak: 12,
+    booksRead: 128,
+    readingTimeHours: 456,
   },
   weeklyData = [
-    { day: 'MON', hours: 4.2, percent: 85 },
-    { day: 'TUE', hours: 2.8, percent: 60 },
-    { day: 'WED', hours: 5.1, percent: 95 },
-    { day: 'THU', hours: 3.4, percent: 70 },
+    { month: 'Jan', percent: 40, active: false },
+    { month: 'Feb', percent: 65, active: false },
+    { month: 'Mar', percent: 55, active: false },
+    { month: 'Apr', percent: 85, active: false },
+    { month: 'May', percent: 95, active: true },
+    { month: 'Jun', percent: 70, active: false },
   ],
-  sessions = [],
+  sessions = [
+    {
+      id: 'leo-africanus',
+      title: 'Leo Africanus',
+      coverUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB0YDr5_opzGchV6RH8JfnDgYNBnlYUynqr4oERudRaHScnohxXbv0SuAbomcem-7LkBLNPHxbx4WRsiuMTA-Hfrse9wzdtzNA6yGBNdAxfRPTIaauIkZz4t4SfmabT5Qz_guIqRw6jAYDc9jolIT_DOxvLo1majtYrw4OCC-FzWVAAYTTfqeW2F7ttZ1A28TugZWfZ117wnQHmEsl3AxepuAlXKinMvEHzPARpZdOu0kt36WsMF8Mj2c4mY4NBKNYPX-RNeyN42AA',
+      statusText: 'Completed • 2 hours ago',
+      isGold: true,
+      opacity: 1,
+    },
+    {
+      id: 'the-muqaddimah',
+      title: 'The Muqaddimah',
+      coverUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB4zIgv22E8kVyqRJbubkSH_aoI4pxC-GG-WBZo4XHJFNauZTW4nYMYS4SasP1WcehHr9UTlrShl4QtE7lJifu72ndA1Vnf6gJ_6m-CU13_mY56bht6iVT91EQVg1yVaYk5UYik9P6xQkZi6HkMTp63e1X5B4QfcyDUeSw43VNU2Nzlmig7-x_GGE0W1nK-TUxOUqJ5QIj61PjaTSiIyWv74do8viS4L41TV7RQDlheJ4Wrx7sR9oarDMaxk-9HKlbPazVhzEEAqgo',
+      statusText: 'Reached Page 342 • Yesterday',
+      isGold: false,
+      opacity: 1,
+    },
+    {
+      id: 'al-andalus-tales',
+      title: 'Al-Andalus Tales',
+      coverUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCKgYRBY9pAVpwZ72mu2lqyGHwTJHx_8AL8PbSVoYFMVsG3PDOdVVuaeTdmVrkwIe-NRYEza_I7xQtfiB7ekGOEz4nVpSMR4QbAqnHtcOoKLu18lG49zMk2lAA9ZUFc6Sd25DjcLDm8GCR0EUfSrrK3iuGRPW49vuIufDLhCsw5cX6zE1uPKe2SnlGNvdtFsnMjRbbV3Ms_zkcn19f8Cf4p3mLSh1oJP7qBXGrrEALl4X0LxKWOhPdliF0krebIT7XV3u0P2SPPFkA',
+      statusText: 'Added to Library • 3 days ago',
+      isGold: false,
+      opacity: 0.7,
+      grayscale: true,
+    },
+  ],
   onNavigateToLibrary = () => {},
+  onBookPress = () => {},
 }) {
   return (
     <View style={styles.container}>
@@ -49,13 +76,15 @@ export default function StatsScreen({
       <SafeAreaView style={styles.safeArea}>
         {/* Header Navigation */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.menuButton}>
-            <Text style={styles.menuIcon}>☰</Text>
-          </TouchableOpacity>
           <Text style={styles.logo}>Maqra</Text>
-          <TouchableOpacity style={styles.searchButton}>
-            <Text style={styles.searchIcon}>🔍</Text>
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.actionBtn}>
+              <MaterialIcons name="search" size={22} color={colors.onSurfaceVariant} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionBtn}>
+              <MaterialIcons name="settings" size={22} color={colors.onSurfaceVariant} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <ScrollView
@@ -65,64 +94,70 @@ export default function StatsScreen({
           {/* Hero Profile Section */}
           <View style={styles.profileHero}>
             <View style={styles.avatarBorderGlow}>
-              <View style={styles.avatarInnerBorder}>
-                <Image source={{ uri: userProfile.avatarUrl }} style={styles.avatar} />
+              <LinearGradient
+                colors={[colors.tertiary, colors.primary, colors.secondary]}
+                style={styles.avatarGradientBorder}
+              >
+                <View style={styles.avatarInnerBorder}>
+                  <Image source={{ uri: userProfile.avatarUrl }} style={styles.avatar} />
+                </View>
+              </LinearGradient>
+              <View style={styles.verifiedBadge}>
+                <MaterialIcons name="verified" size={16} color={colors.primary} />
               </View>
             </View>
             <Text style={styles.profileName}>{userProfile.name}</Text>
             <Text style={styles.profileTitle}>{userProfile.title}</Text>
-            
-            {/* Custom S-curve Fold mask simulation */}
-            <View style={styles.sCurveHinge} />
           </View>
 
-          {/* Performance Bento Grid */}
+          {/* Performance Bento Grid - 3 Columns */}
           <View style={styles.matrixSection}>
             <View style={styles.matrixRow}>
-              <StatCard
-                title="Current Streak"
-                value={`${stats.streak} days`}
-                icon="🔥"
-                style={styles.cardElevated}
-              />
-              <StatCard
-                title="Books Finished"
-                value={String(stats.booksRead)}
-                icon="📖"
-              />
-            </View>
-            <View style={styles.matrixRow}>
-              <StatCard
-                title="Reading Time"
-                value={`${stats.readingTimeHours}h`}
-                icon="⏱️"
-              />
-              <StatCard
-                title="Insight Level"
-                value={stats.level}
-                icon="🏆"
-              />
+              {/* Streak Card */}
+              <View style={[styles.matrixCard, styles.streakCard]}>
+                <MaterialIcons name="local-fire-department" size={24} color={colors.tertiary} style={styles.cardIcon} />
+                <Text style={styles.cardValue}>{stats.streak} DAYS</Text>
+                <Text style={styles.cardTitle}>Streak</Text>
+              </View>
+              
+              {/* Books Card */}
+              <View style={styles.matrixCard}>
+                <MaterialIcons name="menu-book" size={24} color={colors.primary} style={styles.cardIcon} />
+                <Text style={styles.cardValue}>{stats.booksRead}</Text>
+                <Text style={styles.cardTitle}>Books</Text>
+              </View>
+
+              {/* Read Hours Card */}
+              <View style={styles.matrixCard}>
+                <MaterialIcons name="hourglass-empty" size={24} color={colors.secondary} style={styles.cardIcon} />
+                <Text style={styles.cardValue}>{stats.readingTimeHours}h</Text>
+                <Text style={styles.cardTitle}>Read</Text>
+              </View>
             </View>
           </View>
 
-          {/* Zellige Graph weekly bar chart */}
+          {/* Reading Flow monthly bar chart */}
           <View style={styles.graphCard}>
-            <Text style={styles.graphTitle}>Scholarly Cadence</Text>
+            <View style={styles.graphHeader}>
+              <View>
+                <Text style={styles.graphTitle}>Reading Flow</Text>
+                <Text style={styles.graphSubtitle}>Pages consumed per month</Text>
+              </View>
+              <Text style={styles.graphGrowth}>+24%</Text>
+            </View>
+            
             <View style={styles.graphContainer}>
               {weeklyData.map((item) => (
-                <View key={item.day} style={styles.graphBarRow}>
-                  <View style={styles.barHeader}>
-                    <Text style={styles.barDay}>{item.day}</Text>
-                    <Text style={styles.barHours}>{item.hours} hrs</Text>
-                  </View>
+                <View key={item.month} style={styles.graphBarColumn}>
                   <View style={styles.barBg}>
                     <LinearGradient
-                      colors={['#4E8EA2', '#7BBDE8']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={[styles.barFill, { width: `${item.percent}%` }]}
+                      colors={item.active ? ['rgba(175, 202, 219, 0.2)', colors.secondary] : ['rgba(175, 202, 219, 0.1)', 'rgba(175, 202, 219, 0.5)']}
+                      style={[styles.barFill, { height: `${item.percent}%` }]}
                     />
                   </View>
+                  <Text style={[styles.barMonth, item.active && styles.barMonthActive]}>
+                    {item.month}
+                  </Text>
                 </View>
               ))}
             </View>
@@ -130,47 +165,34 @@ export default function StatsScreen({
 
           {/* Session Ledger timeline */}
           <View style={styles.ledgerSection}>
-            <Text style={styles.ledgerTitle}>Reading Records</Text>
+            <Text style={styles.ledgerTitle}>Reading Ledger</Text>
             <View style={styles.ledgerTimeline}>
               {/* Vertical line indicator */}
               <View style={styles.timelineLine} />
 
-              {sessions.length > 0 ? (
-                sessions.map((session, index) => (
-                  <View key={session.id || index} style={styles.ledgerItem}>
-                    {/* Timeline Node dot */}
-                    <View style={styles.timelineNode}>
-                      <View style={styles.timelineDot} />
-                    </View>
-                    
-                    <View style={styles.ledgerContent}>
-                      <View style={styles.ledgerHeaderRow}>
-                        <Text style={styles.ledgerBookTitle}>{session.bookTitle}</Text>
-                        <Text style={styles.ledgerTime}>
-                          {new Date(session.timestamp).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </Text>
-                      </View>
-                      
-                      <Text style={styles.ledgerNotes}>
-                        {session.notes || 'Focused reading session.'}
-                      </Text>
-                      
-                      <View style={styles.ledgerMetaRow}>
-                        <View style={styles.metaBadge}>
-                          <Text style={styles.metaBadgeText}>
-                            ⏱️ {formatDurationFriendly(session.durationSeconds)}
-                          </Text>
-                        </View>
-                      </View>
+              {sessions.map((session, index) => (
+                <View key={session.id || index} style={[styles.ledgerItem, { opacity: session.opacity }]}>
+                  {/* Timeline Node dot */}
+                  <View style={styles.timelineNode}>
+                    <View style={[styles.timelineDotBorder, session.isGold && styles.timelineDotBorderGold]}>
+                      <View style={[styles.timelineDotInner, session.isGold && styles.timelineDotInnerGold]} />
                     </View>
                   </View>
-                ))
-              ) : (
-                <Text style={styles.emptyTimelineText}>No session logs recorded yet.</Text>
-              )}
+                  
+                  {/* Ledger content card */}
+                  <TouchableOpacity
+                    style={[styles.ledgerContentCard, session.grayscale && styles.grayscaleCard]}
+                    activeOpacity={0.8}
+                    onPress={() => onBookPress(session.id)}
+                  >
+                    <Image source={{ uri: session.coverUrl }} style={styles.ledgerCover} />
+                    <View style={styles.ledgerDetails}>
+                      <Text style={styles.ledgerBookTitle}>{session.title}</Text>
+                      <Text style={styles.ledgerStatusText}>{session.statusText}</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              ))}
             </View>
           </View>
         </ScrollView>
@@ -180,12 +202,16 @@ export default function StatsScreen({
       <View style={styles.bottomNavContainer}>
         <View style={styles.glassNav}>
           <TouchableOpacity style={styles.navItem} onPress={onNavigateToLibrary}>
-            <Text style={styles.navIcon}>📖</Text>
+            <MaterialIcons name="local-library" size={24} color="rgba(255, 255, 255, 0.4)" />
             <Text style={styles.navText}>Library</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem} onPress={() => onNavigateToLibrary()}>
+            <MaterialIcons name="auto-stories" size={24} color="rgba(255, 255, 255, 0.4)" />
+            <Text style={styles.navText}>Reading</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={[styles.navItem, styles.navItemActive]}>
-            <Text style={[styles.navIcon, styles.navIconActive]}>📊</Text>
-            <Text style={[styles.navText, styles.navTextActive]}>Stats</Text>
+            <MaterialIcons name="person" size={24} color={colors.secondary} style={styles.navIconActive} />
+            <Text style={[styles.navText, styles.navTextActive]}>Profile</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -219,27 +245,21 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
   logo: {
-    fontFamily: typography.headlineLgMobile.fontFamily,
+    fontFamily: typography.headlineLg.fontFamily,
     fontSize: 22,
     fontWeight: '800',
-    color: colors.secondaryContainer,
-    textShadowColor: 'rgba(238,152,0,0.5)',
+    fontStyle: 'italic',
+    color: colors.tertiary,
+    textShadowColor: 'rgba(255, 185, 95, 0.4)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 8,
   },
-  menuButton: {
+  headerActions: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  actionBtn: {
     padding: 8,
-  },
-  menuIcon: {
-    fontSize: 22,
-    color: colors.secondary,
-  },
-  searchButton: {
-    padding: 8,
-  },
-  searchIcon: {
-    fontSize: 20,
-    color: colors.secondary,
   },
   scrollContent: {
     paddingBottom: 120,
@@ -247,122 +267,189 @@ const styles = StyleSheet.create({
   profileHero: {
     alignItems: 'center',
     paddingTop: 32,
-    paddingBottom: 48,
-    backgroundColor: '#001D39',
-    position: 'relative',
+    paddingBottom: 24,
   },
   avatarBorderGlow: {
-    padding: 3,
-    borderRadius: radii.full,
-    backgroundColor: colors.secondaryContainer,
-    shadowColor: 'rgba(238, 152, 0, 0.4)',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 20,
-    marginBottom: 20,
+    position: 'relative',
+    marginBottom: 16,
   },
-  avatarInnerBorder: {
+  avatarGradientBorder: {
     width: 120,
     height: 120,
     borderRadius: radii.full,
-    borderWidth: 4,
-    borderColor: '#001D39',
+    padding: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarInnerBorder: {
+    width: '100%',
+    height: '100%',
+    borderRadius: radii.full,
+    borderWidth: 3,
+    borderColor: '#00142a',
     overflow: 'hidden',
+    backgroundColor: '#00142a',
   },
   avatar: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
   },
+  verifiedBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 32,
+    height: 32,
+    borderRadius: radii.full,
+    backgroundColor: '#00142a',
+    borderWidth: 3,
+    borderColor: '#00142a',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 3,
+  },
   profileName: {
     fontFamily: typography.headlineLg.fontFamily,
-    fontSize: 24,
-    color: colors.secondary,
+    fontSize: 26,
+    color: colors.onSurface,
     marginBottom: 4,
   },
   profileTitle: {
-    fontFamily: typography.labelSm.fontFamily,
+    fontFamily: typography.metadataSm.fontFamily,
     fontSize: 10,
     color: colors.onSurfaceVariant,
     textTransform: 'uppercase',
     letterSpacing: 2,
   },
-  sCurveHinge: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 16,
-    backgroundColor: '#00142a',
-    borderTopLeftRadius: radii.md,
-    borderTopRightRadius: radii.md,
-  },
   matrixSection: {
     paddingHorizontal: spacing.marginMobile,
-    marginTop: -20,
-    gap: spacing.gutter,
+    marginTop: 8,
+    marginBottom: 24,
   },
   matrixRow: {
     flexDirection: 'row',
     gap: spacing.gutter,
   },
-  cardElevated: {
-    shadowColor: 'rgba(238, 152, 0, 0.3)',
+  matrixCard: {
+    flex: 1,
+    backgroundColor: 'rgba(29, 54, 83, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: radii.default,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
     shadowRadius: 15,
+    elevation: 4,
+  },
+  streakCard: {
+    borderTopWidth: 4,
+    borderTopColor: colors.tertiary,
+  },
+  cardIcon: {
+    marginBottom: 8,
+  },
+  cardValue: {
+    fontFamily: typography.timerMono.fontFamily,
+    fontSize: 15,
+    color: colors.onSurface,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  cardTitle: {
+    fontFamily: typography.metadataSm.fontFamily,
+    fontSize: 11,
+    color: colors.onSurfaceVariant,
+    marginTop: 2,
   },
   graphCard: {
-    backgroundColor: 'rgba(29, 54, 83, 0.3)',
-    borderRadius: radii.xl,
+    backgroundColor: 'rgba(29, 54, 83, 0.4)',
+    borderRadius: radii.default,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(78, 222, 163, 0.1)',
     marginHorizontal: spacing.marginMobile,
-    marginTop: spacing.gutter,
-    padding: 24,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    elevation: 4,
+    marginBottom: 24,
+  },
+  graphHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 20,
   },
   graphTitle: {
     fontFamily: typography.headlineMd.fontFamily,
-    fontSize: 18,
+    fontSize: 20,
+    color: colors.onSurface,
+  },
+  graphSubtitle: {
+    fontFamily: typography.metadataSm.fontFamily,
+    fontSize: 12,
+    color: colors.onSurfaceVariant,
+    marginTop: 2,
+  },
+  graphGrowth: {
+    fontFamily: typography.timerMono.fontFamily,
+    fontSize: 22,
     color: colors.primary,
-    marginBottom: 20,
+    fontWeight: '700',
   },
   graphContainer: {
-    gap: 16,
-  },
-  graphBarRow: {
-    gap: 6,
-  },
-  barHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    height: 160,
+    paddingTop: 10,
   },
-  barDay: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 10,
-    color: colors.onSurfaceVariant,
-  },
-  barHours: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 10,
-    color: colors.primary,
+  graphBarColumn: {
+    flex: 1,
+    alignItems: 'center',
+    height: '100%',
+    justifyContent: 'flex-end',
   },
   barBg: {
-    height: 6,
+    width: 24,
+    height: 120,
     backgroundColor: colors.surfaceContainerHighest,
     borderRadius: radii.full,
+    justifyContent: 'flex-end',
     overflow: 'hidden',
   },
   barFill: {
-    height: '100%',
+    width: '100%',
     borderRadius: radii.full,
+  },
+  barMonth: {
+    fontFamily: typography.metadataSm.fontFamily,
+    fontSize: 11,
+    color: colors.onSurfaceVariant,
+    marginTop: 8,
+  },
+  barMonthActive: {
+    color: colors.primary,
+    fontWeight: '700',
   },
   ledgerSection: {
     paddingHorizontal: spacing.marginMobile,
-    marginTop: 32,
+    marginTop: 8,
   },
   ledgerTitle: {
     fontFamily: typography.headlineMd.fontFamily,
-    fontSize: 18,
-    color: colors.primary,
+    fontSize: 20,
+    color: colors.onSurface,
     marginBottom: 20,
     paddingLeft: 4,
   },
@@ -372,86 +459,85 @@ const styles = StyleSheet.create({
   },
   timelineLine: {
     position: 'absolute',
-    left: 23,
+    left: 20,
     top: 10,
     bottom: 10,
     width: 1,
-    backgroundColor: colors.secondary,
-    opacity: 0.25,
+    backgroundColor: colors.tertiary,
+    opacity: 0.3,
   },
   ledgerItem: {
     flexDirection: 'row',
-    marginBottom: 24,
+    marginBottom: 20,
+    alignItems: 'center',
   },
   timelineNode: {
-    width: 32,
+    width: 24,
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 4,
+    justifyContent: 'center',
   },
-  timelineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.secondary,
-    shadowColor: colors.secondary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
+  timelineDotBorder: {
+    width: 20,
+    height: 20,
+    borderRadius: radii.full,
+    borderWidth: 2,
+    borderColor: colors.outline,
+    backgroundColor: '#00142a',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  ledgerContent: {
+  timelineDotBorderGold: {
+    borderColor: colors.tertiary,
+  },
+  timelineDotInner: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.outline,
+  },
+  timelineDotInnerGold: {
+    backgroundColor: colors.tertiary,
+  },
+  ledgerContentCard: {
     flex: 1,
-    marginLeft: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
-    paddingBottom: 16,
-  },
-  ledgerHeaderRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
-    marginBottom: 6,
+    marginLeft: 16,
+    backgroundColor: 'rgba(29, 54, 83, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(78, 222, 163, 0.15)',
+    borderRadius: radii.default,
+    padding: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  grayscaleCard: {
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  ledgerCover: {
+    width: 44,
+    height: 60,
+    borderRadius: radii.sm,
+    resizeMode: 'cover',
+  },
+  ledgerDetails: {
+    flex: 1,
+    marginLeft: 16,
   },
   ledgerBookTitle: {
-    fontFamily: typography.headlineMd.fontFamily,
+    fontFamily: typography.bodyLg.fontFamily,
     fontSize: 16,
-    color: colors.primary,
+    color: colors.onSurface,
+    fontWeight: '600',
   },
-  ledgerTime: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 9,
+  ledgerStatusText: {
+    fontFamily: typography.metadataSm.fontFamily,
+    fontSize: 12,
     color: colors.onSurfaceVariant,
-    textTransform: 'uppercase',
-  },
-  ledgerNotes: {
-    fontFamily: typography.bodyMd.fontFamily,
-    fontSize: 13,
-    lineHeight: 20,
-    color: colors.onSurfaceVariant,
-    opacity: 0.8,
-    marginBottom: 10,
-  },
-  ledgerMetaRow: {
-    flexDirection: 'row',
-  },
-  metaBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: radii.full,
-  },
-  metaBadgeText: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 9,
-    color: colors.tertiary,
-  },
-  emptyTimelineText: {
-    fontFamily: typography.bodyMd.fontFamily,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
-    paddingVertical: 20,
+    marginTop: 4,
   },
   bottomNavContainer: {
     position: 'absolute',
@@ -462,8 +548,8 @@ const styles = StyleSheet.create({
     zIndex: 500,
   },
   glassNav: {
-    width: '90%',
-    maxWidth: 400,
+    width: '95%',
+    maxWidth: 360,
     height: 72,
     backgroundColor: 'rgba(0, 15, 33, 0.85)',
     borderRadius: radii.full,
@@ -482,34 +568,25 @@ const styles = StyleSheet.create({
   navItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: radii.full,
+    width: 80,
   },
   navItemActive: {
-    backgroundColor: colors.tertiaryContainer,
-    shadowColor: 'rgba(94, 236, 176, 0.4)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  navIcon: {
-    fontSize: 20,
-    opacity: 0.6,
+    shadowColor: 'rgba(175, 202, 219, 0.4)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
   },
   navIconActive: {
-    opacity: 1,
+    color: colors.secondary,
   },
   navText: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 9,
+    fontFamily: typography.metadataSm.fontFamily,
+    fontSize: 10,
     color: 'rgba(255, 255, 255, 0.4)',
-    marginTop: 2,
-    textTransform: 'uppercase',
+    marginTop: 4,
   },
   navTextActive: {
-    color: colors.onTertiaryContainer,
+    color: colors.secondary,
     fontWeight: '700',
   },
 });

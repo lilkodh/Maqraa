@@ -6,15 +6,13 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  FlatList,
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialIcons } from '@expo/vector-icons';
 import { colors, radii, spacing, typography } from '../utils/theme';
-import BookCard from '../components/BookCard';
 import ProgressRing from '../components/ProgressRing';
-import Emptystate from '../components/Emptystate';
 
 const { width } = Dimensions.get('window');
 
@@ -27,50 +25,61 @@ export default function LibraryScreen({
   goal = { current: 12, target: 20 },
   onNavigateToStats = () => {},
 }) {
-  const categories = ['All', 'Philosophy', 'Poetry', 'History', 'Science'];
+  const categories = ['All', 'To Read', 'In Progress', 'Completed'];
 
-  // Filter books locally based on filter prop
-  const filteredBooks = books.filter((b) => {
-    if (activeFilter === 'All') return true;
-    return b.genre && b.genre.includes(activeFilter);
-  });
+  // Seed covers for fanned grid decks
+  const digitalLibraryCover = 'https://lh3.googleusercontent.com/aida-public/AB6AXuADtELIof-En3zYr7XuTZHWfWqqTNKpU1-jRSWLCd8QRo6EuAMXSGrPhWRqiaTCmFw12FxUdfAel_kZJdwo4-723p6_Dje7sR8Z-ZDQzrX6f3DYK0LaqB2hWZT7zm8lPXQ_k9_WYTbY_PJ87M9s4LlP6e_zO5GxThxrynR0nGObM3XABGKaKD5XwF735nfpejxOGDjHHvbLQ1erHVthp5GG9j6J66gjniodGNU9YiARoZAbzTPtoLElDOTpKSBz86yTtUm6eVMkyrk';
+  const curatedArticlesCover = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDQiCg6m4fPRnrQtG0wzcC837xhgVnOd_JV0qTHJoXClTonHWiefDy32K3BZo-cARF24vZZU142gQDuaLWZTf_se7LRktzMDqoy4bnmFhIB3XWT5vJsYHGpiIb3dQdR26PEN8XZcdXEMdRlClkDmzcjJUz3uGi1UOOrtoWIccaE3ZuARRH3sZlL7R-gVoQ16x9euHB8TKSEO1YKEbIqNKq_MgoAY-7WZKGyimw_0Ete99gjeppbtVu0QRGO-mtUHzC-T91ixehJ76s';
+  const globalResearchCover = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDxmG_bhwVnFS8e6_RuF0Uw2tRg_dIlkfkbxpGt3XXSD03dpK7gSKxTPYB-hnm6bQmRWLazqZJjGAxgsicZJ0NugkB_voCL9N7MU0DIavdnc47ywssc7Ph1gOAIopAh1u0EsM1Kf9FFN3fh3EgoieiSNeBDLbsFbSrjkfbSIgKb-u307RpTp3KMHabFDAPtBwi_U0vwxKeJkbpgRMyop_EzWNHBKqT_wtZRFdgPwogyfvfPe3q2w0tOrpISbuQL7o-nQh0CGME0pA4';
+  const audioNarrativesCover = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBnPQVJpsVz-7urbdatW_g_vk-qPNhTfGbNp4N9a1sb_3l4P3ckrrZzCXUWQ5Q6MTjDyuLBuWfTmGA4E3ApAQMdG9tE9ooQvX4avHFEEgmdpqsE15iLj9iEgtyjrjmfNODCtO6PNhxTBh-JPGSkD3hN7LcFxA6Sv1awQo0sbx0lSsSeZ9I3Qs0zEKKOSoJgfcjPdQB8EQllNrKL6xXKia4LNrJ085X9Kd1KWS4xShrMvOU3lO_39nfLv357npG7nM8JYtDhmZGBDGM';
 
-  // Pick books for the 3D shelf
-  const leftShelfBook = books.find(b => b.id === 'al-fitna');
-  const centerShelfBook = activeBook || books.find(b => b.id === 'al-muqaddima');
-  const rightShelfBook = books.find(b => b.id === 'mystical-poetry');
+  // Seed books on the shelf
+  const leftBookUrl = 'https://lh3.googleusercontent.com/aida-public/AB6AXuD1U7nRKL3C7AboucHXh5CdliAXJMwblTntkq1ayUIqpKDNvv8cDy5eXpDqiBUBEfFUva2opaqEKuQX3XhEzn7POBjc6bGm7YOPJ13VlusDFftgam-5ua5y6td2VlkksStF_KDbiLHwJeHVjLtBu8XPAMWK1Jo51TmmGgz-FAXs0xH6a_A2Ea8z7ACNos1IHP7Cy10bjoxuWLoGJci6fqjkddBOuS4DuFyYazQW7F3UFb24F0cOaJf6sfLX1g8eaHjhHPxl6kl_kaI';
+  const centerBookUrl = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCbTCw6V6dbnzXB6scpVf6KvJKiq9EhfaLQFXPvXeap8dmbITgxtbdcEL0qysmah4ci80toiaAE6HnZkYGbIxhzrgItLzv_qVwglQXuOutZTkSURr4iHwP9-chygxaQHHU9ljUfjlDV2RICQvGeSDKFw8X61DwO_hutnbG4XWZMBT4DVPkRi4gJFQbcwksOHY69ofUnt-P4xFZaPMP6FvtrCluXfnADVj64FTl3FumoUHDFkbKiOxZvMXJQEDxSn-BV0oCwpvD_Lz4';
+  const rightBookUrl = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBnupx6CBNe-ira8Gcz50EYTnRc3IV_1Fq9sV_Obwkg8Pxtsu1IMMacsN4ExEKcBh7Whg0SrdbQnVp9G-kljpx03obMtPW37xWp-oMXSISZvKBnPIvBjicN4KsK-9rz7ZHoHelp_l_Pag_hSLlH7_KbRuhqEH5xxB5y6h9LHxtzpXsjtzEXm62XRDwbRQRobHUTigFBZPPlXLIav1sKVYAVau4__aSB75XFUXqQcuJEv0E7BNR6KANDSDV-tBAWA4fmspkmsHC7BDU';
 
   return (
     <View style={styles.container}>
-      {/* Background S-Curve Gradient & Pattern */}
-      <LinearGradient
-        colors={['#00142a', '#001c38', '#000f21']}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
-      />
-      
-      {/* Decorative Zellige lattice approximation lines */}
+      {/* Mesh Gradient Background */}
+      <View style={StyleSheet.absoluteFillObject}>
+        <LinearGradient
+          colors={['#00142a', '#000f21']}
+          style={StyleSheet.absoluteFillObject}
+        />
+        {/* Top left emerald glow */}
+        <LinearGradient
+          colors={['rgba(0, 66, 43, 0.45)', 'transparent']}
+          style={styles.topLeftGlow}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
+        {/* Top right gold glow */}
+        <LinearGradient
+          colors={['rgba(42, 23, 0, 0.45)', 'transparent']}
+          style={styles.topRightGlow}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 1 }}
+        />
+        {/* Bottom center blue glow */}
+        <LinearGradient
+          colors={['rgba(25, 51, 65, 0.45)', 'transparent']}
+          style={styles.bottomCenterGlow}
+          start={{ x: 0.5, y: 1 }}
+          end={{ x: 0.5, y: 0 }}
+        />
+      </View>
       <View style={styles.latticePattern} pointerEvents="none" />
 
       <SafeAreaView style={styles.safeArea}>
-        {/* Dynamic Island Header */}
+        {/* Header App Bar */}
         <View style={styles.header}>
           <Text style={styles.logo}>Maqra</Text>
-          
-          {/* Dynamic Island Shape (Reading Status) */}
-          {centerShelfBook && (
-            <View style={styles.dynamicIsland}>
-              <View style={styles.pulseDot} />
-              <Text style={styles.dynamicIslandText} numberOfLines={1}>
-                Reading: {centerShelfBook.title}
-              </Text>
-            </View>
-          )}
-
           <View style={styles.headerActions}>
             <TouchableOpacity style={styles.actionButton}>
-              <Text style={styles.actionIcon}>🔍</Text>
+              <MaterialIcons name="search" size={22} color={colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton}>
+              <MaterialIcons name="add" size={22} color={colors.primary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -79,35 +88,96 @@ export default function LibraryScreen({
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Headline */}
-          <View style={styles.titleSection}>
-            <Text style={styles.screenTitle}>My Library</Text>
+          {/* 3D Shelf Hub */}
+          <View style={styles.shelfSection}>
+            {/* Shelf Platform */}
+            <View style={styles.shelfBeam} />
+
+            <View style={styles.shelfRow}>
+              {/* Left Book */}
+              <TouchableOpacity
+                style={[styles.shelfBookWrapper, styles.leftBookTransform]}
+                onPress={() => onBookPress('book-1')}
+                activeOpacity={0.8}
+              >
+                <Image source={{ uri: leftBookUrl }} style={styles.shelfBookImage} />
+                <View style={styles.bookShadow} />
+              </TouchableOpacity>
+
+              {/* Central Featured Book */}
+              <View style={styles.centerBookContainer}>
+                <View style={styles.auraGlow} />
+                <TouchableOpacity
+                  style={[styles.shelfBookWrapper, styles.centerBookTransform]}
+                  onPress={() => onBookPress('alchemists-shadow')}
+                  activeOpacity={0.8}
+                >
+                  <Image source={{ uri: centerBookUrl }} style={styles.shelfBookImage} />
+                </TouchableOpacity>
+                <View style={styles.bookReflection} />
+              </View>
+
+              {/* Right Book */}
+              <TouchableOpacity
+                style={[styles.shelfBookWrapper, styles.rightBookTransform]}
+                onPress={() => onBookPress('book-3')}
+                activeOpacity={0.8}
+              >
+                <Image source={{ uri: rightBookUrl }} style={styles.shelfBookImage} />
+                <View style={styles.bookShadow} />
+              </TouchableOpacity>
+            </View>
           </View>
 
-          {/* Swipeable Pill Bar */}
-          <View style={styles.pillContainer}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.pillScroll}
-            >
+          {/* Goal & Streak Strip Section */}
+          <View style={styles.statsStrip}>
+            {/* Goal Widget Card */}
+            <View style={[styles.glassCard, styles.goalCard]}>
+              <ProgressRing
+                size={96}
+                strokeWidth={6}
+                progress={(goal.current / goal.target) * 100}
+                centerText={String(goal.current)}
+                subText={`/ ${goal.target} Books`}
+                strokeColor="#afcadb"
+                textColor="#afcadb"
+              />
+            </View>
+
+            {/* Streak Widget Card */}
+            <View style={[styles.glassCard, styles.streakCard]}>
+              <View style={styles.streakHeader}>
+                <View>
+                  <Text style={styles.streakTitle}>Reading Streak</Text>
+                  <Text style={styles.streakSubtitle}>14 Days Strong</Text>
+                </View>
+                <View style={styles.flameContainer}>
+                  <MaterialIcons name="local-fire-department" size={28} color={colors.tertiary} />
+                </View>
+              </View>
+              {/* Segmented Progress Bars */}
+              <View style={styles.segmentRow}>
+                <View style={[styles.segmentBar, styles.segmentBarActive]} />
+                <View style={[styles.segmentBar, styles.segmentBarActive]} />
+                <View style={[styles.segmentBar, styles.segmentBarActive]} />
+                <View style={styles.segmentBar} />
+                <View style={styles.segmentBar} />
+              </View>
+            </View>
+          </View>
+
+          {/* Categorization Pills */}
+          <View style={styles.pillSection}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillScroll}>
               {categories.map((cat) => {
                 const isActive = activeFilter === cat;
                 return (
                   <TouchableOpacity
                     key={cat}
-                    style={[
-                      styles.pillButton,
-                      isActive && styles.pillButtonActive,
-                    ]}
+                    style={[styles.pillBtn, isActive && styles.pillBtnActive]}
                     onPress={() => onFilterChange(cat)}
                   >
-                    <Text
-                      style={[
-                        styles.pillText,
-                        isActive && styles.pillTextActive,
-                      ]}
-                    >
+                    <Text style={[styles.pillText, isActive && styles.pillTextActive]}>
                       {cat}
                     </Text>
                   </TouchableOpacity>
@@ -116,99 +186,78 @@ export default function LibraryScreen({
             </ScrollView>
           </View>
 
-          {/* 3D Shelf Hub */}
-          <View style={styles.shelfSection}>
-            {/* Wooden shelf detail line */}
-            <View style={styles.shelfBeam} />
-
-            <View style={styles.shelfRow}>
-              {/* Left Book */}
-              {leftShelfBook && (
-                <TouchableOpacity
-                  style={[styles.shelfBookWrapper, styles.leftBookTransform]}
-                  onPress={() => onBookPress(leftShelfBook.id)}
-                  activeOpacity={0.8}
-                >
-                  <Image source={{ uri: leftShelfBook.coverUrl }} style={styles.shelfBookImage} />
-                  <View style={styles.bookShadow} />
-                </TouchableOpacity>
-              )}
-
-              {/* Central Featured Book */}
-              {centerShelfBook && (
-                <View style={styles.centerBookContainer}>
-                  {/* Sapphire Aura Glow */}
-                  <View style={styles.auraGlow} />
-                  <TouchableOpacity
-                    style={[styles.shelfBookWrapper, styles.centerBookTransform]}
-                    onPress={() => onBookPress(centerShelfBook.id)}
-                    activeOpacity={0.8}
-                  >
-                    <Image source={{ uri: centerShelfBook.coverUrl }} style={[styles.shelfBookImage, styles.centerBookImage]} />
-                  </TouchableOpacity>
-                  {/* Reflection mockup */}
-                  <View style={styles.bookReflection} />
+          {/* Stacked Deck Grid (Fanned Stack items) */}
+          <View style={styles.deckGrid}>
+            {/* Grid Item 1: Digital Library */}
+            <TouchableOpacity style={styles.gridItem} activeOpacity={0.9} onPress={() => onBookPress('alchemists-shadow')}>
+              <View style={styles.cardStack}>
+                <View style={[styles.stackBgCard, { transform: [{ rotate: '-8deg' }] }]} />
+                <View style={[styles.stackBgCard, { transform: [{ rotate: '-4deg' }] }]} />
+                <View style={styles.stackForegroundCard}>
+                  <Image source={{ uri: digitalLibraryCover }} style={styles.deckCover} />
                 </View>
-              )}
+              </View>
+              <Text style={styles.deckTitle}>Digital Library</Text>
+              <Text style={styles.deckSubtitle}>142 Titles</Text>
+            </TouchableOpacity>
 
-              {/* Right Book */}
-              {rightShelfBook && (
-                <TouchableOpacity
-                  style={[styles.shelfBookWrapper, styles.rightBookTransform]}
-                  onPress={() => onBookPress(rightShelfBook.id)}
-                  activeOpacity={0.8}
-                >
-                  <Image source={{ uri: rightShelfBook.coverUrl }} style={styles.shelfBookImage} />
-                  <View style={styles.bookShadow} />
-                </TouchableOpacity>
-              )}
-            </View>
+            {/* Grid Item 2: Curated Articles */}
+            <TouchableOpacity style={styles.gridItem} activeOpacity={0.9}>
+              <View style={styles.cardStack}>
+                <View style={[styles.stackBgCard, { transform: [{ rotate: '8deg' }] }]} />
+                <View style={[styles.stackBgCard, { transform: [{ rotate: '6deg' }] }]} />
+                <View style={styles.stackForegroundCard}>
+                  <Image source={{ uri: curatedArticlesCover }} style={styles.deckCover} />
+                </View>
+              </View>
+              <Text style={styles.deckTitle}>Curated Articles</Text>
+              <Text style={styles.deckSubtitle}>85 Entries</Text>
+            </TouchableOpacity>
 
-            {/* Goal Loop Ring Floating */}
-            <View style={styles.goalGaugeContainer}>
-              <ProgressRing
-                size={85}
-                strokeWidth={5}
-                progress={(goal.current / goal.target) * 100}
-                centerText={`${goal.current}/${goal.target}`}
-                subText="Goal"
-              />
-            </View>
-          </View>
+            {/* Grid Item 3: Global Research */}
+            <TouchableOpacity style={styles.gridItem} activeOpacity={0.9}>
+              <View style={styles.cardStack}>
+                <View style={[styles.stackBgCard, { transform: [{ rotate: '-8deg' }] }]} />
+                <View style={styles.stackForegroundCard}>
+                  <Image source={{ uri: globalResearchCover }} style={styles.deckCover} />
+                </View>
+              </View>
+              <Text style={styles.deckTitle}>Global Research</Text>
+              <Text style={styles.deckSubtitle}>12 Folders</Text>
+            </TouchableOpacity>
 
-          {/* Ledger Title */}
-          <View style={styles.ledgerHeader}>
-            <Text style={styles.ledgerTitle}>Shelf Books</Text>
-            <Text style={styles.ledgerSubtitle}>[{filteredBooks.length}]</Text>
-          </View>
-
-          {/* Books List */}
-          <View style={styles.booksList}>
-            {filteredBooks.length > 0 ? (
-              filteredBooks.map((item) => (
-                <BookCard
-                  key={item.id}
-                  book={item}
-                  onPress={() => onBookPress(item.id)}
-                />
-              ))
-            ) : (
-              <Emptystate message={`No books found under ${activeFilter}.`} />
-            )}
+            {/* Grid Item 4: Audio Narratives */}
+            <TouchableOpacity style={styles.gridItem} activeOpacity={0.9}>
+              <View style={styles.cardStack}>
+                <View style={[styles.stackBgCard, { transform: [{ rotate: '8deg' }] }]} />
+                <View style={styles.stackForegroundCard}>
+                  <Image source={{ uri: audioNarrativesCover }} style={styles.deckCover} />
+                </View>
+              </View>
+              <Text style={styles.deckTitle}>Audio Narratives</Text>
+              <Text style={styles.deckSubtitle}>22 Audiobooks</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </SafeAreaView>
 
-      {/* Floating Glass Bottom Tab Nav Bar */}
+      {/* Floating Bottom Nav bar */}
       <View style={styles.bottomNavContainer}>
         <View style={styles.glassNav}>
           <TouchableOpacity style={[styles.navItem, styles.navItemActive]}>
-            <Text style={[styles.navIcon, styles.navIconActive]}>📖</Text>
+            <MaterialIcons name="local-library" size={24} color={colors.secondary} style={styles.navIconActive} />
             <Text style={[styles.navText, styles.navTextActive]}>Library</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => onBookPress(activeBook ? activeBook.id : 'alchemists-shadow')}
+          >
+            <MaterialIcons name="auto-stories" size={24} color="rgba(255, 255, 255, 0.4)" />
+            <Text style={styles.navText}>Reading</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.navItem} onPress={onNavigateToStats}>
-            <Text style={styles.navIcon}>📊</Text>
-            <Text style={styles.navText}>Stats</Text>
+            <MaterialIcons name="person" size={24} color="rgba(255, 255, 255, 0.4)" />
+            <Text style={styles.navText}>Profile</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -224,9 +273,30 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  topLeftGlow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: width,
+    height: 300,
+  },
+  topRightGlow: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: width,
+    height: 300,
+  },
+  bottomCenterGlow: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: width,
+    height: 300,
+  },
   latticePattern: {
     ...StyleSheet.absoluteFillObject,
-    opacity: 0.03,
+    opacity: 0.04,
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: '#fff',
@@ -236,147 +306,72 @@ const styles = StyleSheet.create({
     height: 60,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'between',
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.marginMobile,
     zIndex: 100,
   },
   logo: {
-    fontFamily: typography.headlineLgMobile.fontFamily,
+    fontFamily: typography.headlineLg.fontFamily,
     fontSize: 22,
-    fontWeight: '800',
-    color: colors.secondary,
-    textShadowColor: 'rgba(238,152,0,0.4)',
+    fontWeight: '700',
+    fontStyle: 'italic',
+    color: colors.tertiary,
+    textShadowColor: 'rgba(255, 185, 95, 0.4)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 8,
   },
-  dynamicIsland: {
-    position: 'absolute',
-    left: width / 2 - 70,
-    width: 140,
-    height: 32,
-    backgroundColor: '#000',
-    borderRadius: radii.full,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  pulseDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.secondary,
-    marginRight: 6,
-  },
-  dynamicIslandText: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 8,
-    color: colors.onSurface,
-    textTransform: 'uppercase',
-  },
   headerActions: {
-    marginLeft: 'auto',
+    flexDirection: 'row',
+    gap: 20,
   },
   actionButton: {
-    width: 36,
-    height: 36,
-    borderRadius: radii.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  actionIcon: {
-    fontSize: 16,
-    color: colors.onSurfaceVariant,
+    padding: 4,
   },
   scrollContent: {
+    paddingHorizontal: spacing.marginMobile,
     paddingBottom: 120,
   },
-  titleSection: {
-    paddingHorizontal: spacing.marginMobile,
-    marginTop: spacing.unit * 2,
-    marginBottom: spacing.unit * 3,
-  },
-  screenTitle: {
-    fontFamily: typography.displayLg.fontFamily,
-    fontSize: 32,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  pillContainer: {
-    paddingLeft: spacing.marginMobile,
-    marginBottom: spacing.gutter,
-  },
-  pillScroll: {
-    paddingRight: spacing.marginMobile,
-  },
-  pillButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: radii.full,
-    backgroundColor: 'rgba(0, 15, 33, 0.4)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-    marginRight: 10,
-  },
-  pillButtonActive: {
-    backgroundColor: colors.primaryContainer,
-    borderColor: 'rgba(175, 202, 219, 0.2)',
-    shadowColor: 'rgba(175,202,219,0.5)',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  pillText: {
-    fontFamily: typography.labelMd.fontFamily,
-    fontSize: 12,
-    color: colors.onSurfaceVariant,
-  },
-  pillTextActive: {
-    color: colors.onPrimaryContainer,
-    fontWeight: '600',
-  },
   shelfSection: {
-    marginVertical: spacing.gutter,
     height: 250,
     justifyContent: 'flex-end',
     position: 'relative',
-    overflow: 'visible',
+    marginTop: 10,
+    marginBottom: 20,
   },
   shelfBeam: {
     position: 'absolute',
-    bottom: 50,
-    left: spacing.marginMobile,
-    right: spacing.marginMobile,
-    height: 6,
+    bottom: 24,
+    left: -10,
+    right: -10,
+    height: 10,
     backgroundColor: '#3d2b1f',
-    borderRadius: radii.full,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
+    shadowOffset: { width: 0, height: 15 },
     shadowOpacity: 0.8,
     shadowRadius: 15,
     elevation: 6,
   },
   shelfRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-around',
     alignItems: 'flex-end',
     height: '100%',
-    paddingBottom: 56,
+    paddingBottom: 30,
+    gap: 12,
   },
   shelfBookWrapper: {
     borderRadius: radii.sm,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 10, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 15,
+    shadowOffset: { width: 10, height: 15 },
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
     elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   shelfBookImage: {
     width: '100%',
@@ -386,83 +381,190 @@ const styles = StyleSheet.create({
   leftBookTransform: {
     width: 80,
     height: 120,
-    transform: [{ rotateY: '20deg' }],
-    opacity: 0.85,
-    borderLeftWidth: 3,
-    borderLeftColor: '#1a110a',
+    transform: [{ translateY: 10 }, { rotateY: '15deg' }],
   },
   rightBookTransform: {
     width: 80,
     height: 120,
-    transform: [{ rotateY: '-20deg' }],
-    opacity: 0.85,
-    borderRightWidth: 3,
-    borderRightColor: '#1a110a',
+    transform: [{ translateY: 10 }, { rotateY: '-15deg' }],
   },
   centerBookContainer: {
-    width: 120,
-    height: 180,
-    marginHorizontal: 20,
+    width: 105,
+    height: 150,
     zIndex: 10,
     alignItems: 'center',
     justifyContent: 'flex-end',
   },
   centerBookTransform: {
-    width: 120,
-    height: 180,
-    transform: [{ perspective: 1200 }, { rotateY: '-15deg' }, { scale: 1.15 }],
-    borderLeftWidth: 4,
-    borderLeftColor: '#2a1700',
-  },
-  centerBookImage: {
-    borderRadius: radii.sm,
+    width: 105,
+    height: 150,
+    transform: [{ translateY: -12 }, { scale: 1.1 }],
   },
   auraGlow: {
     position: 'absolute',
     inset: -20,
-    backgroundColor: 'rgba(175, 202, 219, 0.12)',
+    backgroundColor: 'rgba(78, 222, 163, 0.1)',
     borderRadius: radii.full,
-    filter: 'blur(30px)',
   },
   bookReflection: {
     position: 'absolute',
-    bottom: -35,
-    width: 120,
-    height: 35,
-    backgroundColor: 'rgba(175, 202, 219, 0.05)',
+    bottom: -15,
+    width: 105,
+    height: 15,
+    backgroundColor: 'rgba(78, 222, 163, 0.05)',
     transform: [{ scaleY: -1 }],
-    opacity: 0.3,
+    opacity: 0.2,
   },
   bookShadow: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.25)',
   },
-  goalGaugeContainer: {
-    position: 'absolute',
-    bottom: 70,
-    right: 25,
-    zIndex: 20,
-  },
-  ledgerHeader: {
+  statsStrip: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    paddingHorizontal: spacing.marginMobile,
-    marginTop: spacing.gutter,
-    marginBottom: spacing.unit,
+    gap: spacing.gutter,
+    height: 140,
+    marginBottom: 24,
   },
-  ledgerTitle: {
+  glassCard: {
+    backgroundColor: 'rgba(3, 32, 60, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: radii.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    elevation: 4,
+  },
+  goalCard: {
+    width: 130,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  streakCard: {
+    flex: 1,
+    padding: 16,
+    justifyContent: 'space-between',
+  },
+  streakHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  streakTitle: {
     fontFamily: typography.headlineMd.fontFamily,
-    fontSize: 20,
-    color: colors.primary,
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.tertiary,
   },
-  ledgerSubtitle: {
-    fontFamily: typography.labelSm.fontFamily,
+  streakSubtitle: {
+    fontFamily: typography.bodyLg.fontFamily,
     fontSize: 12,
     color: colors.onSurfaceVariant,
-    marginLeft: 8,
   },
-  booksList: {
-    paddingHorizontal: spacing.marginMobile,
+  flameContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: radii.full,
+    backgroundColor: 'rgba(255, 185, 95, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  segmentRow: {
+    flexDirection: 'row',
+    gap: 4,
+    marginTop: 12,
+  },
+  segmentBar: {
+    flex: 1,
+    height: 4,
+    backgroundColor: colors.surfaceContainerHighest,
+    borderRadius: radii.full,
+  },
+  segmentBarActive: {
+    backgroundColor: colors.primary,
+  },
+  pillSection: {
+    marginBottom: 24,
+  },
+  pillScroll: {
+    gap: 10,
+  },
+  pillBtn: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: radii.full,
+    backgroundColor: 'rgba(3, 32, 60, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  pillBtnActive: {
+    backgroundColor: colors.primaryContainer,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  pillText: {
+    fontFamily: typography.metadataSm.fontFamily,
+    fontSize: 12,
+    color: colors.onSurfaceVariant,
+  },
+  pillTextActive: {
+    color: colors.onPrimary,
+    fontWeight: '700',
+  },
+  deckGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 20,
+  },
+  gridItem: {
+    width: (width - spacing.marginMobile * 2 - 20) / 2,
+    marginBottom: 16,
+  },
+  cardStack: {
+    height: 180,
+    width: '100%',
+    position: 'relative',
+    marginBottom: 10,
+  },
+  stackBgCard: {
+    position: 'absolute',
+    top: 8,
+    left: 12,
+    width: '80%',
+    height: '90%',
+    backgroundColor: 'rgba(3, 32, 60, 0.4)',
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  stackForegroundCard: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: radii.sm,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 10, height: 15 },
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+    elevation: 6,
+  },
+  deckCover: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  deckTitle: {
+    fontFamily: typography.headlineMd.fontFamily,
+    fontSize: 15,
+    color: colors.onSurface,
+    fontWeight: '600',
+  },
+  deckSubtitle: {
+    fontFamily: typography.metadataSm.fontFamily,
+    fontSize: 11,
+    color: colors.onSurfaceVariant,
   },
   bottomNavContainer: {
     position: 'absolute',
@@ -473,8 +575,8 @@ const styles = StyleSheet.create({
     zIndex: 500,
   },
   glassNav: {
-    width: '90%',
-    maxWidth: 400,
+    width: '95%',
+    maxWidth: 360,
     height: 72,
     backgroundColor: 'rgba(0, 15, 33, 0.85)',
     borderRadius: radii.full,
@@ -493,34 +595,25 @@ const styles = StyleSheet.create({
   navItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: radii.full,
+    width: 80,
   },
   navItemActive: {
-    backgroundColor: colors.tertiaryContainer,
-    shadowColor: 'rgba(94, 236, 176, 0.4)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  navIcon: {
-    fontSize: 20,
-    opacity: 0.6,
+    shadowColor: 'rgba(175, 202, 219, 0.4)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
   },
   navIconActive: {
-    opacity: 1,
+    color: colors.secondary,
   },
   navText: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 9,
+    fontFamily: typography.metadataSm.fontFamily,
+    fontSize: 10,
     color: 'rgba(255, 255, 255, 0.4)',
-    marginTop: 2,
-    textTransform: 'uppercase',
+    marginTop: 4,
   },
   navTextActive: {
-    color: colors.onTertiaryContainer,
+    color: colors.secondary,
     fontWeight: '700',
   },
 });

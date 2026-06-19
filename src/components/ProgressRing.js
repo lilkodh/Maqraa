@@ -10,6 +10,8 @@ export default function ProgressRing({
   showText = true,
   centerText = '',
   subText = '',
+  strokeColor = '#afcadb',
+  textColor = '#afcadb',
 }) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
@@ -21,8 +23,8 @@ export default function ProgressRing({
       <Svg width={size} height={size} style={styles.svg}>
         <Defs>
           <LinearGradient id="sapphireGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <Stop offset="0%" stopColor="#BDD8E9" />
-            <Stop offset="100%" stopColor="#3b82f6" />
+            <Stop offset="0%" stopColor={strokeColor} />
+            <Stop offset="100%" stopColor={strokeColor} />
           </LinearGradient>
         </Defs>
         {/* Background Track */}
@@ -50,7 +52,7 @@ export default function ProgressRing({
       </Svg>
       {showText && (
         <View style={styles.textContainer}>
-          <Text style={styles.percentageText}>
+          <Text style={[styles.percentageText, { color: textColor }]}>
             {centerText || `${Math.round(clampedProgress)}%`}
           </Text>
           {subText ? <Text style={styles.subText}>{subText}</Text> : null}
@@ -77,11 +79,10 @@ const styles = StyleSheet.create({
     fontFamily: typography.displayLg.fontFamily,
     fontSize: 24,
     fontWeight: '700',
-    color: colors.primary,
     textAlign: 'center',
   },
   subText: {
-    fontFamily: typography.labelSm.fontFamily,
+    fontFamily: typography.metadataSm.fontFamily,
     fontSize: 9,
     letterSpacing: 1,
     color: colors.onSurfaceVariant,
