@@ -10,8 +10,6 @@ import {
   SafeAreaView,
   Animated,
   Platform,
-  Modal,
-  Alert,
   KeyboardAvoidingView,
   Dimensions,
   PanResponder,
@@ -193,11 +191,6 @@ export default function LibraryScreen({
   const [newBookCover, setNewBookCover] = useState(null);
   const [isRemoveBookVisible, setIsRemoveBookVisible] = useState(false);
 
-  useEffect(() => {
-    if (onBottomSheetVisibilityChange) {
-      onBottomSheetVisibilityChange(isAddBookVisible || isRemoveBookVisible);
-    }
-  }, [isAddBookVisible, isRemoveBookVisible]);
 
   // Animated values
   const anim1 = useRef(new Animated.Value(0)).current;
@@ -307,15 +300,8 @@ export default function LibraryScreen({
   };
 
   const handleSaveBook = () => {
-    if (!newBookTitle.trim()) {
-      Alert.alert("Error", "Please enter a book title.");
-      return;
-    }
     const pages = parseInt(newBookPages, 10);
-    if (isNaN(pages) || pages <= 0) {
-      Alert.alert("Error", "Please enter a valid number of pages.");
-      return;
-    }
+    if (!newBookTitle.trim() || isNaN(pages) || pages <= 0) return;
 
     onAddBook({
       title: newBookTitle.trim(),

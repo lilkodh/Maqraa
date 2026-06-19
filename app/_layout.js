@@ -1,8 +1,6 @@
-import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { View, ActivityIndicator } from 'react-native';
 import { BottomNav } from '../src/components/StatCard';
-import useBookStore from '../src/store/bookStore';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
@@ -23,8 +21,6 @@ export default function Layout() {
     Inter_700Bold,
   });
 
-  const isBottomSheetOpen = useBookStore((state) => state.isBottomSheetOpen);
-
   if (!fontsLoaded) {
     return (
       <View style={{ flex: 1, backgroundColor: '#FAF6F0', justifyContent: 'center', alignItems: 'center' }}>
@@ -40,7 +36,6 @@ export default function Layout() {
         tabBar={(props) => <BottomNav {...props} />}
         screenOptions={{
           headerShown: false,
-          tabBarStyle: { display: isBottomSheetOpen ? 'none' : 'flex' },
         }}
       >
         <Tabs.Screen name="index" />
@@ -55,4 +50,3 @@ export default function Layout() {
     </SafeAreaProvider>
   );
 }
-

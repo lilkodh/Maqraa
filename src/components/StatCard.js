@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity, Keyboard, Platform } from 're
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { colors, radii, spacing, shadows } from '../utils/theme';
-import useBookStore from '../store/bookStore';
 
 export function StatCard({ title, value, iconName, iconColor = colors.primary }) {
   return (
@@ -19,7 +18,6 @@ export function StatCard({ title, value, iconName, iconColor = colors.primary })
 
 export function BottomNav({ activeTab = 'home', state, descriptors, navigation }) {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
-  const isBottomSheetOpen = useBookStore((state) => state.isBottomSheetOpen);
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener(
@@ -37,7 +35,7 @@ export function BottomNav({ activeTab = 'home', state, descriptors, navigation }
     };
   }, []);
 
-  if (isKeyboardVisible || isBottomSheetOpen) {
+  if (isKeyboardVisible) {
     return null;
   }
 
