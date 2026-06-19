@@ -48,6 +48,9 @@ export default function Layout() {
           <NativeTabs.Trigger name="index">
             <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
           </NativeTabs.Trigger>
+          <NativeTabs.Trigger name="add">
+            <NativeTabs.Trigger.Label>+</NativeTabs.Trigger.Label>
+          </NativeTabs.Trigger>
           <NativeTabs.Trigger name="stats">
             <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
           </NativeTabs.Trigger>
@@ -68,6 +71,7 @@ export default function Layout() {
       >
         <Stack.Screen name="index" />
         <Stack.Screen name="stats" />
+        <Stack.Screen name="add" options={{ presentation: 'transparentModal', animation: 'fade' }} />
         <Stack.Screen name="book/[id]" />
       </Stack>
     </SafeAreaProvider>
