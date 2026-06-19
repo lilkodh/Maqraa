@@ -35,6 +35,7 @@ export default function LibraryScreen({
   onAddPhoto,
   onPickCoverImage,
   onDeleteBook,
+  onBottomSheetVisibilityChange,
 }) {
   const goalProgress = goalCount > 0 ? finishedBooksCount / goalCount : 0;
 
@@ -47,6 +48,12 @@ export default function LibraryScreen({
   const [newBookPages, setNewBookPages] = useState('');
   const [newBookCover, setNewBookCover] = useState(null);
   const [isRemoveBookVisible, setIsRemoveBookVisible] = useState(false);
+
+  useEffect(() => {
+    if (onBottomSheetVisibilityChange) {
+      onBottomSheetVisibilityChange(isAddBookVisible || isRemoveBookVisible);
+    }
+  }, [isAddBookVisible, isRemoveBookVisible]);
 
   // Animated values
   const anim1 = useRef(new Animated.Value(0)).current;
@@ -670,12 +677,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radii.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(22, 28, 45, 0.8)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#0d0d0d',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -699,9 +706,9 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: radii.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    backgroundColor: 'rgba(22, 28, 45, 0.4)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
     opacity: 0.6,
@@ -711,9 +718,9 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: radii.xl,
     opacity: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    backgroundColor: 'rgba(22, 28, 45, 0.85)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   categoryLabel: {
     fontFamily: 'Inter_500Medium',
@@ -733,9 +740,9 @@ const styles = StyleSheet.create({
   searchPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    backgroundColor: 'rgba(18, 24, 38, 0.6)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: radii.full,
     paddingHorizontal: 20,
     paddingVertical: 12,
@@ -751,9 +758,9 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   goalCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(22, 28, 45, 0.8)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     marginHorizontal: spacing.marginEdge,
     borderRadius: 24,
     padding: 24,
@@ -859,7 +866,7 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(250, 246, 240, 0.85)',
+    backgroundColor: 'rgba(8, 11, 17, 0.85)',
     zIndex: 40,
   },
   backdropPressable: {
@@ -884,16 +891,16 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(13, 13, 13, 0.6)',
+    backgroundColor: 'rgba(8, 11, 17, 0.7)',
     justifyContent: 'flex-end',
   },
   modalKeyboardAvoiding: {
     width: '100%',
   },
   modalContent: {
-    backgroundColor: 'rgba(250, 246, 240, 0.95)',
+    backgroundColor: 'rgba(22, 28, 45, 0.95)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     paddingHorizontal: 24,
@@ -924,7 +931,7 @@ const styles = StyleSheet.create({
   modalCloseButton: {
     padding: 6,
     borderRadius: radii.full,
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -938,12 +945,12 @@ const styles = StyleSheet.create({
     width: 130,
     height: 180,
     borderRadius: radii.lg,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: 'rgba(18, 24, 38, 0.5)',
     alignSelf: 'center',
     marginBottom: 24,
     overflow: 'hidden',
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     borderStyle: 'dashed',
   },
   coverPickerPlaceholder: {
@@ -1003,7 +1010,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   formInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: 'rgba(18, 24, 38, 0.7)',
     borderRadius: radii.md,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -1011,7 +1018,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_300Light',
     color: colors.textPrimary,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   modalButtonsRow: {
     flexDirection: 'row',
@@ -1023,7 +1030,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: radii.full,
     borderWidth: 1,
-    borderColor: '#bdc9c1',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -1068,9 +1075,9 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   removeBookRow: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(22, 28, 45, 0.8)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: radii.lg,
     padding: 12,
     flexDirection: 'row',
@@ -1091,7 +1098,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: colors.surfaceContainer,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   removeBookCover: {
     width: '100%',

@@ -18,6 +18,7 @@ export default function HomeRoute() {
   const profilePhoto = useBookStore((state) => state.profilePhoto);
   const setProfilePhoto = useBookStore((state) => state.setProfilePhoto);
   const deleteBook = useBookStore((state) => state.deleteBook);
+  const setBottomSheetOpen = useBookStore((state) => state.setBottomSheetOpen);
 
   // Derive metrics
   const streakCount = getStreakCount ? getStreakCount() : 12;
@@ -109,6 +110,7 @@ export default function HomeRoute() {
       onAddPhoto={handleAddPhoto}
       onPickCoverImage={handlePickCoverImage}
       onDeleteBook={handleDeleteBook}
+      onBottomSheetVisibilityChange={setBottomSheetOpen}
     />
   );
 }

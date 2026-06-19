@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Keyboard, Platform } from 're
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { colors, radii, spacing, shadows } from '../utils/theme';
+import useBookStore from '../store/bookStore';
 
 export function StatCard({ title, value, iconName, iconColor = colors.primary }) {
   return (
@@ -18,6 +19,7 @@ export function StatCard({ title, value, iconName, iconColor = colors.primary })
 
 export function BottomNav({ activeTab = 'home', state, descriptors, navigation }) {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const isBottomSheetOpen = useBookStore((state) => state.isBottomSheetOpen);
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener(
@@ -35,7 +37,7 @@ export function BottomNav({ activeTab = 'home', state, descriptors, navigation }
     };
   }, []);
 
-  if (isKeyboardVisible) {
+  if (isKeyboardVisible || isBottomSheetOpen) {
     return null;
   }
 
@@ -99,9 +101,9 @@ export function BottomNav({ activeTab = 'home', state, descriptors, navigation }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(22, 28, 45, 0.8)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     padding: spacing.containerPadding,
     borderRadius: radii.xl,
     flex: 1,
@@ -131,9 +133,9 @@ const styles = StyleSheet.create({
     bottom: 24,
     left: spacing.marginEdge,
     right: spacing.marginEdge,
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    backgroundColor: 'rgba(22, 28, 45, 0.85)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.6)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: radii.full,
     flexDirection: 'row',
     justifyContent: 'space-around',

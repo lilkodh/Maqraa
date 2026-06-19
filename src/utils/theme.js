@@ -1,21 +1,21 @@
 export const colors = {
-  background: '#FAF6F0', // Warm Cream Base
-  surface: '#FFFFFF', // Pure White Cards
-  primary: '#006C4B', // Mint Green (Primary brand)
-  primaryContainer: '#4CAF85', // Mint Green (FAB/Progress)
-  secondary: '#3E59AC', // Majorelle Blue (Headers/Active Nav)
-  tertiary: '#9C440F', // Terracotta (Arabic tags)
-  textPrimary: '#0D0D0D', // Ink Dark
-  textSecondary: '#6E7A72', // Outline / Secondary Text
-  surfaceContainer: '#F0EDEC',
-  surfaceContainerLow: '#F6F3F2',
-  surfaceContainerHigh: '#EBE7E7',
-  surfaceContainerHighest: '#E5E2E1',
-  error: '#BA1A1A',
-  errorContainer: '#FFDAD6',
+  background: '#0B0F19', // Deep Midnight Blue Base
+  surface: '#161B26', // Deep Blue Slate Cards
+  primary: '#4CAF85', // Vibrant Mint Green
+  primaryContainer: '#006C4B', // Mint Green Container
+  secondary: '#5E7CF2', // Vibrant Accent Blue (Active States)
+  tertiary: '#FF8C00', // Arabic Accent Orange
+  textPrimary: '#FFFFFF', // High-Contrast White Text
+  textSecondary: '#94A3B8', // Soft Slate-Blue Text
+  surfaceContainer: '#1E2538', // Mid-tone Slate Blue Containers
+  surfaceContainerLow: '#121824',
+  surfaceContainerHigh: '#28354E',
+  surfaceContainerHighest: '#334155',
+  error: '#FF6B6B',
+  errorContainer: '#8B0000',
   white: '#FFFFFF',
   black: '#000000',
-  darkBg: '#0D0D0D', // Dark Ink Panel
+  darkBg: '#080B11', // Midnight Black-Blue Panel
 };
 
 export const radii = {

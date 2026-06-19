@@ -270,9 +270,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   chartCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(22, 28, 45, 0.8)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 20,
     padding: spacing.containerPadding,
     marginBottom: spacing.lg,
@@ -337,9 +337,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   historyRow: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(22, 28, 45, 0.8)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 20,
     padding: spacing.md,
     flexDirection: 'row',
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: colors.surfaceContainer,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   historyBookCover: {
     width: '100%',

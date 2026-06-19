@@ -132,6 +132,7 @@ const useBookStore = create(
       activeBookId: 'alchemists-shadow',
       targetGoal: 20,
       profilePhoto: null,
+      isBottomSheetOpen: false,
       
       // Timer state
       timerState: {
@@ -142,6 +143,7 @@ const useBookStore = create(
       
       // Actions
       setProfilePhoto: (photoUri) => set({ profilePhoto: photoUri }),
+      setBottomSheetOpen: (isOpen) => set({ isBottomSheetOpen: isOpen }),
       addBook: (book) => set((state) => ({
         books: [...state.books, {
           id: String(Date.now()),
