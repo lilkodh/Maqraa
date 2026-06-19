@@ -101,15 +101,9 @@ export function BottomNav({ activeTab = 'home', state, descriptors, navigation }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.85)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.95)',
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderRightWidth: 2.5,
-    borderRightColor: 'rgba(181, 137, 0, 0.22)',
-    borderBottomWidth: 4,
-    borderBottomColor: 'rgba(181, 137, 0, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.7)',
     padding: spacing.containerPadding,
     borderRadius: radii.xl,
     flex: 1,
