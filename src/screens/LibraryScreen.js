@@ -137,6 +137,11 @@ export default function LibraryScreen({
           <StatCard title="Day Streak" value={streakCount} iconName="whatshot" iconColor={colors.secondary} />
         </View>
       </ScrollView>
+
+      {/* Floating Action Button */}
+      <TouchableOpacity style={[styles.fab, shadows.active]} onPress={onAddBook} activeOpacity={0.8}>
+        <MaterialIcons name="add" size={32} color={colors.white} />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -351,5 +356,17 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.marginEdge,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 100,
+    right: spacing.marginEdge,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 50,
   },
 });

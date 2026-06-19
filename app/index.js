@@ -24,8 +24,7 @@ export default function HomeRoute() {
   };
 
   const handleAddBook = () => {
-    // Navigate or trigger action (pure presentational trigger)
-    console.log('FAB add book pressed');
+    router.push('/add');
   };
 
   return (
