@@ -202,7 +202,7 @@ export default function BookDetailScreen({
             <View style={styles.actionRow}>
               <TouchableOpacity
                 style={[styles.outlineActionButton, book.status === 'in_progress' && styles.activeOutlineButton]}
-                onPress={handleToggleCompletion}
+                onPress={onToggleCompletion}
                 activeOpacity={0.8}
               >
                 <Text style={styles.outlineActionText}>Currently Reading</Text>
