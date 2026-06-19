@@ -13,6 +13,8 @@ import {
   Modal,
   Alert,
   KeyboardAvoidingView,
+  Dimensions,
+  PanResponder,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
@@ -21,6 +23,148 @@ import BookCard from '../components/BookCard';
 import ProgressRing from '../components/ProgressRing';
 import { StatCard } from '../components/StatCard';
 import { router } from 'expo-router';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+function GestureBottomSheet({ visible, onClose, children }) {
+  const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const [shouldRender, setShouldRender] = useState(visible);
+
+  useEffect(() => {
+    if (visible) {
+      setShouldRender(true);
+      Animated.parallel([
+        Animated.spring(translateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 65,
+          friction: 11,
+        }),
+        Animated.timing(backdropOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(translateY, {
+          toValue: SCREEN_HEIGHT,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(backdropOpacity, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setShouldRender(false);
+      });
+    }
+  }, [visible]);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dy) > 5;
+      },
+      onPanResponderGrant: () => {},
+      onPanResponderMove: (_, gestureState) => {
+        const { dy } = gestureState;
+        if (dy < 0) {
+          translateY.setValue(dy * 0.15);
+        } else {
+          translateY.setValue(dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        const { dy, vy } = gestureState;
+
+        if (dy > 120 || vy > 0.5) {
+          Animated.parallel([
+            Animated.timing(translateY, {
+              toValue: SCREEN_HEIGHT,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+            Animated.timing(backdropOpacity, {
+              toValue: 0,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            onClose();
+          });
+        } else {
+          Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 65,
+            friction: 11,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
+  if (!shouldRender) return null;
+
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      {/* Backdrop */}
+      <Animated.View
+        style={[
+          styles.modalOverlayBackdrop,
+          {
+            opacity: backdropOpacity,
+          },
+        ]}
+      >
+        <TouchableOpacity
+          style={{ flex: 1 }}
+          activeOpacity={1}
+          onPress={() => {
+            Animated.parallel([
+              Animated.timing(translateY, {
+                toValue: SCREEN_HEIGHT,
+                duration: 250,
+                useNativeDriver: true,
+              }),
+              Animated.timing(backdropOpacity, {
+                toValue: 0,
+                duration: 250,
+                useNativeDriver: true,
+              }),
+            ]).start(() => {
+              onClose();
+            });
+          }}
+        />
+      </Animated.View>
+
+      {/* Sheet Content Container */}
+      <View style={styles.modalOverlayContainer}>
+        <Animated.View
+          style={[
+            styles.modalContent,
+            {
+              transform: [{ translateY }],
+            },
+          ]}
+        >
+          {/* Touch Area for Dragging */}
+          <View {...panResponder.panHandlers} style={styles.dragHandleArea}>
+            <View style={styles.bottomSheetHandle} />
+          </View>
+          {children}
+        </Animated.View>
+      </View>
+    </View>
+  );
+}
 
 export default function LibraryScreen({
   books = [],
@@ -465,172 +609,158 @@ export default function LibraryScreen({
         </TouchableOpacity>
       </View>
 
-      {/* Add Book Modal */}
-      <Modal
+      {/* Add Book Sheet */}
+      <GestureBottomSheet
         visible={isAddBookVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setIsAddBookVisible(false)}
+        onClose={() => setIsAddBookVisible(false)}
       >
-        <SafeAreaView style={styles.modalOverlay}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.modalKeyboardAvoiding}
-          >
-            <View style={styles.modalContent}>
-              <View style={styles.bottomSheetHandle} />
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Add New Book</Text>
-                <TouchableOpacity onPress={() => setIsAddBookVisible(false)} style={styles.modalCloseButton} activeOpacity={0.7}>
-                  <MaterialIcons name="close" size={24} color={colors.textPrimary} />
-                </TouchableOpacity>
-              </View>
-
-              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalForm}>
-                {/* Cover Image Picker */}
-                <TouchableOpacity style={styles.coverPickerContainer} onPress={handlePickCover} activeOpacity={0.8}>
-                  {newBookCover ? (
-                    <View style={styles.coverPreviewWrapper}>
-                      <Image source={{ uri: newBookCover }} style={styles.coverPreviewImage} resizeMode="cover" />
-                      <View style={styles.changeCoverBadge}>
-                        <MaterialIcons name="photo-camera" size={14} color={colors.white} />
-                        <Text style={styles.changeCoverText}>Change Cover</Text>
-                      </View>
-                    </View>
-                  ) : (
-                    <View style={styles.coverPickerPlaceholder}>
-                      <MaterialIcons name="add-photo-alternate" size={40} color={colors.textSecondary} />
-                      <Text style={styles.coverPickerLabel}>Upload Book Cover</Text>
-                      <Text style={styles.coverPickerHint}>Tap to browse photo library</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-
-                {/* Form Fields */}
-                <View style={styles.formField}>
-                  <Text style={styles.formLabel}>Book Title</Text>
-                  <TextInput
-                    style={styles.formInput}
-                    placeholder="Enter book title..."
-                    placeholderTextColor={colors.textSecondary}
-                    value={newBookTitle}
-                    onChangeText={setNewBookTitle}
-                  />
-                </View>
-
-                <View style={styles.formField}>
-                  <Text style={styles.formLabel}>Author Name</Text>
-                  <TextInput
-                    style={styles.formInput}
-                    placeholder="Enter author's name..."
-                    placeholderTextColor={colors.textSecondary}
-                    value={newBookAuthor}
-                    onChangeText={setNewBookAuthor}
-                  />
-                </View>
-
-                <View style={styles.formField}>
-                  <Text style={styles.formLabel}>Total Pages</Text>
-                  <TextInput
-                    style={styles.formInput}
-                    placeholder="e.g. 350"
-                    placeholderTextColor={colors.textSecondary}
-                    keyboardType="numeric"
-                    value={newBookPages}
-                    onChangeText={setNewBookPages}
-                  />
-                </View>
-
-                {/* Buttons */}
-                <View style={styles.modalButtonsRow}>
-                  <TouchableOpacity
-                    style={styles.modalCancelButton}
-                    onPress={() => setIsAddBookVisible(false)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.modalCancelText}>Cancel</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.modalSaveButton}
-                    onPress={handleSaveBook}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.modalSaveText}>Save Book</Text>
-                  </TouchableOpacity>
-                </View>
-              </ScrollView>
-            </View>
-          </KeyboardAvoidingView>
-        </SafeAreaView>
-      </Modal>
-
-      {/* Remove Book Modal */}
-      <Modal
-        visible={isRemoveBookVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setIsRemoveBookVisible(false)}
-      >
-        <SafeAreaView style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.bottomSheetHandle} />
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Remove Books</Text>
-              <TouchableOpacity onPress={() => setIsRemoveBookVisible(false)} style={styles.modalCloseButton} activeOpacity={0.7}>
-                <MaterialIcons name="close" size={24} color={colors.textPrimary} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.removeListForm}>
-              {books.length === 0 ? (
-                <View style={styles.emptyRemoveContainer}>
-                  <MaterialIcons name="library-books" size={48} color={colors.textSecondary} style={{ opacity: 0.5 }} />
-                  <Text style={styles.emptyRemoveText}>No books in library to remove.</Text>
-                </View>
-              ) : (
-                books.map((b) => (
-                  <View key={b.id} style={[styles.removeBookRow, shadows.card]}>
-                    <View style={styles.removeBookInfo}>
-                      <View style={styles.removeBookCoverContainer}>
-                        <Image source={{ uri: b.coverUrl }} style={styles.removeBookCover} resizeMode="cover" />
-                      </View>
-                      <View style={styles.removeBookTextDetails}>
-                        <Text style={styles.removeBookTitle} numberOfLines={1}>{b.title}</Text>
-                        <Text style={styles.removeBookAuthor} numberOfLines={1}>{b.author}</Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.removeBookTrashButton}
-                      activeOpacity={0.7}
-                      onPress={() => {
-                        Alert.alert(
-                          "Confirm Removal",
-                          `Are you sure you want to remove '${b.title}' from your library?`,
-                          [
-                            { text: "Cancel", style: "cancel" },
-                            { text: "Remove", style: "destructive", onPress: () => onDeleteBook(b.id) }
-                          ]
-                        );
-                      }}
-                    >
-                      <MaterialIcons name="delete" size={22} color={colors.error} />
-                    </TouchableOpacity>
-                  </View>
-                ))
-              )}
-            </ScrollView>
-
-            <TouchableOpacity
-              style={styles.modalDoneButton}
-              onPress={() => setIsRemoveBookVisible(false)}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.modalDoneText}>Done</Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalKeyboardAvoiding}
+        >
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Add New Book</Text>
+            <TouchableOpacity onPress={() => setIsAddBookVisible(false)} style={styles.modalCloseButton} activeOpacity={0.7}>
+              <MaterialIcons name="close" size={24} color={colors.textPrimary} />
             </TouchableOpacity>
           </View>
-        </SafeAreaView>
-      </Modal>
+
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalForm}>
+            {/* Cover Image Picker */}
+            <TouchableOpacity style={styles.coverPickerContainer} onPress={handlePickCover} activeOpacity={0.8}>
+              {newBookCover ? (
+                <View style={styles.coverPreviewWrapper}>
+                  <Image source={{ uri: newBookCover }} style={styles.coverPreviewImage} resizeMode="cover" />
+                  <View style={styles.changeCoverBadge}>
+                    <MaterialIcons name="photo-camera" size={14} color={colors.white} />
+                    <Text style={styles.changeCoverText}>Change Cover</Text>
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.coverPickerPlaceholder}>
+                  <MaterialIcons name="add-photo-alternate" size={40} color={colors.textSecondary} />
+                  <Text style={styles.coverPickerLabel}>Upload Book Cover</Text>
+                  <Text style={styles.coverPickerHint}>Tap to browse photo library</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* Form Fields */}
+            <View style={styles.formField}>
+              <Text style={styles.formLabel}>Book Title</Text>
+              <TextInput
+                style={styles.formInput}
+                placeholder="Enter book title..."
+                placeholderTextColor={colors.textSecondary}
+                value={newBookTitle}
+                onChangeText={setNewBookTitle}
+              />
+            </View>
+
+            <View style={styles.formField}>
+              <Text style={styles.formLabel}>Author Name</Text>
+              <TextInput
+                style={styles.formInput}
+                placeholder="Enter author's name..."
+                placeholderTextColor={colors.textSecondary}
+                value={newBookAuthor}
+                onChangeText={setNewBookAuthor}
+              />
+            </View>
+
+            <View style={styles.formField}>
+              <Text style={styles.formLabel}>Total Pages</Text>
+              <TextInput
+                style={styles.formInput}
+                placeholder="e.g. 350"
+                placeholderTextColor={colors.textSecondary}
+                keyboardType="numeric"
+                value={newBookPages}
+                onChangeText={setNewBookPages}
+              />
+            </View>
+
+            {/* Buttons */}
+            <View style={styles.modalButtonsRow}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setIsAddBookVisible(false)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.modalSaveButton}
+                onPress={handleSaveBook}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.modalSaveText}>Save Book</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </GestureBottomSheet>
+
+      {/* Remove Book Sheet */}
+      <GestureBottomSheet
+        visible={isRemoveBookVisible}
+        onClose={() => setIsRemoveBookVisible(false)}
+      >
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Remove Books</Text>
+          <TouchableOpacity onPress={() => setIsRemoveBookVisible(false)} style={styles.modalCloseButton} activeOpacity={0.7}>
+            <MaterialIcons name="close" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.removeListForm}>
+          {books.length === 0 ? (
+            <View style={styles.emptyRemoveContainer}>
+              <MaterialIcons name="library-books" size={48} color={colors.textSecondary} style={{ opacity: 0.5 }} />
+              <Text style={styles.emptyRemoveText}>No books in library to remove.</Text>
+            </View>
+          ) : (
+            books.map((b) => (
+              <View key={b.id} style={[styles.removeBookRow, shadows.card]}>
+                <View style={styles.removeBookInfo}>
+                  <View style={styles.removeBookCoverContainer}>
+                    <Image source={{ uri: b.coverUrl }} style={styles.removeBookCover} resizeMode="cover" />
+                  </View>
+                  <View style={styles.removeBookTextDetails}>
+                    <Text style={styles.removeBookTitle} numberOfLines={1}>{b.title}</Text>
+                    <Text style={styles.removeBookAuthor} numberOfLines={1}>{b.author}</Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  style={styles.removeBookTrashButton}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    Alert.alert(
+                      "Confirm Removal",
+                      `Are you sure you want to remove '${b.title}' from your library?`,
+                      [
+                        { text: "Cancel", style: "cancel" },
+                        { text: "Remove", style: "destructive", onPress: () => onDeleteBook(b.id) }
+                      ]
+                    );
+                  }}
+                >
+                  <MaterialIcons name="delete" size={22} color={colors.error} />
+                </TouchableOpacity>
+              </View>
+            ))
+          )}
+        </ScrollView>
+
+        <TouchableOpacity
+          style={styles.modalDoneButton}
+          onPress={() => setIsRemoveBookVisible(false)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.modalDoneText}>Done</Text>
+        </TouchableOpacity>
+      </GestureBottomSheet>
     </SafeAreaView>
   );
 }
@@ -920,7 +1050,7 @@ const styles = StyleSheet.create({
     borderRadius: 2.5,
     backgroundColor: 'rgba(110, 122, 114, 0.3)',
     alignSelf: 'center',
-    marginBottom: 16,
+    marginBottom: 0,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1153,5 +1283,22 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontWeight: '600',
     color: colors.white,
+  },
+  modalOverlayBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(13, 13, 13, 0.6)',
+  },
+  modalOverlayContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    zIndex: 1000,
+  },
+  dragHandleArea: {
+    width: '100%',
+    paddingTop: 12,
+    paddingBottom: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
 });
