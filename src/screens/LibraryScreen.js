@@ -355,15 +355,34 @@ export default function LibraryScreen({
       ))}
 
       {/* Main Floating Action Button */}
-      <TouchableOpacity
-        style={[styles.fab, shadows.active]}
-        onPress={() => setIsExpanded(!isExpanded)}
-        activeOpacity={0.8}
+      <Animated.View
+        style={[
+          styles.fabContainer,
+          {
+            opacity: mainRotate.interpolate({
+              inputRange: [0, 0.2, 1],
+              outputRange: [1, 0, 0],
+            }),
+            transform: [
+              {
+                scale: mainRotate.interpolate({
+                  inputRange: [0, 0.2, 1],
+                  outputRange: [1, 0, 0],
+                }),
+              },
+            ],
+          },
+        ]}
+        pointerEvents={isExpanded ? 'none' : 'auto'}
       >
-        <Animated.View style={{ transform: [{ rotate: rotation }] }}>
+        <TouchableOpacity
+          style={[styles.fab, shadows.active]}
+          onPress={() => setIsExpanded(true)}
+          activeOpacity={0.8}
+        >
           <MaterialIcons name="add" size={32} color={colors.white} />
-        </Animated.View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </Animated.View>
 
       {/* Shared Bottom Nav Component */}
       <BottomNav activeTab="home" />
@@ -582,17 +601,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.marginEdge,
   },
-  fab: {
+  fabContainer: {
     position: 'absolute',
     bottom: 100,
     right: spacing.marginEdge,
+    zIndex: 50,
+  },
+  fab: {
     width: 56,
     height: 56,
     borderRadius: 28,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 50,
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
