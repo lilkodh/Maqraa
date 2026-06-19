@@ -237,7 +237,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   headerStatCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 16,
     width: '48%',
     paddingVertical: 16,
@@ -271,7 +273,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   chartCard: {
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
     padding: spacing.containerPadding,
     marginBottom: spacing.lg,
@@ -336,7 +340,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   historyRow: {
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
     padding: spacing.md,
     flexDirection: 'row',
@@ -355,6 +361,8 @@ const styles = StyleSheet.create({
     borderRadius: radii.default,
     overflow: 'hidden',
     backgroundColor: colors.surfaceContainer,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
   },
   historyBookCover: {
     width: '100%',

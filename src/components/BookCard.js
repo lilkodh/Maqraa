@@ -69,6 +69,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: colors.surfaceContainerHighest,
     position: 'relative',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
   },
   verticalCover: {
     width: '100%',
@@ -120,7 +122,9 @@ const styles = StyleSheet.create({
   // Horizontal display (for lists/history if needed)
   horizontalCard: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: radii.xl,
     padding: spacing.md,
     marginBottom: spacing.sm,
@@ -133,6 +137,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: colors.surfaceContainer,
     position: 'relative',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
   },
   horizontalCover: {
     width: '100%',

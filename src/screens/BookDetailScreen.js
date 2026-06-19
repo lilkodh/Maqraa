@@ -317,7 +317,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
   },
   card: {
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 20,
     padding: spacing.containerPadding,
     marginBottom: spacing.lg,
@@ -397,7 +399,9 @@ const styles = StyleSheet.create({
   },
   pageInput: {
     flex: 1,
-    backgroundColor: '#F2EEE8',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
     borderRadius: radii.md,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -501,7 +505,9 @@ const styles = StyleSheet.create({
   },
   sessionStatItem: {
     flex: 1,
-    backgroundColor: colors.surfaceContainerLow,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
     padding: spacing.sm,
     borderRadius: radii.md,
     marginHorizontal: 4,

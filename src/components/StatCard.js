@@ -54,7 +54,9 @@ export function BottomNav({ activeTab = 'home' }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.7)',
     padding: spacing.containerPadding,
     borderRadius: radii.xl,
     flex: 1,
@@ -84,14 +86,15 @@ const styles = StyleSheet.create({
     bottom: 24,
     left: spacing.marginEdge,
     right: spacing.marginEdge,
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
     borderRadius: radii.full,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    borderWidth: 0,
     zIndex: 100,
   },
   tabButton: {
