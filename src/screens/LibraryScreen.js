@@ -14,6 +14,7 @@ import { colors, radii, spacing, typography } from '../utils/theme';
 import Svg, { Circle } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
+const size = 160;
 
 export default function LibraryScreen({
   books = [],
@@ -60,8 +61,6 @@ export default function LibraryScreen({
   const book2Cover = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDalhceKsFX2MyYYwiUllRuqf5b7Gfe10gu5284Cciyc6Xgl1GxuDYObAlsNP_WVNHQ-mGsWwa3PO_71yXKvVNHFGUdLRqd_EwYwZDgPHW3rQ5c5krcc91hjriv4XNwXkZmqoQZfdJBJR3FCZ738s_yMw6JJr8MatTKcoN5HNGeTYce65zD2YGnYWBdctX-g7Vdjxv4GKjKnaiLgr-cJYJB1rlDKLa1ETquxaZv4Qg6n3g76ClJMx4qc3KSY17Nzi_-s3oYQMl0kXo';
   const book3Cover = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBRUj7K5bpNVfgRBFk2VtyVndcaZ5iOQ4BzBpbZfecXKAyOhhTKpIhaDf-9LKzcgFlm0OIMZpiJL5KeswSSEjdRw5Q0GKWS0QqjToAKmqlqsr56LcdoASnSP1a-r3H13FxqKGO4mXKyedqTprkw3OeY8TAgMwtFkm40YfRRNKMfhvGwVROcuz9WiBBbTD_c1oSFXYWXRVNXIWYwZYGfoGEdNZKeQWnZKgXmGzIAe6cQtRe9lgVItU9BoD-L5kckq9aXrPBqVDH7nUc';
 
-  // Goal Progress Ring calculations
-  const size = 160;
   const strokeWidth = 10;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;

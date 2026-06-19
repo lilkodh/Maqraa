@@ -15,6 +15,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { formatTime } from '../utils/calculations';
 
 const { width } = Dimensions.get('window');
+const size = 160;
 
 export default function BookDetailScreen({
   book,
@@ -41,8 +42,6 @@ export default function BookDetailScreen({
 
   const progressPercent = Math.round((book.readPages / book.totalPages) * 100);
 
-  // Concentric Halo progress circle calculations
-  const size = 160;
   const strokeWidth = 6;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
