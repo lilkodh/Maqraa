@@ -24,6 +24,7 @@ export default function LibraryScreen({
   finishedBooksCount = 12,
   streakCount = 12,
   totalPagesRead = 1200,
+  profilePhoto = null,
   onSelectBook,
   onAddBook,
   onStartSession,
@@ -203,7 +204,7 @@ export default function LibraryScreen({
           <View style={styles.avatarContainer}>
             <Image
               source={{
-                uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCHzrnCzrjwiROv4PgItFRGi_VHtq8llyf5FvHi7lnD5c8IPzpKhVNCIyVosynMT0wUrjgEd-BIUKidJzTCpiIxT6tcMjSbDghw6khyZYiTEcf4mNw7Rdb1ziSYiqlmjyADoNYl2guZvJWLVWO4WpjTjBsgKqeIaY88ZTrAj0TzEh3hiw8JIKH5H6jVUFs8JWoy2XldrZ7tHpj5RJyn_3cfbFFtW62BP4MRPL3Z8MypK1elrpJzmf-ErSpdkFtGBNv9nRwH_T0plQI',
+                uri: profilePhoto || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCHzrnCzrjwiROv4PgItFRGi_VHtq8llyf5FvHi7lnD5c8IPzpKhVNCIyVosynMT0wUrjgEd-BIUKidJzTCpiIxT6tcMjSbDghw6khyZYiTEcf4mNw7Rdb1ziSYiqlmjyADoNYl2guZvJWLVWO4WpjTjBsgKqeIaY88ZTrAj0TzEh3hiw8JIKH5H6jVUFs8JWoy2XldrZ7tHpj5RJyn_3cfbFFtW62BP4MRPL3Z8MypK1elrpJzmf-ErSpdkFtGBNv9nRwH_T0plQI',
               }}
               style={styles.avatar}
             />

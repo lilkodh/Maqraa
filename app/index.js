@@ -15,6 +15,8 @@ export default function HomeRoute() {
   const addBook = useBookStore((state) => state.addBook);
   const startTimer = useBookStore((state) => state.startTimer);
   const activeBookId = useBookStore((state) => state.activeBookId);
+  const profilePhoto = useBookStore((state) => state.profilePhoto);
+  const setProfilePhoto = useBookStore((state) => state.setProfilePhoto);
 
   // Derive metrics
   const streakCount = getStreakCount ? getStreakCount() : 12;
@@ -61,6 +63,7 @@ export default function HomeRoute() {
     if (!pickerResult.canceled) {
       const selectedUri = pickerResult.assets[0].uri;
       console.log('Photo selected:', selectedUri);
+      setProfilePhoto(selectedUri);
       Alert.alert("Photo Selected", "Your photo has been uploaded successfully!");
     }
   };
@@ -72,6 +75,7 @@ export default function HomeRoute() {
       finishedBooksCount={finishedBooksCount}
       streakCount={streakCount}
       totalPagesRead={totalPagesRead}
+      profilePhoto={profilePhoto}
       onSelectBook={handleSelectBook}
       onAddBook={handleAddBook}
       onStartSession={handleStartSession}

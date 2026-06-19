@@ -9,6 +9,7 @@ export default function StatsRoute() {
   const getStreakCount = useBookStore((state) => state.getStreakCount);
   const getFinishedBooksCount = useBookStore((state) => state.getFinishedBooksCount);
   const getTotalReadingSeconds = useBookStore((state) => state.getTotalReadingSeconds);
+  const profilePhoto = useBookStore((state) => state.profilePhoto);
 
   // Derive metrics
   const streakCount = getStreakCount ? getStreakCount() : 12;
@@ -65,6 +66,7 @@ export default function StatsRoute() {
       totalReadingHours={totalReadingHours}
       monthlyData={monthlyData}
       readingHistory={readingHistory}
+      profilePhoto={profilePhoto}
       onDeleteHistoryItem={handleDeleteHistoryItem}
       onDeleteAllData={handleDeleteAllData}
     />

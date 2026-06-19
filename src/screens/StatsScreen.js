@@ -19,6 +19,7 @@ export default function StatsScreen({
   totalReadingHours = 124,
   monthlyData = [],
   readingHistory = [],
+  profilePhoto = null,
   onDeleteHistoryItem,
   onDeleteAllData,
 }) {
@@ -38,7 +39,7 @@ export default function StatsScreen({
           <View style={styles.userIdentityContainer}>
             <View style={styles.avatarContainer}>
               <Image
-                source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCMWJbRxJjQTZqNuMJ_f4i9_srRW-GoFDDQ3jkZndJuYFPM0b6ceTqyyWaQLncQTltwr-OE4zs-Ji_iXijltJTBnIRsp_kjBfqyCAfbrLPp9QAJekxXdAPJhepoDHoAy0yB7hqCkXhCuaXleYUmhdbUaIyVu3WZUFHPiV2Xg2VUTLTTP077M_sMRUbjI-yA6Eb1mfG33yK561Le4J2BWZjUFVeU0TdksIZ1po_5XS0JmefJoGG8KnSD23WxF0C59Gcb45r5IJDlCIE' }}
+                source={{ uri: profilePhoto || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCMWJbRxJjQTZqNuMJ_f4i9_srRW-GoFDDQ3jkZndJuYFPM0b6ceTqyyWaQLncQTltwr-OE4zs-Ji_iXijltJTBnIRsp_kjBfqyCAfbrLPp9QAJekxXdAPJhepoDHoAy0yB7hqCkXhCuaXleYUmhdbUaIyVu3WZUFHPiV2Xg2VUTLTTP077M_sMRUbjI-yA6Eb1mfG33yK561Le4J2BWZjUFVeU0TdksIZ1po_5XS0JmefJoGG8KnSD23WxF0C59Gcb45r5IJDlCIE' }}
                 style={styles.avatar}
               />
               <View style={styles.cameraBadge}>

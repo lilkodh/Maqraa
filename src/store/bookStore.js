@@ -131,6 +131,7 @@ const useBookStore = create(
       sessions: SEED_SESSIONS,
       activeBookId: 'alchemists-shadow',
       targetGoal: 20,
+      profilePhoto: null,
       
       // Timer state
       timerState: {
@@ -140,6 +141,7 @@ const useBookStore = create(
       },
       
       // Actions
+      setProfilePhoto: (photoUri) => set({ profilePhoto: photoUri }),
       addBook: (book) => set((state) => ({
         books: [...state.books, {
           id: String(Date.now()),
@@ -264,6 +266,7 @@ const useBookStore = create(
         sessions: state.sessions,
         activeBookId: state.activeBookId,
         targetGoal: state.targetGoal,
+        profilePhoto: state.profilePhoto,
       }),
     }
   )
