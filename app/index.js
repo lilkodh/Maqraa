@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import useBookStore from '../src/store/bookStore';
 import LibraryScreen from '../src/screens/LibraryScreen';
 
 export default function HomeRoute() {
   const router = useRouter();
+  const { tab } = useLocalSearchParams();
   const books = useBookStore((state) => state.books);
   const activeBookId = useBookStore((state) => state.activeBookId);
   const targetGoal = useBookStore((state) => state.targetGoal);
@@ -32,6 +33,7 @@ export default function HomeRoute() {
       onBookPress={handleBookPress}
       goal={{ current: finishedBooksCount + 12, target: targetGoal }}
       onNavigateToStats={handleNavigateToStats}
+      initialTab={tab}
     />
   );
 }

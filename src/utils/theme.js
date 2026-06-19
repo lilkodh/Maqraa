@@ -1,29 +1,29 @@
 export const colors = {
-  background: '#00142a',
-  surface: '#00142a',
-  surfaceDim: '#00142a',
-  surfaceBright: '#223a58',
-  surfaceContainerLowest: '#000f21',
-  surfaceContainerLow: '#001c38',
-  surfaceContainer: '#03203c',
-  surfaceContainerHigh: '#112b47',
-  surfaceContainerHighest: '#1d3653',
-  onSurface: '#d3e4ff',
-  onSurfaceVariant: '#bbcabf',
-  primary: '#4edea3', // Moorish Emerald
-  onPrimary: '#003824',
-  primaryContainer: '#10b981',
-  onPrimaryContainer: '#00422b',
-  secondary: '#afcadb', // Sapphire Blue
-  onSecondary: '#193341',
-  secondaryContainer: '#334c5a',
-  onSecondaryContainer: '#a2bccd',
-  tertiary: '#ffb95f', // Antique Gold
-  onTertiary: '#472a00',
-  tertiaryContainer: '#e29100',
-  onTertiaryContainer: '#523200',
-  outline: '#86948a',
-  outlineVariant: '#3c4a42',
+  background: '#151311', // Deep Charcoal
+  surface: '#151311',
+  surfaceDim: '#151311',
+  surfaceBright: '#3c3936',
+  surfaceContainerLowest: '#100e0c',
+  surfaceContainerLow: '#1e1b19',
+  surfaceContainer: '#221f1d',
+  surfaceContainerHigh: '#2c2927',
+  surfaceContainerHighest: '#373431',
+  onSurface: '#e8e1dd',
+  onSurfaceVariant: '#d0c5af',
+  primary: '#f2ca50', // Primary Gold
+  onPrimary: '#3c2f00',
+  primaryContainer: '#d4af37',
+  onPrimaryContainer: '#554300',
+  secondary: '#dbc2b3', // Muted Bronze
+  onSecondary: '#3d2d23',
+  secondaryContainer: '#554339',
+  onSecondaryContainer: '#c9b0a3',
+  tertiary: '#70e3b0', // Moorish Emerald
+  onTertiary: '#003825',
+  tertiaryContainer: '#52c796',
+  onTertiaryContainer: '#004f36',
+  outline: '#99907c',
+  outlineVariant: '#4d4635',
 };
 
 export const radii = {
@@ -45,9 +45,14 @@ export const spacing = {
 export const typography = {
   displayLg: {
     fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 40,
-    lineHeight: 48,
-    letterSpacing: -0.8,
+    fontSize: 48,
+    lineHeight: 56,
+    letterSpacing: -0.96,
+  },
+  displayLgMobile: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 32,
+    lineHeight: 40,
   },
   headlineLg: {
     fontFamily: 'PlayfairDisplay_700Bold',
@@ -55,6 +60,11 @@ export const typography = {
     lineHeight: 40,
   },
   headlineMd: {
+    fontFamily: 'PlayfairDisplay_600SemiBold',
+    fontSize: 32,
+    lineHeight: 40,
+  },
+  headlineSm: {
     fontFamily: 'PlayfairDisplay_600SemiBold',
     fontSize: 24,
     lineHeight: 32,
@@ -68,6 +78,18 @@ export const typography = {
     fontFamily: 'Inter_400Regular',
     fontSize: 16,
     lineHeight: 24,
+  },
+  labelMd: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    lineHeight: 20,
+    letterSpacing: 0.7,
+  },
+  labelSm: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    lineHeight: 16,
+    letterSpacing: 1.2,
   },
   metadataSm: {
     fontFamily: 'Inter_500Medium',

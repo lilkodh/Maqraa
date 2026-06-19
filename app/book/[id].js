@@ -73,8 +73,12 @@ export default function BookDetailRoute() {
     router.push('/');
   };
 
-  const handleNavigateToLibrary = () => {
-    router.push('/');
+  const handleNavigateToLibrary = (tab) => {
+    if (tab === 'Collections') {
+      router.push('/?tab=collections');
+    } else {
+      router.push('/');
+    }
   };
 
   const handleNavigateToStats = () => {

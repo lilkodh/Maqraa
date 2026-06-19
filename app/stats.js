@@ -14,8 +14,12 @@ export default function StatsRoute() {
   const booksRead = getFinishedBooksCount() + 127; // Leo Africanus is completed in seed, so 1 + 127 = 128
   const readingTimeHours = Math.round(getTotalReadingSeconds() / 3600) + 452; // 3.5h seed + 452 = 456h
 
-  const handleNavigateToLibrary = () => {
-    router.push('/');
+  const handleNavigateToLibrary = (tab) => {
+    if (tab === 'Collections') {
+      router.push('/?tab=collections');
+    } else {
+      router.push('/');
+    }
   };
 
   const handleBookPress = (id) => {

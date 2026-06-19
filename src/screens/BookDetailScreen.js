@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -7,13 +7,11 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
-  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, radii, spacing, typography } from '../utils/theme';
-import ProgressRing from '../components/ProgressRing';
+import Svg, { Circle } from 'react-native-svg';
 import { formatTime } from '../utils/calculations';
 
 const { width } = Dimensions.get('window');
@@ -30,14 +28,12 @@ export default function BookDetailScreen({
   onNavigateToLibrary = () => {},
   onNavigateToStats = () => {},
 }) {
-  const [sessionNotes, setSessionNotes] = useState('');
-
   if (!book) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>No book selected.</Text>
-        <TouchableOpacity style={styles.backButton} onPress={onBackPress}>
-          <Text style={styles.backButtonText}>Go Back</Text>
+        <TouchableOpacity style={styles.errorBackBtn} onPress={onBackPress}>
+          <Text style={styles.errorBackBtnText}>Go Back</Text>
         </TouchableOpacity>
       </View>
     );
@@ -45,220 +41,187 @@ export default function BookDetailScreen({
 
   const progressPercent = Math.round((book.readPages / book.totalPages) * 100);
 
-  const handleStop = () => {
-    onStopTimer(sessionNotes);
-    setSessionNotes('');
-  };
+  // Concentric Halo progress circle calculations
+  const size = 160;
+  const strokeWidth = 6;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
 
   return (
     <View style={styles.container}>
-      {/* Background Dark Void */}
-      <LinearGradient
-        colors={['#000f21', '#00142a']}
-        style={StyleSheet.absoluteFillObject}
-      />
-
-      <SafeAreaView style={styles.safeArea}>
-        {/* Top App Bar */}
-        <View style={styles.topBar}>
-          <TouchableOpacity style={styles.iconBtn} onPress={onBackPress}>
-            <MaterialIcons name="arrow-back" size={22} color={colors.onSurfaceVariant} />
+      {/* Top Header Navigation */}
+      <SafeAreaView edges={['top']} style={styles.headerWrapper}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.headerBtn} onPress={onBackPress}>
+            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
           </TouchableOpacity>
-          <Text style={styles.logoTitle}>Maqra</Text>
-          <TouchableOpacity style={styles.iconBtn}>
-            <MaterialIcons name="search" size={22} color={colors.onSurfaceVariant} />
+          <Text style={styles.logoTitle}>MAQRA</Text>
+          <TouchableOpacity style={styles.headerBtn}>
+            <MaterialIcons name="more-vert" size={24} color={colors.primary} />
           </TouchableOpacity>
         </View>
+      </SafeAreaView>
 
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Cinematic Banner Section */}
-          <View style={styles.heroSection}>
-            {book.coverUrl && (
-              <Image
-                source={{ uri: book.coverUrl }}
-                style={StyleSheet.absoluteFillObject}
-                blurRadius={20}
-              />
-            )}
-            <View style={styles.heroOverlay} />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Cinematic Banner */}
+        <View style={styles.bannerSection}>
+          <Image
+            source={{ uri: book.coverUrl }}
+            style={styles.bannerBackground}
+            blurRadius={10}
+          />
+          <View style={styles.bannerOverlay} />
 
-            {/* Floating Book Cover */}
-            <View style={styles.coverContainer}>
-              <View style={styles.bookCoverWrapper}>
-                {book.coverUrl ? (
-                  <Image source={{ uri: book.coverUrl }} style={styles.coverImage} />
-                ) : (
-                  <View style={styles.fallbackCover}>
-                    <Text style={styles.fallbackText}>{book.title[0]}</Text>
-                  </View>
-                )}
-                <View style={styles.spineShadow} />
-              </View>
+          {/* 3D Book Cover Asset */}
+          <View style={styles.coverWrapper}>
+            <View style={styles.coverCard}>
+              <Image source={{ uri: book.coverUrl }} style={styles.coverImage} />
+              <View style={styles.coverBorder} />
             </View>
           </View>
+        </View>
 
-          {/* Metadata Section */}
-          <View style={styles.metadataSection}>
+        {/* Content Area */}
+        <View style={styles.contentArea}>
+          {/* Metadata Block */}
+          <View style={styles.metaBlock}>
             <Text style={styles.title}>{book.title}</Text>
-            <Text style={styles.author}>by {book.author}</Text>
-            
-            {/* Stars Rating */}
+            <Text style={styles.author}>{book.synopsis || 'Ibn Arabi’s Mystical Journey'}</Text>
+
+            {/* Gold Star Matrix */}
             <View style={styles.starRow}>
-              <View style={styles.starsContainer}>
-                <MaterialIcons name="star" size={16} color={colors.tertiary} />
-                <MaterialIcons name="star" size={16} color={colors.tertiary} />
-                <MaterialIcons name="star" size={16} color={colors.tertiary} />
-                <MaterialIcons name="star" size={16} color={colors.tertiary} />
-                <MaterialIcons name="star-half" size={16} color={colors.tertiary} />
+              <View style={styles.stars}>
+                <MaterialIcons name="star" size={18} color={colors.primary} />
+                <MaterialIcons name="star" size={18} color={colors.primary} />
+                <MaterialIcons name="star" size={18} color={colors.primary} />
+                <MaterialIcons name="star" size={18} color={colors.primary} />
+                <MaterialIcons name="star-border" size={18} color={colors.primary} />
               </View>
-              <Text style={styles.ratingText}>
-                {book.rating || '4.8'} (2.4k reviews)
-              </Text>
+              <Text style={styles.ratingNum}>{book.rating || '4.8'}</Text>
             </View>
 
-            {/* Tags/Chips */}
-            <View style={styles.chipRow}>
-              <View style={styles.chip}>
-                <Text style={styles.chipText}>{book.language || 'Classical Arabic'}</Text>
+            {/* Language Capsules */}
+            <View style={styles.tagRow}>
+              <View style={styles.tagCapsuleActive}>
+                <Text style={styles.tagTextActive}>ARABIC (ORIGINAL)</Text>
               </View>
-              {book.genre &&
-                book.genre.map((g) => (
-                  <View key={g} style={styles.chip}>
-                    <Text style={styles.chipText}>{g}</Text>
-                  </View>
-                ))}
+              <View style={styles.tagCapsuleInactive}>
+                <Text style={styles.tagTextInactive}>ENGLISH (TRANS)</Text>
+              </View>
+              <View style={styles.tagCapsuleInactive}>
+                <Text style={styles.tagTextInactive}>SUFISM</Text>
+              </View>
             </View>
           </View>
 
-          {/* Stat Strip (Bento-like columns) */}
+          {/* Frosted Stat Strip */}
           <View style={styles.statStrip}>
-            <View style={styles.statBox}>
-              <MaterialIcons name="star" size={18} color={colors.secondary} style={styles.statIcon} />
-              <Text style={styles.statVal}>{book.rating || '4.8'}</Text>
-              <Text style={styles.statLbl}>Rating</Text>
+            <View style={styles.statCol}>
+              <Text style={styles.statLabel}>RATING</Text>
+              <Text style={styles.statValue}>{book.rating || '4.8'}</Text>
             </View>
-            <View style={styles.statBox}>
-              <MaterialIcons name="auto-stories" size={18} color={colors.secondary} style={styles.statIcon} />
-              <Text style={styles.statVal}>12k</Text>
-              <Text style={styles.statLbl}>Reads</Text>
+            <View style={styles.statCol}>
+              <Text style={styles.statLabel}>READS</Text>
+              <Text style={styles.statValue}>1.2k</Text>
             </View>
-            <View style={styles.statBox}>
-              <MaterialIcons name="rate-review" size={18} color={colors.secondary} style={styles.statIcon} />
-              <Text style={styles.statVal}>840</Text>
-              <Text style={styles.statLbl}>Reviews</Text>
+            <View style={styles.statCol}>
+              <Text style={styles.statLabel}>REVIEWS</Text>
+              <Text style={styles.statValue}>458</Text>
             </View>
-            <View style={styles.statBox}>
-              <MaterialIcons name="format-quote" size={18} color={colors.secondary} style={styles.statIcon} />
-              <Text style={styles.statVal}>42</Text>
-              <Text style={styles.statLbl}>Quotes</Text>
+            <View style={styles.statCol}>
+              <Text style={styles.statLabel}>QUOTES</Text>
+              <Text style={styles.statValue}>82</Text>
             </View>
           </View>
 
-          {/* Progress Ring Overlay */}
-          <View style={styles.progressRingSection}>
-            <ProgressRing
-              size={130}
-              strokeWidth={6}
-              progress={progressPercent}
-              centerText={`p. ${book.readPages}`}
-              subText={String(book.totalPages)}
-              strokeColor={colors.primary}
-              textColor={colors.onSurface}
-            />
-            <Text style={styles.progressLabel}>
-              Current Progress: {progressPercent}%
-            </Text>
-          </View>
-
-          {/* Leather-Bound Timer Card */}
-          <View style={styles.timerSection}>
-            <View style={styles.timerCard}>
-              <Text style={styles.timerLabel}>Session Time</Text>
-              <Text style={styles.timerValue}>{formatTime(timerSeconds)}</Text>
-              
-              <View style={styles.timerActions}>
-                {/* Stop button */}
-                <TouchableOpacity style={styles.timerSubBtn} onPress={handleStop}>
-                  <MaterialIcons name="stop" size={20} color={colors.onSurfaceVariant} />
-                </TouchableOpacity>
-                
-                {/* Play/Pause Main button */}
-                <TouchableOpacity
-                  style={[styles.timerMainBtn, timerRunning && styles.timerMainBtnActive]}
-                  onPress={timerRunning ? onPauseTimer : onStartTimer}
-                >
-                  <MaterialIcons
-                    name={timerRunning ? 'pause' : 'play-arrow'}
-                    size={30}
-                    color={colors.onPrimary}
-                  />
-                </TouchableOpacity>
-                
-                {/* Reset button */}
-                <TouchableOpacity style={styles.timerSubBtn} onPress={() => onPauseTimer()}>
-                  <MaterialIcons name="replay" size={20} color={colors.onSurfaceVariant} />
-                </TouchableOpacity>
+          {/* Concentric Completion Halo */}
+          <View style={styles.haloSection}>
+            <View style={styles.haloRingWrapper}>
+              <Svg width={size} height={size} style={styles.haloRing}>
+                {/* Track Circle */}
+                <Circle
+                  cx={size / 2}
+                  cy={size / 2}
+                  r={radius}
+                  stroke="#373431"
+                  strokeWidth={4}
+                  fill="none"
+                />
+                {/* Progress Circle */}
+                <Circle
+                  cx={size / 2}
+                  cy={size / 2}
+                  r={radius}
+                  stroke="#F59E0B"
+                  strokeWidth={6}
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  strokeLinecap="round"
+                  fill="none"
+                  transform={`rotate(-90 ${size / 2} ${size / 2})`}
+                />
+              </Svg>
+              <View style={styles.haloTextContainer}>
+                <Text style={styles.haloPercent}>{progressPercent}%</Text>
+                <Text style={styles.haloLabel}>PROGRESS</Text>
               </View>
-
-              {/* Notes Input */}
-              <TextInput
-                style={styles.notesInput}
-                placeholder="Log thoughts / sanctuary insights..."
-                placeholderTextColor="rgba(255, 255, 255, 0.3)"
-                value={sessionNotes}
-                onChangeText={setSessionNotes}
-              />
             </View>
           </View>
 
-          {/* Master Action Completion CTA */}
-          <View style={styles.actionSection}>
+          {/* Leather-Bound Timer Module */}
+          <View style={styles.timerModule}>
+            <View style={styles.timerLeft}>
+              <MaterialIcons name="schedule" size={24} color={colors.primary} />
+              <View style={styles.timerTextCol}>
+                <Text style={styles.timerLabelText}>CURRENT SESSION</Text>
+                <Text style={styles.timerClockText}>{formatTime(timerSeconds)}</Text>
+              </View>
+            </View>
             <TouchableOpacity
-              style={[
-                styles.completionBtn,
-                book.status === 'completed' && styles.completionBtnActive,
-              ]}
-              onPress={onToggleCompletion}
+              style={styles.timerToggleBtn}
+              onPress={timerRunning ? onPauseTimer : onStartTimer}
             >
               <MaterialIcons
-                name="check-circle"
-                size={20}
-                color={book.status === 'completed' ? colors.primary : colors.onPrimary}
-                style={styles.completionIcon}
+                name={timerRunning ? 'pause' : 'play-arrow'}
+                size={22}
+                color={colors.primary}
               />
-              <Text style={[styles.completionBtnText, book.status === 'completed' && styles.completionBtnTextActive]}>
-                {book.status === 'completed' ? 'Completed' : 'Mark as Completed'}
-              </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Synopsis (The Librarian's Note) */}
-          <View style={styles.synopsisSection}>
-            <Text style={styles.synopsisTitle}>The Librarian's Note</Text>
-            <Text style={styles.synopsisText}>
-              {book.synopsis ||
-                'A transformative journey through the shifting sands of the Andalusian desert, where every word is a tile in a vast philosophical mosaic.'}
-            </Text>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+          {/* Master CTA */}
+          <TouchableOpacity
+            style={styles.masterCta}
+            activeOpacity={0.8}
+            onPress={onToggleCompletion}
+          >
+            <MaterialIcons name="check-circle" size={24} color="#85f8c4" />
+            <Text style={styles.masterCtaText}>MARK AS COMPLETED</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
 
-      {/* Floating Bottom Navigation Bar */}
+      {/* Floating Bottom Nav bar */}
       <View style={styles.bottomNavContainer}>
         <View style={styles.glassNav}>
-          <TouchableOpacity style={styles.navItem} onPress={onNavigateToLibrary}>
-            <MaterialIcons name="local-library" size={24} color="rgba(255, 255, 255, 0.4)" />
+          <TouchableOpacity style={styles.navItem} onPress={() => onNavigateToLibrary('Library')}>
+            <MaterialIcons name="local-library" size={24} color="rgba(232, 225, 221, 0.7)" />
             <Text style={styles.navText}>Library</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.navItem, styles.navItemActive]}>
-            <MaterialIcons name="auto-stories" size={24} color={colors.secondary} style={styles.navIconActive} />
+            <MaterialIcons name="menu-book" size={24} color={colors.primary} />
             <Text style={[styles.navText, styles.navTextActive]}>Reading</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem} onPress={() => onNavigateToLibrary('Collections')}>
+            <MaterialIcons name="auto-stories" size={24} color="rgba(232, 225, 221, 0.7)" />
+            <Text style={styles.navText}>Collections</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.navItem} onPress={onNavigateToStats}>
-            <MaterialIcons name="person" size={24} color="rgba(255, 255, 255, 0.4)" />
+            <MaterialIcons name="person" size={24} color="rgba(232, 225, 221, 0.7)" />
             <Text style={styles.navText}>Profile</Text>
           </TouchableOpacity>
         </View>
@@ -270,351 +233,325 @@ export default function BookDetailScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000f21',
-  },
-  safeArea: {
-    flex: 1,
+    backgroundColor: '#151311',
   },
   errorContainer: {
     flex: 1,
-    backgroundColor: '#000f21',
-    alignItems: 'center',
+    backgroundColor: '#151311',
     justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
   },
   errorText: {
     fontFamily: typography.bodyLg.fontFamily,
-    color: colors.onSurface,
     fontSize: 18,
-    marginBottom: 20,
+    color: '#e8e1dd',
+    marginBottom: 24,
   },
-  backButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: colors.primaryContainer,
+  errorBackBtn: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
     borderRadius: radii.full,
+    backgroundColor: colors.primary,
   },
-  backButtonText: {
-    fontFamily: typography.metadataSm.fontFamily,
-    color: colors.onPrimaryContainer,
+  errorBackBtnText: {
+    fontFamily: typography.labelMd.fontFamily,
+    fontSize: 14,
+    color: colors.onPrimary,
+    fontWeight: '700',
   },
-  topBar: {
-    height: 60,
+  headerWrapper: {
+    backgroundColor: 'rgba(85, 67, 57, 0.4)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(242, 202, 80, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
+    zIndex: 100,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+  },
+  header: {
+    height: 64,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.marginMobile,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
-  logoTitle: {
-    fontFamily: typography.headlineLg.fontFamily,
-    fontSize: 20,
-    fontWeight: '700',
-    fontStyle: 'italic',
-    color: colors.tertiary,
-    textShadowColor: 'rgba(255,185,95,0.4)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 8,
-  },
-  iconBtn: {
+  headerBtn: {
     padding: 8,
   },
+  logoTitle: {
+    fontFamily: typography.displayLgMobile.fontFamily,
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.primary,
+    letterSpacing: 2,
+  },
   scrollContent: {
-    paddingBottom: 160,
+    paddingTop: 64,
+    paddingBottom: 140,
   },
-  heroSection: {
-    height: 200,
-    width: '100%',
+  bannerSection: {
+    height: 320,
     position: 'relative',
-    overflow: 'hidden',
-  },
-  heroOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 20, 42, 0.7)',
-  },
-  coverContainer: {
-    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingBottom: 10,
   },
-  bookCoverWrapper: {
-    width: 120,
-    height: 170,
+  bannerBackground: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+    opacity: 0.3,
+  },
+  bannerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(21, 19, 17, 0.6)',
+  },
+  coverWrapper: {
+    position: 'absolute',
+    bottom: -48,
+    shadowColor: '#000',
+    shadowOffset: { width: 10, height: 10 },
+    shadowOpacity: 0.6,
+    shadowRadius: 30,
+    elevation: 15,
+  },
+  coverCard: {
+    width: 192,
+    height: 288,
     borderRadius: radii.sm,
     overflow: 'hidden',
-    borderLeftWidth: 3,
-    borderLeftColor: 'rgba(255, 255, 255, 0.1)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.6,
-    shadowRadius: 20,
-    elevation: 10,
-    transform: [{ rotate: '-2deg' }],
+    borderLeftWidth: 4,
+    borderLeftColor: 'rgba(242, 202, 80, 0.3)',
+    backgroundColor: colors.surfaceContainerHigh,
   },
   coverImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
   },
-  fallbackCover: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: colors.surfaceBright,
-    alignItems: 'center',
-    justifyContent: 'center',
+  coverBorder: {
+    ...StyleSheet.absoluteFillObject,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.2)',
   },
-  fallbackText: {
-    fontFamily: typography.headlineLg.fontFamily,
-    fontSize: 28,
-    color: colors.secondary,
-  },
-  spineShadow: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 5,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-  },
-  metadataSection: {
-    alignItems: 'center',
+  contentArea: {
+    marginTop: 80,
     paddingHorizontal: spacing.marginMobile,
-    marginTop: 20,
+    alignItems: 'center',
+  },
+  metaBlock: {
+    alignItems: 'center',
+    marginBottom: 32,
   },
   title: {
-    fontFamily: typography.headlineLg.fontFamily,
-    fontSize: 24,
+    fontFamily: typography.displayLgMobile.fontFamily,
+    fontSize: 32,
     fontWeight: '700',
     color: colors.onSurface,
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: 8,
+    letterSpacing: -0.5,
   },
   author: {
-    fontFamily: typography.bodyMd.fontFamily,
-    fontSize: 15,
+    fontFamily: typography.bodyLg.fontFamily,
+    fontSize: 18,
     color: colors.onSurfaceVariant,
-    fontStyle: 'italic',
+    opacity: 0.8,
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 16,
   },
   starRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    justifyContent: 'center',
+    marginBottom: 24,
   },
-  starsContainer: {
+  stars: {
     flexDirection: 'row',
+    gap: 4,
     marginRight: 8,
-    gap: 2,
   },
-  ratingText: {
-    fontFamily: typography.metadataSm.fontFamily,
-    fontSize: 11,
+  ratingNum: {
+    fontFamily: typography.labelMd.fontFamily,
+    fontSize: 14,
     color: colors.onSurfaceVariant,
+    fontWeight: '600',
   },
-  chipRow: {
+  tagRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: 8,
   },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+  tagCapsuleActive: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
     borderRadius: radii.full,
-    backgroundColor: 'rgba(29, 54, 83, 0.4)',
     borderWidth: 1,
-    borderColor: 'rgba(78, 222, 163, 0.2)',
+    borderColor: 'rgba(242, 202, 80, 0.2)',
+    backgroundColor: 'rgba(242, 202, 80, 0.05)',
   },
-  chipText: {
-    fontFamily: typography.metadataSm.fontFamily,
+  tagTextActive: {
+    fontFamily: typography.labelSm.fontFamily,
     fontSize: 11,
     color: colors.primary,
   },
-  statStrip: {
-    flexDirection: 'row',
-    paddingHorizontal: spacing.marginMobile,
-    gap: 10,
-    marginTop: 20,
-  },
-  statBox: {
-    flex: 1,
-    backgroundColor: 'rgba(29, 54, 83, 0.4)',
+  tagCapsuleInactive: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: radii.full,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: radii.md,
-    paddingVertical: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 3,
+    borderColor: colors.outlineVariant,
+    backgroundColor: colors.surfaceContainerLow,
   },
-  statIcon: {
+  tagTextInactive: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 11,
+    color: colors.onSurfaceVariant,
+  },
+  statStrip: {
+    width: '100%',
+    backgroundColor: 'rgba(43, 29, 20, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.1)',
+    borderRadius: radii.sm,
+    paddingVertical: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 40,
+    shadowColor: '#000',
+    shadowOffset: { width: 10, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  statCol: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statLabel: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 10,
+    color: 'rgba(242, 202, 80, 0.6)',
+    letterSpacing: 1.5,
     marginBottom: 4,
   },
-  statVal: {
-    fontFamily: typography.headlineMd.fontFamily,
-    fontSize: 14,
+  statValue: {
+    fontFamily: typography.headlineSm.fontFamily,
+    fontSize: 20,
     color: colors.onSurface,
     fontWeight: '600',
   },
-  statLbl: {
-    fontFamily: typography.metadataSm.fontFamily,
-    fontSize: 8,
-    color: colors.onSurfaceVariant,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginTop: 2,
-  },
-  progressRingSection: {
+  haloSection: {
+    marginBottom: 48,
     alignItems: 'center',
-    marginVertical: 28,
   },
-  progressLabel: {
-    fontFamily: typography.metadataSm.fontFamily,
-    fontSize: 11,
+  haloRingWrapper: {
+    position: 'relative',
+    width: size,
+    height: size,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  haloRing: {
+    position: 'absolute',
+  },
+  haloTextContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  haloPercent: {
+    fontFamily: typography.displayLgMobile.fontFamily,
+    fontSize: 32,
+    fontWeight: '700',
     color: colors.primary,
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-    marginTop: 12,
   },
-  timerSection: {
-    paddingHorizontal: spacing.marginMobile,
-    marginBottom: 20,
-  },
-  timerCard: {
-    backgroundColor: 'rgba(29, 54, 83, 0.4)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    borderLeftWidth: 4,
-    borderLeftColor: colors.tertiary,
-    borderRadius: radii.md,
-    padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 15 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 5,
-  },
-  timerLabel: {
-    fontFamily: typography.metadataSm.fontFamily,
+  haloLabel: {
+    fontFamily: typography.labelSm.fontFamily,
     fontSize: 10,
-    color: colors.tertiary,
-    textTransform: 'uppercase',
-    letterSpacing: 2,
+    color: colors.onSurfaceVariant,
+    opacity: 0.6,
+    letterSpacing: 1.2,
+    marginTop: 4,
+  },
+  timerModule: {
+    width: '100%',
+    maxWidth: 360,
+    backgroundColor: '#2B1D14',
+    borderRadius: radii.sm,
+    padding: 16,
+    borderLeftWidth: 8,
+    borderLeftColor: colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 48,
+    shadowColor: '#000',
+    shadowOffset: { width: 10, height: 10 },
+    shadowOpacity: 0.6,
+    shadowRadius: 30,
+    elevation: 12,
+  },
+  timerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  timerTextCol: {
+    flexDirection: 'column',
+  },
+  timerLabelText: {
+    fontFamily: typography.labelSm.fontFamily,
+    fontSize: 10,
+    color: colors.primary,
+    letterSpacing: 1.2,
     marginBottom: 4,
   },
-  timerValue: {
+  timerClockText: {
     fontFamily: typography.timerMono.fontFamily,
-    fontSize: 36,
+    fontSize: 20,
     color: colors.onSurface,
     fontWeight: '700',
     letterSpacing: 1,
-    marginBottom: 16,
   },
-  timerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-    marginBottom: 16,
-  },
-  timerSubBtn: {
-    width: 44,
-    height: 44,
+  timerToggleBtn: {
+    width: 40,
+    height: 40,
     borderRadius: radii.full,
-    backgroundColor: colors.surfaceContainerHigh,
+    backgroundColor: 'rgba(242, 202, 80, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(242, 202, 80, 0.3)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  timerMainBtn: {
-    width: 60,
-    height: 60,
-    borderRadius: radii.full,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: 'rgba(78, 222, 163, 0.3)',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  timerMainBtnActive: {
-    backgroundColor: colors.primaryContainer,
-  },
-  notesInput: {
+  masterCta: {
     width: '100%',
-    height: 38,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    maxWidth: 360,
+    height: 64,
+    backgroundColor: '#004f36',
     borderRadius: radii.full,
-    paddingHorizontal: 16,
-    color: colors.onSurface,
-    fontFamily: typography.bodyMd.fontFamily,
-    fontSize: 11,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.03)',
-  },
-  actionSection: {
-    paddingHorizontal: spacing.marginMobile,
-    marginBottom: 24,
-  },
-  completionBtn: {
-    height: 52,
-    borderRadius: radii.full,
-    backgroundColor: colors.primaryContainer,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    gap: 12,
+    shadowColor: 'rgba(0, 79, 54, 0.4)',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-    elevation: 5,
-    gap: 8,
+    shadowOpacity: 0.6,
+    shadowRadius: 25,
+    elevation: 8,
   },
-  completionBtnActive: {
-    backgroundColor: colors.surfaceBright,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  completionIcon: {
-    marginRight: 2,
-  },
-  completionBtnText: {
-    fontFamily: typography.headlineMd.fontFamily,
+  masterCtaText: {
+    fontFamily: typography.labelMd.fontFamily,
     fontSize: 14,
+    color: '#85f8c4',
     fontWeight: '700',
-    color: colors.onPrimary,
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-  },
-  completionBtnTextActive: {
-    color: colors.primary,
-  },
-  synopsisSection: {
-    paddingHorizontal: spacing.marginMobile,
-    marginBottom: 20,
-  },
-  synopsisTitle: {
-    fontFamily: typography.headlineMd.fontFamily,
-    fontSize: 16,
-    color: colors.primary,
-    marginBottom: 6,
-  },
-  synopsisText: {
-    fontFamily: typography.bodyLg.fontFamily,
-    fontSize: 14,
-    lineHeight: 22,
-    color: colors.onSurfaceVariant,
-    opacity: 0.8,
+    letterSpacing: 1,
   },
   bottomNavContainer: {
     position: 'absolute',
@@ -625,45 +562,46 @@ const styles = StyleSheet.create({
     zIndex: 500,
   },
   glassNav: {
-    width: '95%',
-    maxWidth: 360,
-    height: 72,
-    backgroundColor: 'rgba(0, 15, 33, 0.85)',
+    width: '90%',
+    maxWidth: 400,
+    height: 64,
+    backgroundColor: 'rgba(85, 67, 57, 0.6)',
     borderRadius: radii.full,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(242, 202, 80, 0.2)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.8,
+    shadowRadius: 50,
+    elevation: 15,
   },
   navItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 80,
+    height: 48,
+    paddingHorizontal: 12,
   },
   navItemActive: {
-    shadowColor: 'rgba(175, 202, 219, 0.4)',
+    backgroundColor: 'rgba(242, 202, 80, 0.1)',
+    borderRadius: radii.full,
+    shadowColor: 'rgba(212, 175, 55, 0.4)',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.6,
-    shadowRadius: 8,
-  },
-  navIconActive: {
-    color: colors.secondary,
+    shadowRadius: 15,
+    elevation: 2,
   },
   navText: {
-    fontFamily: typography.metadataSm.fontFamily,
+    fontFamily: typography.labelSm.fontFamily,
     fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.4)',
-    marginTop: 4,
+    color: 'rgba(232, 225, 221, 0.7)',
+    marginTop: 2,
   },
   navTextActive: {
-    color: colors.secondary,
+    color: colors.primary,
     fontWeight: '700',
   },
 });
