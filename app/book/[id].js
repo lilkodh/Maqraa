@@ -1,66 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import React from 'react';
+import { useLocalSearchParams, router } from 'expo-router';
 import useBookStore from '../../src/store/bookStore';
 import BookDetailScreen from '../../src/screens/BookDetailScreen';
 
 export default function BookDetailRoute() {
   const { id } = useLocalSearchParams();
-  const router = useRouter();
   
   const books = useBookStore((state) => state.books);
-  const activeBookId = useBookStore((state) => state.activeBookId);
-  const setActiveBookId = useBookStore((state) => state.setActiveBookId);
-  
   const timerState = useBookStore((state) => state.timerState);
+  
+  const updateProgress = useBookStore((state) => state.updateProgress);
+  const toggleBookCompletion = useBookStore((state) => state.toggleBookCompletion);
   const startTimer = useBookStore((state) => state.startTimer);
   const pauseTimer = useBookStore((state) => state.pauseTimer);
   const stopTimer = useBookStore((state) => state.stopTimer);
-  const toggleBookCompletion = useBookStore((state) => state.toggleBookCompletion);
+  const setActiveBookId = useBookStore((state) => state.setActiveBookId);
 
-  const book = books.find((b) => b.id === id) || null;
+  // Find active book
+  const book = books.find((b) => b.id === id) || books[0];
 
-  // Local seconds tracking for rendering and store syncing
-  const [localSeconds, setLocalSeconds] = useState(timerState.seconds);
-
-  // Sync active book ID when entering this detail screen
-  useEffect(() => {
-    if (book && activeBookId !== book.id) {
-      setActiveBookId(book.id);
+  const handleUpdateProgress = (pages) => {
+    if (book) {
+      updateProgress(book.id, pages);
     }
-  }, [book, activeBookId]);
-
-  // Keep localSeconds in sync with store timerState
-  useEffect(() => {
-    setLocalSeconds(timerState.seconds);
-  }, [timerState.seconds]);
-
-  // Active ticking effect when running
-  useEffect(() => {
-    let interval = null;
-    if (timerState.isRunning && timerState.startTime) {
-      const updateSeconds = () => {
-        const elapsed = Math.round((Date.now() - timerState.startTime) / 1000);
-        setLocalSeconds(timerState.seconds + elapsed);
-      };
-      
-      updateSeconds();
-      interval = setInterval(updateSeconds, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [timerState.isRunning, timerState.startTime, timerState.seconds]);
-
-  const handleStart = () => {
-    startTimer();
-  };
-
-  const handlePause = () => {
-    pauseTimer();
-  };
-
-  const handleStop = (notes) => {
-    stopTimer(notes);
   };
 
   const handleToggleCompletion = () => {
@@ -69,34 +31,35 @@ export default function BookDetailRoute() {
     }
   };
 
-  const handleBack = () => {
-    router.push('/');
-  };
-
-  const handleNavigateToLibrary = (tab) => {
-    if (tab === 'Collections') {
-      router.push('/?tab=collections');
-    } else {
-      router.push('/');
+  const handleStartTimer = () => {
+    if (book) {
+      setActiveBookId(book.id);
+      startTimer();
     }
   };
 
-  const handleNavigateToStats = () => {
-    router.push('/stats');
+  const handlePauseTimer = () => {
+    pauseTimer();
+  };
+
+  const handleStopTimer = (notes) => {
+    stopTimer(notes);
+  };
+
+  const handleBack = () => {
+    router.back();
   };
 
   return (
     <BookDetailScreen
       book={book}
-      timerSeconds={localSeconds}
-      timerRunning={timerState.isRunning}
-      onStartTimer={handleStart}
-      onPauseTimer={handlePause}
-      onStopTimer={handleStop}
+      timerState={timerState}
+      onUpdateProgress={handleUpdateProgress}
       onToggleCompletion={handleToggleCompletion}
-      onBackPress={handleBack}
-      onNavigateToLibrary={handleNavigateToLibrary}
-      onNavigateToStats={handleNavigateToStats}
+      onStartTimer={handleStartTimer}
+      onPauseTimer={handlePauseTimer}
+      onStopTimer={handleStopTimer}
+      onBack={handleBack}
     />
   );
 }

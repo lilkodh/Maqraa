@@ -1,63 +1,45 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
-import { colors, typography } from '../utils/theme';
+import Svg, { Circle } from 'react-native-svg';
+import { colors } from '../utils/theme';
 
-export default function ProgressRing({
-  size = 120,
-  strokeWidth = 8,
-  progress = 0,
-  showText = true,
-  centerText = '',
-  subText = '',
-  strokeColor = '#afcadb',
-  textColor = '#afcadb',
-}) {
+export default function ProgressRing({ progress = 0.6, size = 96, strokeWidth = 8 }) {
   const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const clampedProgress = Math.min(100, Math.max(0, progress));
-  const strokeDashoffset = circumference - (clampedProgress / 100) * circumference;
+  const circumference = 2 * Math.PI * radius;
+  
+  // Constrain progress between 0 and 1
+  const constrainedProgress = Math.min(1, Math.max(0, progress));
+  const strokeDashoffset = circumference - constrainedProgress * circumference;
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      <Svg width={size} height={size} style={styles.svg}>
-        <Defs>
-          <LinearGradient id="sapphireGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <Stop offset="0%" stopColor={strokeColor} />
-            <Stop offset="100%" stopColor={strokeColor} />
-          </LinearGradient>
-        </Defs>
+      <Svg width={size} height={size}>
         {/* Background Track */}
         <Circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="rgba(189, 216, 233, 0.1)"
+          stroke="rgba(0, 108, 75, 0.1)"
           strokeWidth={strokeWidth}
           fill="transparent"
         />
-        {/* Luminous Progress Circle */}
+        {/* Progress Fill */}
         <Circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="url(#sapphireGrad)"
-          strokeWidth={strokeWidth + 2}
+          stroke={colors.primaryContainer}
+          strokeWidth={strokeWidth}
+          fill="transparent"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
-          fill="transparent"
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </Svg>
-      {showText && (
-        <View style={styles.textContainer}>
-          <Text style={[styles.percentageText, { color: textColor }]}>
-            {centerText || `${Math.round(clampedProgress)}%`}
-          </Text>
-          {subText ? <Text style={styles.subText}>{subText}</Text> : null}
-        </View>
-      )}
+      <View style={styles.textContainer}>
+        <Text style={styles.percentageText}>{Math.round(constrainedProgress * 100)}%</Text>
+      </View>
     </View>
   );
 }
@@ -68,26 +50,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'relative',
   },
-  svg: {
-    position: 'absolute',
-  },
   textContainer: {
+    position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
   },
   percentageText: {
-    fontFamily: typography.displayLg.fontFamily,
-    fontSize: 24,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  subText: {
-    fontFamily: typography.metadataSm.fontFamily,
-    fontSize: 9,
-    letterSpacing: 1,
-    color: colors.onSurfaceVariant,
-    textTransform: 'uppercase',
-    marginTop: 2,
-    textAlign: 'center',
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 18,
+    color: colors.primary,
+    fontWeight: '600',
   },
 });

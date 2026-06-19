@@ -1,52 +1,121 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { colors, radii, spacing, typography } from '../utils/theme';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { colors, radii, spacing, shadows } from '../utils/theme';
 
-export default function StatCard({ title, value, icon, style }) {
+export function StatCard({ title, value, iconName, iconColor = colors.primary }) {
   return (
-    <View style={[styles.card, style]}>
-      {icon ? <Text style={styles.icon}>{icon}</Text> : null}
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.value}>{value}</Text>
+    <View style={[styles.card, shadows.card]}>
+      <View style={styles.iconContainer}>
+        <MaterialIcons name={iconName} size={28} color={iconColor} />
+      </View>
+      <Text style={styles.valueText}>{value}</Text>
+      <Text style={styles.titleText}>{title}</Text>
+    </View>
+  );
+}
+
+export function BottomNav({ activeTab = 'home' }) {
+  const tabs = [
+    { id: 'home', label: 'Home', icon: 'home', route: '/' },
+    { id: 'library', label: 'Library', icon: 'menu-book', route: '/' },
+    { id: 'stats', label: 'Stats', icon: 'leaderboard', route: '/stats' },
+    { id: 'profile', label: 'Profile', icon: 'person', route: '/stats' },
+  ];
+
+  const handlePress = (tab) => {
+    // Navigate using router
+    router.push(tab.route);
+  };
+
+  return (
+    <View style={[styles.navContainer, shadows.active]}>
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab.id;
+        return (
+          <TouchableOpacity
+            key={tab.id}
+            style={[styles.tabButton, isActive && styles.activeTabButton]}
+            onPress={() => handlePress(tab)}
+            activeOpacity={0.8}
+          >
+            <MaterialIcons
+              name={tab.icon}
+              size={24}
+              color={isActive ? colors.secondary : colors.textSecondary}
+            />
+            <Text style={[styles.tabLabel, isActive && styles.activeTabLabel]}>
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
+    backgroundColor: colors.white,
+    padding: spacing.containerPadding,
+    borderRadius: radii.xl,
     flex: 1,
-    backgroundColor: 'rgba(29, 54, 83, 0.4)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: radii.lg,
-    padding: spacing.gutter,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 140,
-    shadowColor: '#000',
-    shadowOffset: { width: 10, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 4,
+    minWidth: '45%',
+    marginBottom: spacing.md,
   },
-  icon: {
-    fontSize: 36,
-    marginBottom: spacing.unit,
-  },
-  title: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 11,
-    color: colors.onSurfaceVariant,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    textAlign: 'center',
+  iconContainer: {
+    alignSelf: 'flex-start',
     marginBottom: 4,
   },
-  value: {
-    fontFamily: typography.labelMd.fontFamily,
+  valueText: {
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 28,
-    fontWeight: '700',
+    color: colors.textPrimary,
+    fontWeight: 'bold',
+    marginTop: spacing.sm,
+  },
+  titleText: {
+    fontFamily: 'Inter_300Light',
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  // Navigation styles
+  navContainer: {
+    position: 'absolute',
+    bottom: 24,
+    left: spacing.marginEdge,
+    right: spacing.marginEdge,
+    backgroundColor: colors.surface,
+    borderRadius: radii.full,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderWidth: 0,
+    zIndex: 100,
+  },
+  tabButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.sm,
+    borderRadius: radii.full,
+    minWidth: 64,
+  },
+  activeTabButton: {
+    backgroundColor: 'rgba(62, 89, 172, 0.1)', // Light tint of Majorelle Blue
+  },
+  tabLabel: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 10,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  activeTabLabel: {
+    fontFamily: 'Inter_600SemiBold',
     color: colors.secondary,
-    textAlign: 'center',
+    fontWeight: '600',
   },
 });

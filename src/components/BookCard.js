@@ -1,130 +1,181 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors, radii, spacing, typography } from '../utils/theme';
+import { colors, radii, spacing, typography, shadows } from '../utils/theme';
 
-export default function BookCard({ book, onPress }) {
-  const progressPercent = Math.round((book.readPages / book.totalPages) * 100);
+export default function BookCard({ book, onPress, horizontal = false }) {
+  if (!book) return null;
 
+  const progressPercent = Math.round((book.readPages / book.totalPages) * 100) || 0;
+  const isArabic = book.language === 'Arabic';
+
+  if (horizontal) {
+    return (
+      <TouchableOpacity style={[styles.horizontalCard, shadows.card]} onPress={onPress} activeOpacity={0.9}>
+        <View style={styles.horizontalCoverContainer}>
+          <Image source={{ uri: book.coverUrl }} style={styles.horizontalCover} resizeMode="cover" />
+          {isArabic && (
+            <View style={styles.arabicBadge}>
+              <Text style={styles.arabicBadgeText}>العربية</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.horizontalInfo}>
+          <Text style={styles.title} numberOfLines={1}>{book.title}</Text>
+          <Text style={styles.author} numberOfLines={1}>{book.author}</Text>
+          
+          <View style={styles.progressContainer}>
+            <View style={styles.progressBarBackground}>
+              <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
+            </View>
+            <Text style={styles.progressText}>{progressPercent}%</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+
+  // Vertical card (standard)
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
-      <View style={styles.coverWrapper}>
-        {book.coverUrl ? (
-          <Image source={{ uri: book.coverUrl }} style={styles.coverImage} resizeMode="cover" />
-        ) : (
-          <View style={styles.fallbackCover}>
-            <Text style={styles.fallbackText}>{book.title[0]}</Text>
+    <TouchableOpacity style={styles.verticalCard} onPress={onPress} activeOpacity={0.9}>
+      <View style={[styles.coverContainer, shadows.card]}>
+        <Image source={{ uri: book.coverUrl }} style={styles.verticalCover} resizeMode="cover" />
+        {isArabic && (
+          <View style={styles.arabicBadge}>
+            <Text style={styles.arabicBadgeText}>العربية</Text>
           </View>
         )}
-        <View style={styles.spineShadow} />
       </View>
-      <View style={styles.infoContainer}>
-        <Text style={styles.title} numberOfLines={1}>{book.title}</Text>
-        <Text style={styles.author} numberOfLines={1}>{book.author}</Text>
-        
-        {/* Luminous progress bar indicator */}
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBarBg}>
-            <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
-          </View>
-          <Text style={styles.progressText}>{progressPercent}%</Text>
-        </View>
+      <View style={styles.verticalInfo}>
+        <Text style={styles.verticalTitle} numberOfLines={1}>{book.title}</Text>
+        <Text style={styles.verticalAuthor} numberOfLines={1}>{book.author}</Text>
+      </View>
+      <View style={styles.verticalProgressBg}>
+        <View style={[styles.verticalProgressFill, { width: `${progressPercent}%` }]} />
       </View>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surfaceContainer,
-    borderRadius: radii.md,
-    padding: spacing.unit * 1.5,
-    marginVertical: spacing.unit,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-    elevation: 5,
+  verticalCard: {
+    width: 140,
+    marginRight: 16,
+    marginBottom: 8,
   },
-  coverWrapper: {
-    width: 60,
-    height: 90,
-    borderRadius: radii.sm,
+  coverContainer: {
+    width: 140,
+    height: 210,
+    borderRadius: radii.xl,
     overflow: 'hidden',
+    backgroundColor: colors.surfaceContainerHighest,
     position: 'relative',
-    shadowColor: '#000',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    borderLeftWidth: 3,
-    borderLeftColor: '#2a1700', // Skeuomorphic book spine edge
   },
-  coverImage: {
+  verticalCover: {
     width: '100%',
     height: '100%',
   },
-  fallbackCover: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: colors.surfaceBright,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fallbackText: {
-    fontFamily: typography.headlineLg.fontFamily,
-    fontSize: 24,
-    color: colors.secondary,
-  },
-  spineShadow: {
+  arabicBadge: {
     position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    top: 8,
+    left: 8,
+    backgroundColor: colors.tertiary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: radii.sm,
   },
-  infoContainer: {
+  arabicBadgeText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    color: colors.white,
+    fontWeight: 'bold',
+  },
+  verticalInfo: {
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  verticalTitle: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: colors.textPrimary,
+    fontWeight: '500',
+  },
+  verticalAuthor: {
+    fontFamily: 'Inter_300Light',
+    fontSize: 12,
+    color: colors.textSecondary,
+    fontWeight: '300',
+  },
+  verticalProgressBg: {
+    height: 6,
+    backgroundColor: 'rgba(0, 108, 75, 0.1)',
+    borderRadius: radii.full,
+    overflow: 'hidden',
+    marginTop: 4,
+  },
+  verticalProgressFill: {
+    height: '100%',
+    backgroundColor: colors.primaryContainer,
+    borderRadius: radii.full,
+  },
+  // Horizontal display (for lists/history if needed)
+  horizontalCard: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderRadius: radii.xl,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    alignItems: 'center',
+  },
+  horizontalCoverContainer: {
+    width: 48,
+    height: 72,
+    borderRadius: radii.default,
+    overflow: 'hidden',
+    backgroundColor: colors.surfaceContainer,
+    position: 'relative',
+  },
+  horizontalCover: {
+    width: '100%',
+    height: '100%',
+  },
+  horizontalInfo: {
     flex: 1,
-    marginLeft: spacing.gutter,
+    marginLeft: spacing.md,
     justifyContent: 'center',
   },
   title: {
-    fontFamily: typography.headlineMd.fontFamily,
-    fontSize: 18,
-    color: colors.primary,
-    marginBottom: 4,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 15,
+    color: colors.textPrimary,
+    fontWeight: '600',
   },
   author: {
-    fontFamily: typography.bodyMd.fontFamily,
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-    marginBottom: spacing.unit,
+    fontFamily: 'Inter_300Light',
+    fontSize: 12,
+    color: colors.textSecondary,
   },
   progressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: spacing.sm,
   },
-  progressBarBg: {
+  progressBarBackground: {
     flex: 1,
-    height: 4,
-    backgroundColor: colors.surfaceContainerHighest,
+    height: 6,
+    backgroundColor: 'rgba(0, 108, 75, 0.1)',
     borderRadius: radii.full,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#3b82f6', // Neon Sapphire shade
+    backgroundColor: colors.primaryContainer,
     borderRadius: radii.full,
   },
   progressText: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 10,
-    color: colors.onSurfaceVariant,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: colors.primary,
     marginLeft: 8,
-    minWidth: 25,
-    textAlign: 'right',
+    fontWeight: '600',
   },
 });

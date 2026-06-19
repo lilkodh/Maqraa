@@ -6,646 +6,431 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  Dimensions,
+  SafeAreaView,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors, radii, spacing, typography } from '../utils/theme';
-
-const { width } = Dimensions.get('window');
+import { colors, radii, spacing, typography, shadows } from '../utils/theme';
+import { BottomNav } from '../components/StatCard';
 
 export default function StatsScreen({
-  userProfile = {
-    name: 'Malek Al-Fassi',
-    avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAHzmEBwhiSp6nmKXySXfgzJUUs9Ft2R2dI9BJCt26cxDYlLrzINJIBPefvby_PkKT03qICc5_skMBMCQMyFHrjUEVdaHih9M1_AHWGQtVfQmbYafuRlgzVSqImbJ5fZpVENtkcmf97Rh4E2CDDsw28rJILEoIGEtfCFzHz0fcp_1YljeyLrgpkLHsaMOlFwrMZpjp_BHea27qubrrYJkYZkr3h-HlY3L_UJPUGQGwM5nsyUt5oyLoen9E3YzLtYvsLCl1b4K85wmk',
-    title: 'Master Collector • Registry No. 882',
-  },
-  stats = {
-    streak: 14,
-    booksRead: 1284,
-    readingTimeHours: 840,
-  },
-  weeklyData = [
-    { month: 'Jan', percent: 40 },
-    { month: 'Feb', percent: 65 },
-    { month: 'Mar', percent: 55 },
-    { month: 'Apr', percent: 90 },
-    { month: 'May', percent: 75 },
-    { month: 'Jun', percent: 85 },
-  ],
-  sessions = [
-    {
-      id: 's1',
-      title: 'Al-Kindi: De Gradibus',
-      detail: 'Finished session • 42 pages',
-      time: '2h ago',
-      icon: 'menu-book',
-      color: colors.primary,
-    },
-    {
-      id: 's2',
-      title: 'Acquired Rare Folio',
-      detail: 'The Muqaddimah (14th Century Edition)',
-      time: 'Yesterday',
-      icon: 'stars',
-      color: colors.tertiary,
-    },
-    {
-      id: 's3',
-      title: 'Royal Citation Earned',
-      detail: "Unlocked 'Custodian of the Nightfall'",
-      time: '3 days ago',
-      icon: 'emoji-events',
-      color: colors.primary,
-    },
-  ],
-  onNavigateToLibrary = () => {},
-  onBookPress = () => {},
+  streakCount = 12,
+  finishedBooksCount = 14,
+  totalPagesRead = 3420,
+  totalReadingHours = 124,
+  monthlyData = [],
+  readingHistory = [],
+  onDeleteHistoryItem,
+  onDeleteAllData,
 }) {
   return (
-    <View style={styles.container}>
-      {/* Top Header AppBar */}
-      <SafeAreaView edges={['top']} style={styles.headerWrapper}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.headerBtn}>
-            <MaterialIcons name="menu" size={24} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={styles.logoTitle}>MAQRA</Text>
-          <TouchableOpacity style={styles.headerBtn}>
-            <MaterialIcons name="search" size={24} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Reader Registry Section */}
-        <View style={styles.registrySection}>
-          <View style={styles.avatarContainer}>
-            <View style={styles.avatarBorder}>
-              <Image source={{ uri: userProfile.avatarUrl }} style={styles.avatarImage} />
-            </View>
-            <View style={styles.verifiedBadge}>
-              <MaterialIcons name="verified" size={16} color={colors.onPrimary} />
-            </View>
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Top Profile Panel (Dark Ink) */}
+        <View style={styles.darkHeaderPanel}>
+          <View style={styles.headerTopRow}>
+            <Text style={styles.logoText}>Maqra</Text>
+            <TouchableOpacity style={styles.searchButton}>
+              <MaterialIcons name="search" size={24} color={colors.white} />
+            </TouchableOpacity>
           </View>
-          <View style={styles.registryTextCol}>
-            <Text style={styles.registryName}>{userProfile.name}</Text>
-            <View style={styles.registrySubRow}>
-              <MaterialIcons name="auto-stories" size={14} color={colors.primary} />
-              <Text style={styles.registrySubText}>{userProfile.title}</Text>
-            </View>
-            <View style={styles.badgeRow}>
-              <View style={styles.badgeCapsulePrimary}>
-                <Text style={styles.badgeTextPrimary}>LEVEL 42</Text>
-              </View>
-              <View style={styles.badgeCapsuleSecondary}>
-                <Text style={styles.badgeTextSecondary}>SCHOLARSHIP STATUS</Text>
+
+          {/* User Identity */}
+          <View style={styles.userIdentityContainer}>
+            <View style={styles.avatarContainer}>
+              <Image
+                source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCMWJbRxJjQTZqNuMJ_f4i9_srRW-GoFDDQ3jkZndJuYFPM0b6ceTqyyWaQLncQTltwr-OE4zs-Ji_iXijltJTBnIRsp_kjBfqyCAfbrLPp9QAJekxXdAPJhepoDHoAy0yB7hqCkXhCuaXleYUmhdbUaIyVu3WZUFHPiV2Xg2VUTLTTP077M_sMRUbjI-yA6Eb1mfG33yK561Le4J2BWZjUFVeU0TdksIZ1po_5XS0JmefJoGG8KnSD23WxF0C59Gcb45r5IJDlCIE' }}
+                style={styles.avatar}
+              />
+              <View style={styles.cameraBadge}>
+                <MaterialIcons name="photo-camera" size={12} color={colors.white} />
               </View>
             </View>
+            <Text style={styles.userName}>Youssef</Text>
+            <Text style={styles.membershipText}>Member since 2024</Text>
+          </View>
+
+          {/* Stats Grid inside Header */}
+          <View style={styles.headerStatsGrid}>
+            <View style={styles.headerStatCard}>
+              <Text style={styles.headerStatValue}>{finishedBooksCount}</Text>
+              <Text style={styles.headerStatLabel}>Total Books</Text>
+            </View>
+            <View style={styles.headerStatCard}>
+              <Text style={styles.headerStatValue}>{totalPagesRead.toLocaleString()}</Text>
+              <Text style={styles.headerStatLabel}>Total Pages</Text>
+            </View>
+            <View style={styles.headerStatCard}>
+              <Text style={styles.headerStatValue}>{totalReadingHours}</Text>
+              <Text style={styles.headerStatLabel}>Total Hours</Text>
+            </View>
+            <View style={styles.headerStatCard}>
+              <Text style={styles.headerStatValue}>{streakCount}</Text>
+              <Text style={styles.headerStatLabel}>Day Streak</Text>
+            </View>
           </View>
         </View>
 
-        {/* Performance Matrix Grid */}
-        <View style={styles.matrixSection}>
-          {/* Card 1: Total Volumes */}
-          <View style={styles.glassCard}>
-            <View style={styles.matrixHeader}>
-              <Text style={styles.matrixLabel}>TOTAL VOLUMES</Text>
-              <MaterialIcons name="history-edu" size={24} color="rgba(242, 202, 80, 0.05)" style={styles.matrixBgIcon} />
+        {/* Content Canvas */}
+        <View style={styles.canvasContent}>
+          {/* Monthly Chart Section */}
+          <Text style={styles.sectionTitle}>Statistics</Text>
+          <View style={[styles.chartCard, shadows.card]}>
+            <Text style={styles.chartSubtitle}>Books finished per month</Text>
+            <View style={styles.chartBarsRow}>
+              {monthlyData.map((data, index) => {
+                const isActive = data.month === 'SEP'; // September is active
+                const maxCount = Math.max(...monthlyData.map(d => d.count)) || 1;
+                const barHeightPct = (data.count / maxCount) * 100;
+
+                return (
+                  <View key={data.month} style={styles.chartBarWrapper}>
+                    <View style={styles.barBackground}>
+                      <View
+                        style={[
+                          styles.barFill,
+                          { height: `${barHeightPct}%` },
+                          isActive ? styles.barFillActive : styles.barFillInactive,
+                        ]}
+                      />
+                    </View>
+                    <Text style={[styles.barLabel, isActive && styles.barLabelActive]}>
+                      {data.month}
+                    </Text>
+                  </View>
+                );
+              })}
             </View>
-            <View style={styles.matrixValueRow}>
-              <Text style={styles.matrixValue}>{stats.booksRead.toLocaleString()}</Text>
-              <Text style={styles.matrixGrowth}>+12%</Text>
-            </View>
-            <Text style={styles.matrixSubText}>Historical manuscripts archived</Text>
           </View>
 
-          {/* Card 2: Reading Velocity */}
-          <View style={styles.glassCard}>
-            <View style={styles.matrixHeader}>
-              <Text style={styles.matrixLabel}>READING VELOCITY</Text>
-              <MaterialIcons name="speed" size={24} color="rgba(242, 202, 80, 0.05)" style={styles.matrixBgIcon} />
-            </View>
-            <View style={styles.matrixValueRow}>
-              <Text style={styles.matrixValue}>84</Text>
-              <Text style={styles.matrixUnit}>pp/hr</Text>
-            </View>
-            <View style={styles.progressBarTrack}>
-              <View style={[styles.progressBarFill, { width: '72%' }]} />
-            </View>
+          {/* Reading History Section */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Reading history</Text>
+            <TouchableOpacity activeOpacity={0.6}>
+              <Text style={styles.viewAllButton}>View All</Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Card 3: Global Rank */}
-          <View style={styles.glassCard}>
-            <View style={styles.matrixHeader}>
-              <Text style={styles.matrixLabel}>GLOBAL RANK</Text>
-              <MaterialIcons name="workspace-premium" size={24} color="rgba(242, 202, 80, 0.05)" style={styles.matrixBgIcon} />
-            </View>
-            <View style={styles.matrixValueRow}>
-              <Text style={styles.matrixValue}>Top 2%</Text>
-            </View>
-            <Text style={styles.matrixSubText}>Within the Elite Library Circle</Text>
-          </View>
-        </View>
-
-        {/* Activity Vector Chart */}
-        <View style={styles.graphSection}>
-          <View style={styles.graphHeader}>
-            <View>
-              <Text style={styles.graphTitle}>Activity Vector</Text>
-              <Text style={styles.graphSubtitle}>Archive engagement by lunar cycle</Text>
-            </View>
-            <Text style={styles.graphDate}>Jan — Jun 2024</Text>
-          </View>
-
-          <View style={styles.chartContainer}>
-            {weeklyData.map((d) => (
-              <View key={d.month} style={styles.chartCol}>
-                <View style={styles.barTrack}>
-                  <View style={[styles.barFill, { height: `${d.percent}%` }]} />
+          <View style={styles.historyList}>
+            {readingHistory.map((item) => (
+              <View key={item.id} style={[styles.historyRow, shadows.card]}>
+                <View style={styles.historyBookInfo}>
+                  <View style={styles.historyBookCoverContainer}>
+                    <Image source={{ uri: item.coverUrl }} style={styles.historyBookCover} resizeMode="cover" />
+                  </View>
+                  <View style={styles.historyTextDetails}>
+                    <Text style={styles.historyBookTitle}>{item.title}</Text>
+                    <Text style={styles.historyBookFinished}>
+                      Finished {new Date(item.timestamp).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </Text>
+                    <View style={styles.historyBadgesRow}>
+                      <View style={styles.historyBadgeMint}>
+                        <Text style={styles.historyBadgeMintText}>{item.durationHours} hrs</Text>
+                      </View>
+                      <View style={styles.historyBadgeBlue}>
+                        <Text style={styles.historyBadgeBlueText}>{item.totalPages} pgs</Text>
+                      </View>
+                    </View>
+                  </View>
                 </View>
-                <Text style={styles.chartMonthLabel}>{d.month}</Text>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => onDeleteHistoryItem(item.id)}
+                  activeOpacity={0.7}
+                >
+                  <MaterialIcons name="delete" size={20} color={colors.textSecondary} />
+                </TouchableOpacity>
               </View>
             ))}
           </View>
-        </View>
 
-        {/* Historical Log Ledger */}
-        <View style={styles.ledgerSection}>
-          <View style={styles.ledgerHeader}>
-            <Text style={styles.ledgerTitle}>Historical Ledger</Text>
+          {/* Danger Zone */}
+          <View style={styles.dangerZone}>
+            <TouchableOpacity style={styles.dangerButton} onPress={onDeleteAllData} activeOpacity={0.8}>
+              <Text style={styles.dangerButtonText}>Delete all data</Text>
+            </TouchableOpacity>
+            <Text style={styles.versionText}>Maqra v2.4.0 — All data is stored locally.</Text>
           </View>
-          <View style={styles.ledgerList}>
-            {sessions.map((s, index) => (
-              <View key={s.id} style={[styles.ledgerItem, index === sessions.length - 1 && styles.ledgerItemLast]}>
-                <View style={styles.ledgerLeft}>
-                  <View style={styles.ledgerIconContainer}>
-                    <MaterialIcons name={s.icon} size={22} color={s.color} />
-                  </View>
-                  <View style={styles.ledgerTextCol}>
-                    <Text style={styles.ledgerItemTitle}>{s.title}</Text>
-                    <Text style={styles.ledgerItemDetail}>{s.detail}</Text>
-                  </View>
-                </View>
-                <Text style={styles.ledgerTime}>{s.time}</Text>
-              </View>
-            ))}
-          </View>
-          <TouchableOpacity style={styles.viewArchiveBtn}>
-            <Text style={styles.viewArchiveText}>View Full Archive</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
 
-      {/* Floating Bottom Nav bar */}
-      <View style={styles.bottomNavContainer}>
-        <View style={styles.glassNav}>
-          <TouchableOpacity style={styles.navItem} onPress={() => onNavigateToLibrary('Library')}>
-            <MaterialIcons name="local-library" size={24} color="rgba(232, 225, 221, 0.7)" />
-            <Text style={styles.navText}>Library</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => onBookPress('alchemists-shadow')}>
-            <MaterialIcons name="menu-book" size={24} color="rgba(232, 225, 221, 0.7)" />
-            <Text style={styles.navText}>Reading</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => onNavigateToLibrary('Collections')}>
-            <MaterialIcons name="auto-stories" size={24} color="rgba(232, 225, 221, 0.7)" />
-            <Text style={styles.navText}>Collections</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.navItem, styles.navItemActive]}>
-            <MaterialIcons name="person" size={24} color={colors.primary} />
-            <Text style={[styles.navText, styles.navTextActive]}>Profile</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+      <BottomNav activeTab="profile" />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#151311',
-  },
-  headerWrapper: {
-    backgroundColor: 'rgba(85, 67, 57, 0.4)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(242, 202, 80, 0.3)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
-    zIndex: 100,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-  },
-  header: {
-    height: 64,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.marginMobile,
-  },
-  headerBtn: {
-    padding: 8,
-  },
-  logoTitle: {
-    fontFamily: typography.displayLgMobile.fontFamily,
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.primary,
-    letterSpacing: 2,
+    backgroundColor: colors.background,
   },
   scrollContent: {
-    paddingTop: 100,
-    paddingBottom: 140,
-    paddingHorizontal: spacing.marginMobile,
+    paddingBottom: 120,
   },
-  registrySection: {
+  darkHeaderPanel: {
+    backgroundColor: '#0D0D0D',
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+    paddingTop: 24,
+    paddingBottom: 32,
+    paddingHorizontal: spacing.marginEdge,
+  },
+  headerTopRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 20,
-    marginBottom: 48,
+    marginBottom: 20,
+  },
+  logoText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 22,
+    color: colors.white,
+    fontWeight: 'bold',
+    letterSpacing: -0.5,
+  },
+  searchButton: {
+    padding: 8,
+  },
+  userIdentityContainer: {
+    alignItems: 'center',
+    marginBottom: 32,
   },
   avatarContainer: {
     position: 'relative',
-  },
-  avatarBorder: {
-    width: 128,
-    height: 128,
-    borderRadius: radii.full,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    padding: 4,
-    backgroundColor: 'transparent',
-    shadowColor: '#000',
-    shadowOffset: { width: 10, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: radii.full,
-  },
-  verifiedBadge: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    backgroundColor: colors.primary,
-    width: 32,
-    height: 32,
-    borderRadius: radii.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 4,
-  },
-  registryTextCol: {
-    flex: 1,
-  },
-  registryName: {
-    fontFamily: typography.displayLgMobile.fontFamily,
-    fontSize: 28,
-    fontWeight: '700',
-    color: colors.onSurface,
-    marginBottom: 4,
-  },
-  registrySubRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
-  },
-  registrySubText: {
-    fontFamily: typography.bodyLg.fontFamily,
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-    opacity: 0.8,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  badgeCapsulePrimary: {
-    backgroundColor: 'rgba(242, 202, 80, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(242, 202, 80, 0.2)',
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    borderRadius: radii.full,
-  },
-  badgeTextPrimary: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 11,
-    color: colors.primary,
-  },
-  badgeCapsuleSecondary: {
-    backgroundColor: 'rgba(112, 227, 176, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(112, 227, 176, 0.2)',
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    borderRadius: radii.full,
-  },
-  badgeTextSecondary: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 11,
-    color: colors.tertiary,
-  },
-  matrixSection: {
-    gap: 24,
-    marginBottom: 48,
-  },
-  glassCard: {
-    backgroundColor: 'rgba(43, 29, 20, 0.4)',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.1)',
-    borderRadius: radii.sm,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 10, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  matrixHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 12,
   },
-  matrixLabel: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 12,
-    color: colors.onSurfaceVariant,
-    letterSpacing: 1.5,
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: colors.white,
   },
-  matrixBgIcon: {
+  cameraBadge: {
     position: 'absolute',
+    bottom: 0,
     right: 0,
-    top: 0,
-  },
-  matrixValueRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 8,
-    marginBottom: 8,
-  },
-  matrixValue: {
-    fontFamily: typography.displayLgMobile.fontFamily,
-    fontSize: 36,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  matrixGrowth: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 14,
-    color: colors.tertiary,
-    fontWeight: '600',
-  },
-  matrixUnit: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-  },
-  matrixSubText: {
-    fontFamily: typography.bodyMd.fontFamily,
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-    opacity: 0.6,
-  },
-  progressBarTrack: {
-    height: 6,
-    backgroundColor: colors.surfaceContainerHighest,
-    borderRadius: radii.full,
-    marginTop: 8,
-  },
-  progressBarFill: {
-    height: '100%',
     backgroundColor: colors.primary,
-    borderRadius: radii.full,
-    shadowColor: 'rgba(242, 202, 80, 0.6)',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#0D0D0D',
   },
-  graphSection: {
-    backgroundColor: 'rgba(43, 29, 20, 0.4)',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.1)',
-    borderRadius: radii.sm,
-    padding: 24,
-    marginBottom: 48,
-    shadowColor: '#000',
-    shadowOffset: { width: 10, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  graphHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 40,
-  },
-  graphTitle: {
-    fontFamily: typography.headlineSm.fontFamily,
+  userName: {
+    fontFamily: 'Inter_500Medium',
     fontSize: 20,
-    color: colors.onSurface,
-    fontWeight: '600',
-    marginBottom: 4,
+    color: colors.white,
+    fontWeight: '500',
   },
-  graphSubtitle: {
-    fontFamily: typography.bodyMd.fontFamily,
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-    opacity: 0.7,
+  membershipText: {
+    fontFamily: 'Inter_300Light',
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
   },
-  graphDate: {
-    fontFamily: typography.labelMd.fontFamily,
-    fontSize: 14,
-    color: colors.primary,
-  },
-  chartContainer: {
+  headerStatsGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'flex-end',
-    height: 240,
-    paddingBottom: 24,
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
-  chartCol: {
+  headerStatCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+    width: '48%',
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  headerStatValue: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 24,
+    color: colors.white,
+    fontWeight: 'bold',
+  },
+  headerStatLabel: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 10,
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginTop: 4,
+  },
+  canvasContent: {
+    paddingHorizontal: spacing.marginEdge,
+    paddingVertical: spacing.lg,
+  },
+  sectionTitle: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 20,
+    color: colors.textPrimary,
+    fontWeight: '500',
+    marginBottom: spacing.md,
+  },
+  chartCard: {
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: spacing.containerPadding,
+    marginBottom: spacing.lg,
+  },
+  chartSubtitle: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 20,
+  },
+  chartBarsRow: {
+    flexDirection: 'row',
+    alignItems: 'end',
+    justifyContent: 'space-between',
+    height: 128,
+  },
+  chartBarWrapper: {
     alignItems: 'center',
     flex: 1,
+    marginHorizontal: 2,
   },
-  barTrack: {
-    width: 24,
-    height: 180,
-    backgroundColor: 'transparent',
+  barBackground: {
+    flex: 1,
     justifyContent: 'flex-end',
-    marginBottom: 16,
+    width: '100%',
+    height: '100%',
   },
   barFill: {
     width: '100%',
-    borderRadius: radii.sm,
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 2,
+  },
+  barFillActive: {
     backgroundColor: colors.primary,
-    shadowColor: 'rgba(212, 175, 55, 0.4)',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
-    elevation: 5,
   },
-  chartMonthLabel: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 12,
-    color: colors.onSurfaceVariant,
+  barFillInactive: {
+    backgroundColor: 'rgba(0, 108, 75, 0.15)',
   },
-  ledgerSection: {
-    backgroundColor: 'rgba(43, 29, 20, 0.4)',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.1)',
-    borderRadius: radii.sm,
-    shadowColor: '#000',
-    shadowOffset: { width: 10, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
-    marginBottom: 24,
+  barLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 8,
+    color: colors.textSecondary,
+    fontWeight: 'bold',
+    marginTop: 8,
   },
-  ledgerHeader: {
-    padding: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(242, 202, 80, 0.2)',
+  barLabelActive: {
+    color: colors.primary,
   },
-  ledgerTitle: {
-    fontFamily: typography.headlineSm.fontFamily,
-    fontSize: 20,
-    color: colors.onSurface,
-    fontWeight: '600',
-  },
-  ledgerList: {
-    paddingHorizontal: 24,
-  },
-  ledgerItem: {
+  sectionHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(242, 202, 80, 0.1)',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    marginTop: spacing.sm,
   },
-  ledgerItemLast: {
-    borderBottomWidth: 0,
+  viewAllButton: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: colors.primary,
   },
-  ledgerLeft: {
+  historyList: {
+    marginBottom: spacing.lg,
+  },
+  historyRow: {
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: spacing.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  historyBookInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    flex: 1,
   },
-  ledgerIconContainer: {
+  historyBookCoverContainer: {
     width: 48,
-    height: 48,
-    borderRadius: radii.full,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.1)',
-    backgroundColor: 'rgba(43, 29, 20, 0.4)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    height: 64,
+    borderRadius: radii.default,
+    overflow: 'hidden',
+    backgroundColor: colors.surfaceContainer,
   },
-  ledgerTextCol: {
-    flexDirection: 'column',
+  historyBookCover: {
+    width: '100%',
+    height: '100%',
   },
-  ledgerItemTitle: {
-    fontFamily: typography.labelMd.fontFamily,
-    fontSize: 16,
-    color: colors.onSurface,
+  historyTextDetails: {
+    marginLeft: 16,
+    flex: 1,
+  },
+  historyBookTitle: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    color: colors.textPrimary,
     fontWeight: '600',
   },
-  ledgerItemDetail: {
-    fontFamily: typography.bodyMd.fontFamily,
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-    opacity: 0.6,
+  historyBookFinished: {
+    fontFamily: 'Inter_300Light',
+    fontSize: 11,
+    color: colors.textSecondary,
     marginTop: 2,
   },
-  ledgerTime: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 12,
-    color: colors.onSurfaceVariant,
-  },
-  viewArchiveBtn: {
-    padding: 16,
-    backgroundColor: 'rgba(242, 202, 80, 0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  viewArchiveText: {
-    fontFamily: typography.labelMd.fontFamily,
-    fontSize: 14,
-    color: colors.primary,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
-  bottomNavContainer: {
-    position: 'absolute',
-    bottom: 24,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    zIndex: 500,
-  },
-  glassNav: {
-    width: '90%',
-    maxWidth: 400,
-    height: 64,
-    backgroundColor: 'rgba(85, 67, 57, 0.6)',
-    borderRadius: radii.full,
-    borderWidth: 1,
-    borderColor: 'rgba(242, 202, 80, 0.2)',
+  historyBadgesRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.8,
-    shadowRadius: 50,
-    elevation: 15,
+    marginTop: 6,
   },
-  navItem: {
+  historyBadgeMint: {
+    backgroundColor: 'rgba(0, 108, 75, 0.08)',
+    borderRadius: radii.full,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginRight: 6,
+  },
+  historyBadgeMintText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    color: colors.primary,
+    fontWeight: 'bold',
+  },
+  historyBadgeBlue: {
+    backgroundColor: 'rgba(62, 89, 172, 0.08)',
+    borderRadius: radii.full,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  historyBadgeBlueText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    color: colors.secondary,
+    fontWeight: 'bold',
+  },
+  deleteButton: {
+    padding: 8,
+  },
+  dangerZone: {
+    paddingTop: spacing.md,
+    alignItems: 'center',
+  },
+  dangerButton: {
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.error,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 48,
-    paddingHorizontal: 12,
   },
-  navItemActive: {
-    backgroundColor: 'rgba(242, 202, 80, 0.1)',
-    borderRadius: radii.full,
-    shadowColor: 'rgba(212, 175, 55, 0.4)',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 15,
-    elevation: 2,
+  dangerButtonText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: colors.error,
+    fontWeight: '500',
   },
-  navText: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 10,
-    color: 'rgba(232, 225, 221, 0.7)',
-    marginTop: 2,
-  },
-  navTextActive: {
-    color: colors.primary,
-    fontWeight: '700',
+  versionText: {
+    fontFamily: 'Inter_300Light',
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 16,
+    opacity: 0.6,
   },
 });

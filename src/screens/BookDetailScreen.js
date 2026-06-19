@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,601 +6,544 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  Dimensions,
+  TextInput,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors, radii, spacing, typography } from '../utils/theme';
-import Svg, { Circle } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
+import { colors, radii, spacing, typography, shadows } from '../utils/theme';
+import { BottomNav } from '../components/StatCard';
 import { formatTime } from '../utils/calculations';
-
-const { width } = Dimensions.get('window');
-const size = 160;
 
 export default function BookDetailScreen({
   book,
-  timerSeconds = 0,
-  timerRunning = false,
-  onStartTimer = () => {},
-  onPauseTimer = () => {},
-  onStopTimer = () => {},
-  onToggleCompletion = () => {},
-  onBackPress = () => {},
-  onNavigateToLibrary = () => {},
-  onNavigateToStats = () => {},
+  timerState,
+  onUpdateProgress,
+  onToggleCompletion,
+  onStartTimer,
+  onPauseTimer,
+  onStopTimer,
+  onBack,
 }) {
-  if (!book) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>No book selected.</Text>
-        <TouchableOpacity style={styles.errorBackBtn} onPress={onBackPress}>
-          <Text style={styles.errorBackBtnText}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  const [pageInput, setPageInput] = useState('');
 
-  const progressPercent = Math.round((book.readPages / book.totalPages) * 100);
+  if (!book) return null;
 
-  const strokeWidth = 6;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
+  const progressPercent = Math.round((book.readPages / book.totalPages) * 100) || 0;
+  const isTimerRunning = timerState?.isRunning || false;
+  const timerSeconds = timerState?.seconds || 0;
+
+  // Format timer time nicely using formatTime
+  const formattedTime = formatTime ? formatTime(timerSeconds) : '00:00:00';
+
+  const handleUpdate = () => {
+    const pages = parseInt(pageInput, 10);
+    if (!isNaN(pages)) {
+      onUpdateProgress(pages);
+      setPageInput('');
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      {/* Top Header Navigation */}
-      <SafeAreaView edges={['top']} style={styles.headerWrapper}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.headerBtn} onPress={onBackPress}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={styles.logoTitle}>MAQRA</Text>
-          <TouchableOpacity style={styles.headerBtn}>
-            <MaterialIcons name="more-vert" size={24} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Cinematic Banner */}
-        <View style={styles.bannerSection}>
-          <Image
-            source={{ uri: book.coverUrl }}
-            style={styles.bannerBackground}
-            blurRadius={10}
-          />
-          <View style={styles.bannerOverlay} />
-
-          {/* 3D Book Cover Asset */}
-          <View style={styles.coverWrapper}>
-            <View style={styles.coverCard}>
-              <Image source={{ uri: book.coverUrl }} style={styles.coverImage} />
-              <View style={styles.coverBorder} />
-            </View>
-          </View>
-        </View>
-
-        {/* Content Area */}
-        <View style={styles.contentArea}>
-          {/* Metadata Block */}
-          <View style={styles.metaBlock}>
-            <Text style={styles.title}>{book.title}</Text>
-            <Text style={styles.author}>{book.synopsis || 'Ibn Arabi’s Mystical Journey'}</Text>
-
-            {/* Gold Star Matrix */}
-            <View style={styles.starRow}>
-              <View style={styles.stars}>
-                <MaterialIcons name="star" size={18} color={colors.primary} />
-                <MaterialIcons name="star" size={18} color={colors.primary} />
-                <MaterialIcons name="star" size={18} color={colors.primary} />
-                <MaterialIcons name="star" size={18} color={colors.primary} />
-                <MaterialIcons name="star-border" size={18} color={colors.primary} />
-              </View>
-              <Text style={styles.ratingNum}>{book.rating || '4.8'}</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.keyboardContainer}
+    >
+      <SafeAreaView style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* Top 45% Dark Panel */}
+          <View style={styles.darkHeaderPanel}>
+            <View style={styles.navRow}>
+              <TouchableOpacity onPress={onBack} style={styles.headerButton}>
+                <MaterialIcons name="arrow-back" size={24} color={colors.white} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.headerButton}>
+                <MaterialIcons name="share" size={24} color={colors.white} />
+              </TouchableOpacity>
             </View>
 
-            {/* Language Capsules */}
-            <View style={styles.tagRow}>
-              <View style={styles.tagCapsuleActive}>
-                <Text style={styles.tagTextActive}>ARABIC (ORIGINAL)</Text>
+            <View style={styles.bookDisplayContainer}>
+              <View style={styles.coverShadowContainer}>
+                <Image source={{ uri: book.coverUrl }} style={styles.bookCover} resizeMode="cover" />
               </View>
-              <View style={styles.tagCapsuleInactive}>
-                <Text style={styles.tagTextInactive}>ENGLISH (TRANS)</Text>
-              </View>
-              <View style={styles.tagCapsuleInactive}>
-                <Text style={styles.tagTextInactive}>SUFISM</Text>
+              <Text style={styles.bookTitle} numberOfLines={1}>{book.title}</Text>
+              <Text style={styles.bookAuthor}>{book.author}</Text>
+              
+              <View style={styles.starsRow}>
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <MaterialIcons key={s} name="star" size={18} color={colors.primaryContainer} />
+                ))}
               </View>
             </View>
           </View>
 
-          {/* Frosted Stat Strip */}
-          <View style={styles.statStrip}>
-            <View style={styles.statCol}>
-              <Text style={styles.statLabel}>RATING</Text>
-              <Text style={styles.statValue}>{book.rating || '4.8'}</Text>
-            </View>
-            <View style={styles.statCol}>
-              <Text style={styles.statLabel}>READS</Text>
-              <Text style={styles.statValue}>1.2k</Text>
-            </View>
-            <View style={styles.statCol}>
-              <Text style={styles.statLabel}>REVIEWS</Text>
-              <Text style={styles.statValue}>458</Text>
-            </View>
-            <View style={styles.statCol}>
-              <Text style={styles.statLabel}>QUOTES</Text>
-              <Text style={styles.statValue}>82</Text>
-            </View>
-          </View>
+          {/* Canvas */}
+          <View style={styles.canvasContent}>
+            {/* Progress Section */}
+            <View style={[styles.card, shadows.card]}>
+              <View style={styles.cardHeader}>
+                <View>
+                  <Text style={styles.cardSubtitle}>OVERALL PROGRESS</Text>
+                  <View style={styles.progressTextRow}>
+                    <Text style={styles.progressPercent}>{progressPercent}%</Text>
+                    <Text style={styles.progressDetails}>{book.readPages} / {book.totalPages} pages</Text>
+                  </View>
+                </View>
+                <View style={styles.avatarRow}>
+                  <Image
+                    source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDQPhBqv1yvlBb8EWPoEoCkmdNAFvRG0QpDtNxflyZDQQQWnX6CAUvHRhBUaqJIvZE-jM31UFhLdzzzF1FQBBH7E7esJ67swWjv7WRRtTDmYABPjgdp0HeiP50BZ3lEbw_WLnQMVMTijlhzJYWsOPSQ7NT_9Q2aa1Zrhuy6pi07SvLoh508tiAEFkEYSrjk1kCO9Y9XtGBKHzlBfSXR3Zt4bWBmt5czZ4a2QQzYxLQmc2jaVeGp_YjiG4-Zm1DkDt_0E5J3btZkW5U' }}
+                    style={styles.smallAvatar}
+                  />
+                  <Image
+                    source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC_6h2wRU9Q38whJECi4HL8Bi8uqEZohvOzj_dlHq94DLDaYu1lGvk9B22XzhmTpT-mu-TRBVLy9RW2vcwUZoDb3MsDJa_P1SVPRH1W-F6h6BvEv2pqj3lRs-gofScJhIJLELNlnE3imxb6u6luzBucyEyC8LjQRr41RvYCRGlGCxLNUgVYRfRsufxKO5iBH-Q0spxcdXpm7XYFplhLpJm7KXCYl_nTY4E-EVxGp1o_M5WE3K8z3AUY5WysG6CKovBr2Wy6LV5N4BM' }}
+                    style={[styles.smallAvatar, { marginLeft: -8 }]}
+                  />
+                  <View style={styles.moreAvatarBadge}>
+                    <Text style={styles.moreAvatarText}>+4</Text>
+                  </View>
+                </View>
+              </View>
 
-          {/* Concentric Completion Halo */}
-          <View style={styles.haloSection}>
-            <View style={styles.haloRingWrapper}>
-              <Svg width={size} height={size} style={styles.haloRing}>
-                {/* Track Circle */}
-                <Circle
-                  cx={size / 2}
-                  cy={size / 2}
-                  r={radius}
-                  stroke="#373431"
-                  strokeWidth={4}
-                  fill="none"
+              <View style={styles.progressBg}>
+                <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <TextInput
+                  placeholder="Enter page reached..."
+                  placeholderTextColor={colors.textSecondary}
+                  keyboardType="numeric"
+                  value={pageInput}
+                  onChangeText={setPageInput}
+                  style={styles.pageInput}
                 />
-                {/* Progress Circle */}
-                <Circle
-                  cx={size / 2}
-                  cy={size / 2}
-                  r={radius}
-                  stroke="#F59E0B"
-                  strokeWidth={6}
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                  fill="none"
-                  transform={`rotate(-90 ${size / 2} ${size / 2})`}
-                />
+                <TouchableOpacity style={styles.updateButton} onPress={handleUpdate} activeOpacity={0.8}>
+                  <Text style={styles.updateButtonText}>Update</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Reading Session Card */}
+            <View style={[styles.card, shadows.card]}>
+              <View style={styles.sessionHeader}>
+                <Text style={styles.cardSubtitle}>READING SESSION</Text>
+                <View style={styles.activeIndicator}>
+                  <View style={[styles.indicatorDot, isTimerRunning && styles.indicatorDotActive]} />
+                  <Text style={[styles.indicatorText, isTimerRunning && styles.indicatorTextActive]}>
+                    {isTimerRunning ? 'Active Now' : 'Session Inactive'}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.timerContainer}>
+                <Text style={styles.timerText}>{formattedTime}</Text>
+                
+                <View style={styles.controlsRow}>
+                  {/* Pause Button */}
+                  <TouchableOpacity
+                    style={styles.controlButtonSmall}
+                    onPress={onPauseTimer}
+                    disabled={!isTimerRunning}
+                    activeOpacity={0.7}
+                  >
+                    <MaterialIcons name="pause" size={24} color={isTimerRunning ? colors.textPrimary : colors.textSecondary} />
+                  </TouchableOpacity>
+
+                  {/* Play Button */}
+                  <TouchableOpacity
+                    style={styles.controlButtonLarge}
+                    onPress={onStartTimer}
+                    activeOpacity={0.8}
+                  >
+                    <MaterialIcons
+                      name={isTimerRunning ? 'play-arrow' : 'play-arrow'}
+                      size={32}
+                      color={colors.white}
+                    />
+                  </TouchableOpacity>
+
+                  {/* Stop Button */}
+                  <TouchableOpacity
+                    style={styles.controlButtonSmall}
+                    onPress={() => onStopTimer('Finished reading session.')}
+                    activeOpacity={0.7}
+                  >
+                    <MaterialIcons name="stop" size={24} color={colors.textPrimary} />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.sessionStatsGrid}>
+                  <View style={styles.sessionStatItem}>
+                    <Text style={styles.sessionStatLabel}>Pages this session</Text>
+                    <Text style={styles.sessionStatValue}>
+                      {isTimerRunning ? '24' : '0'}
+                    </Text>
+                  </View>
+                  <View style={styles.sessionStatItem}>
+                    <Text style={styles.sessionStatLabel}>Time elapsed</Text>
+                    <Text style={styles.sessionStatValue}>
+                      {Math.round(timerSeconds / 60)} min
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            {/* Decorative Divider */}
+            <View style={styles.dividerContainer}>
+              <Svg height="12" width="100%" viewBox="0 0 100 12" preserveAspectRatio="none">
+                <Path d="M0 6C150 6 150 0 300 0C450 0 450 12 600 12C750 12 750 0 900 0C1050 0 1050 6 1200 6" stroke={colors.primary} strokeWidth="1.5" fill="none" />
               </Svg>
-              <View style={styles.haloTextContainer}>
-                <Text style={styles.haloPercent}>{progressPercent}%</Text>
-                <Text style={styles.haloLabel}>PROGRESS</Text>
-              </View>
+            </View>
+
+            {/* Status Buttons */}
+            <View style={styles.actionRow}>
+              <TouchableOpacity
+                style={[styles.outlineActionButton, book.status === 'in_progress' && styles.activeOutlineButton]}
+                onPress={handleToggleCompletion}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.outlineActionText}>Currently Reading</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.filledActionButton}
+                onPress={() => onUpdateProgress(book.totalPages)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.filledActionText}>Mark as Finished</Text>
+              </TouchableOpacity>
             </View>
           </View>
+        </ScrollView>
 
-          {/* Leather-Bound Timer Module */}
-          <View style={styles.timerModule}>
-            <View style={styles.timerLeft}>
-              <MaterialIcons name="schedule" size={24} color={colors.primary} />
-              <View style={styles.timerTextCol}>
-                <Text style={styles.timerLabelText}>CURRENT SESSION</Text>
-                <Text style={styles.timerClockText}>{formatTime(timerSeconds)}</Text>
-              </View>
-            </View>
-            <TouchableOpacity
-              style={styles.timerToggleBtn}
-              onPress={timerRunning ? onPauseTimer : onStartTimer}
-            >
-              <MaterialIcons
-                name={timerRunning ? 'pause' : 'play-arrow'}
-                size={22}
-                color={colors.primary}
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* Master CTA */}
-          <TouchableOpacity
-            style={styles.masterCta}
-            activeOpacity={0.8}
-            onPress={onToggleCompletion}
-          >
-            <MaterialIcons name="check-circle" size={24} color="#85f8c4" />
-            <Text style={styles.masterCtaText}>MARK AS COMPLETED</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-      {/* Floating Bottom Nav bar */}
-      <View style={styles.bottomNavContainer}>
-        <View style={styles.glassNav}>
-          <TouchableOpacity style={styles.navItem} onPress={() => onNavigateToLibrary('Library')}>
-            <MaterialIcons name="local-library" size={24} color="rgba(232, 225, 221, 0.7)" />
-            <Text style={styles.navText}>Library</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.navItem, styles.navItemActive]}>
-            <MaterialIcons name="menu-book" size={24} color={colors.primary} />
-            <Text style={[styles.navText, styles.navTextActive]}>Reading</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => onNavigateToLibrary('Collections')}>
-            <MaterialIcons name="auto-stories" size={24} color="rgba(232, 225, 221, 0.7)" />
-            <Text style={styles.navText}>Collections</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={onNavigateToStats}>
-            <MaterialIcons name="person" size={24} color="rgba(232, 225, 221, 0.7)" />
-            <Text style={styles.navText}>Profile</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+        <BottomNav activeTab="library" />
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  keyboardContainer: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#151311',
-  },
-  errorContainer: {
-    flex: 1,
-    backgroundColor: '#151311',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  errorText: {
-    fontFamily: typography.bodyLg.fontFamily,
-    fontSize: 18,
-    color: '#e8e1dd',
-    marginBottom: 24,
-  },
-  errorBackBtn: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: radii.full,
-    backgroundColor: colors.primary,
-  },
-  errorBackBtnText: {
-    fontFamily: typography.labelMd.fontFamily,
-    fontSize: 14,
-    color: colors.onPrimary,
-    fontWeight: '700',
-  },
-  headerWrapper: {
-    backgroundColor: 'rgba(85, 67, 57, 0.4)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(242, 202, 80, 0.3)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
-    zIndex: 100,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-  },
-  header: {
-    height: 64,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.marginMobile,
-  },
-  headerBtn: {
-    padding: 8,
-  },
-  logoTitle: {
-    fontFamily: typography.displayLgMobile.fontFamily,
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.primary,
-    letterSpacing: 2,
+    backgroundColor: colors.background,
   },
   scrollContent: {
-    paddingTop: 64,
-    paddingBottom: 140,
+    paddingBottom: 120,
   },
-  bannerSection: {
-    height: 320,
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
+  darkHeaderPanel: {
+    backgroundColor: '#0D0D0D',
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+    paddingTop: 24,
+    paddingBottom: 32,
+    paddingHorizontal: spacing.marginEdge,
   },
-  bannerBackground: {
-    ...StyleSheet.absoluteFillObject,
-    width: '100%',
-    height: '100%',
-    opacity: 0.3,
-  },
-  bannerOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(21, 19, 17, 0.6)',
-  },
-  coverWrapper: {
-    position: 'absolute',
-    bottom: -48,
-    shadowColor: '#000',
-    shadowOffset: { width: 10, height: 10 },
-    shadowOpacity: 0.6,
-    shadowRadius: 30,
-    elevation: 15,
-  },
-  coverCard: {
-    width: 192,
-    height: 288,
-    borderRadius: radii.sm,
-    overflow: 'hidden',
-    borderLeftWidth: 4,
-    borderLeftColor: 'rgba(242, 202, 80, 0.3)',
-    backgroundColor: colors.surfaceContainerHigh,
-  },
-  coverImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  coverBorder: {
-    ...StyleSheet.absoluteFillObject,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.2)',
-  },
-  contentArea: {
-    marginTop: 80,
-    paddingHorizontal: spacing.marginMobile,
-    alignItems: 'center',
-  },
-  metaBlock: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  title: {
-    fontFamily: typography.displayLgMobile.fontFamily,
-    fontSize: 32,
-    fontWeight: '700',
-    color: colors.onSurface,
-    textAlign: 'center',
-    marginBottom: 8,
-    letterSpacing: -0.5,
-  },
-  author: {
-    fontFamily: typography.bodyLg.fontFamily,
-    fontSize: 18,
-    color: colors.onSurfaceVariant,
-    opacity: 0.8,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  starRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-  },
-  stars: {
-    flexDirection: 'row',
-    gap: 4,
-    marginRight: 8,
-  },
-  ratingNum: {
-    fontFamily: typography.labelMd.fontFamily,
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-    fontWeight: '600',
-  },
-  tagRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  tagCapsuleActive: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: radii.full,
-    borderWidth: 1,
-    borderColor: 'rgba(242, 202, 80, 0.2)',
-    backgroundColor: 'rgba(242, 202, 80, 0.05)',
-  },
-  tagTextActive: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 11,
-    color: colors.primary,
-  },
-  tagCapsuleInactive: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: radii.full,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    backgroundColor: colors.surfaceContainerLow,
-  },
-  tagTextInactive: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 11,
-    color: colors.onSurfaceVariant,
-  },
-  statStrip: {
-    width: '100%',
-    backgroundColor: 'rgba(43, 29, 20, 0.4)',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.1)',
-    borderRadius: radii.sm,
-    paddingVertical: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 40,
-    shadowColor: '#000',
-    shadowOffset: { width: 10, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  statCol: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statLabel: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 10,
-    color: 'rgba(242, 202, 80, 0.6)',
-    letterSpacing: 1.5,
-    marginBottom: 4,
-  },
-  statValue: {
-    fontFamily: typography.headlineSm.fontFamily,
-    fontSize: 20,
-    color: colors.onSurface,
-    fontWeight: '600',
-  },
-  haloSection: {
-    marginBottom: 48,
-    alignItems: 'center',
-  },
-  haloRingWrapper: {
-    position: 'relative',
-    width: size,
-    height: size,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  haloRing: {
-    position: 'absolute',
-  },
-  haloTextContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  haloPercent: {
-    fontFamily: typography.displayLgMobile.fontFamily,
-    fontSize: 32,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  haloLabel: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 10,
-    color: colors.onSurfaceVariant,
-    opacity: 0.6,
-    letterSpacing: 1.2,
-    marginTop: 4,
-  },
-  timerModule: {
-    width: '100%',
-    maxWidth: 360,
-    backgroundColor: '#2B1D14',
-    borderRadius: radii.sm,
-    padding: 16,
-    borderLeftWidth: 8,
-    borderLeftColor: colors.primary,
+  navRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 48,
-    shadowColor: '#000',
-    shadowOffset: { width: 10, height: 10 },
-    shadowOpacity: 0.6,
-    shadowRadius: 30,
-    elevation: 12,
+    marginBottom: 20,
   },
-  timerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  timerTextCol: {
-    flexDirection: 'column',
-  },
-  timerLabelText: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 10,
-    color: colors.primary,
-    letterSpacing: 1.2,
-    marginBottom: 4,
-  },
-  timerClockText: {
-    fontFamily: typography.timerMono.fontFamily,
-    fontSize: 20,
-    color: colors.onSurface,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  timerToggleBtn: {
-    width: 40,
-    height: 40,
+  headerButton: {
+    padding: 8,
     borderRadius: radii.full,
-    backgroundColor: 'rgba(242, 202, 80, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(242, 202, 80, 0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
-  masterCta: {
-    width: '100%',
-    maxWidth: 360,
-    height: 64,
-    backgroundColor: '#004f36',
-    borderRadius: radii.full,
-    flexDirection: 'row',
+  bookDisplayContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    shadowColor: 'rgba(0, 79, 54, 0.4)',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.6,
-    shadowRadius: 25,
+  },
+  coverShadowContainer: {
+    width: 160,
+    height: 240,
+    borderRadius: radii.xl,
+    overflow: 'hidden',
+    backgroundColor: '#333',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.3,
+    shadowRadius: 24,
     elevation: 8,
   },
-  masterCtaText: {
-    fontFamily: typography.labelMd.fontFamily,
+  bookCover: {
+    width: '100%',
+    height: '100%',
+  },
+  bookTitle: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 22,
+    color: colors.white,
+    marginTop: 20,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  bookAuthor: {
+    fontFamily: 'Inter_500Medium',
     fontSize: 14,
-    color: '#85f8c4',
-    fontWeight: '700',
-    letterSpacing: 1,
+    color: colors.primaryContainer,
+    marginTop: 4,
+    textAlign: 'center',
   },
-  bottomNavContainer: {
-    position: 'absolute',
-    bottom: 24,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    zIndex: 500,
-  },
-  glassNav: {
-    width: '90%',
-    maxWidth: 400,
-    height: 64,
-    backgroundColor: 'rgba(85, 67, 57, 0.6)',
-    borderRadius: radii.full,
-    borderWidth: 1,
-    borderColor: 'rgba(242, 202, 80, 0.2)',
+  starsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.8,
-    shadowRadius: 50,
-    elevation: 15,
+    marginTop: 8,
   },
-  navItem: {
+  canvasContent: {
+    paddingHorizontal: spacing.marginEdge,
+    paddingVertical: spacing.lg,
+  },
+  card: {
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: spacing.containerPadding,
+    marginBottom: spacing.lg,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.sm,
+  },
+  cardSubtitle: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: colors.textSecondary,
+    fontWeight: '600',
+    letterSpacing: 1,
+  },
+  progressTextRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginTop: 4,
+  },
+  progressPercent: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 32,
+    color: colors.primary,
+    fontWeight: 'bold',
+  },
+  progressDetails: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginLeft: 8,
+  },
+  avatarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  smallAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: colors.white,
+  },
+  moreAvatarBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: colors.white,
+    backgroundColor: colors.surfaceContainer,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 48,
-    paddingHorizontal: 12,
+    marginLeft: -8,
   },
-  navItemActive: {
-    backgroundColor: 'rgba(242, 202, 80, 0.1)',
+  moreAvatarText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    color: colors.textSecondary,
+    fontWeight: 'bold',
+  },
+  progressBg: {
+    height: 12,
+    backgroundColor: 'rgba(0, 108, 75, 0.1)',
     borderRadius: radii.full,
-    shadowColor: 'rgba(212, 175, 55, 0.4)',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 15,
+    overflow: 'hidden',
+    marginBottom: spacing.lg,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: radii.full,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+  },
+  pageInput: {
+    flex: 1,
+    backgroundColor: '#F2EEE8',
+    borderRadius: radii.md,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontFamily: 'Inter_300Light',
+    fontSize: 15,
+    color: colors.textPrimary,
+    marginRight: spacing.sm,
+  },
+  updateButton: {
+    backgroundColor: colors.primary,
+    borderRadius: radii.full,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#006C4B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
     elevation: 2,
   },
-  navText: {
-    fontFamily: typography.labelSm.fontFamily,
-    fontSize: 10,
-    color: 'rgba(232, 225, 221, 0.7)',
-    marginTop: 2,
+  updateButtonText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: colors.white,
+    fontWeight: 'bold',
   },
-  navTextActive: {
+  sessionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  activeIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  indicatorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.textSecondary,
+    marginRight: 6,
+  },
+  indicatorDotActive: {
+    backgroundColor: colors.primary,
+  },
+  indicatorText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  indicatorTextActive: {
     color: colors.primary,
-    fontWeight: '700',
+  },
+  timerContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+  },
+  timerText: {
+    fontFamily: 'JetBrainsMono_500Medium',
+    fontSize: 42,
+    color: colors.primary,
+    fontWeight: '500',
+    letterSpacing: -1,
+    marginBottom: spacing.lg,
+  },
+  controlsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
+  },
+  controlButtonSmall: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.surfaceContainerLow,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 16,
+  },
+  controlButtonLarge: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#006C4B',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  sessionStatsGrid: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: colors.surfaceContainer,
+    width: '100%',
+    paddingTop: spacing.md,
+  },
+  sessionStatItem: {
+    flex: 1,
+    backgroundColor: colors.surfaceContainerLow,
+    padding: spacing.sm,
+    borderRadius: radii.md,
+    marginHorizontal: 4,
+  },
+  sessionStatLabel: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+    color: colors.textSecondary,
+  },
+  sessionStatValue: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 20,
+    color: colors.textPrimary,
+    fontWeight: 'bold',
+    marginTop: 4,
+  },
+  dividerContainer: {
+    marginVertical: spacing.lg,
+    opacity: 0.15,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  outlineActionButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: radii.full,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+  },
+  activeOutlineButton: {
+    backgroundColor: 'rgba(0, 108, 75, 0.05)',
+  },
+  outlineActionText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 15,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  filledActionButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: radii.full,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#006C4B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  filledActionText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 15,
+    color: colors.white,
+    fontWeight: '600',
   },
 });

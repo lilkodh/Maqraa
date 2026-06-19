@@ -1,107 +1,106 @@
 export const colors = {
-  background: '#151311', // Deep Charcoal
-  surface: '#151311',
-  surfaceDim: '#151311',
-  surfaceBright: '#3c3936',
-  surfaceContainerLowest: '#100e0c',
-  surfaceContainerLow: '#1e1b19',
-  surfaceContainer: '#221f1d',
-  surfaceContainerHigh: '#2c2927',
-  surfaceContainerHighest: '#373431',
-  onSurface: '#e8e1dd',
-  onSurfaceVariant: '#d0c5af',
-  primary: '#f2ca50', // Primary Gold
-  onPrimary: '#3c2f00',
-  primaryContainer: '#d4af37',
-  onPrimaryContainer: '#554300',
-  secondary: '#dbc2b3', // Muted Bronze
-  onSecondary: '#3d2d23',
-  secondaryContainer: '#554339',
-  onSecondaryContainer: '#c9b0a3',
-  tertiary: '#70e3b0', // Moorish Emerald
-  onTertiary: '#003825',
-  tertiaryContainer: '#52c796',
-  onTertiaryContainer: '#004f36',
-  outline: '#99907c',
-  outlineVariant: '#4d4635',
+  background: '#FAF6F0', // Warm Cream Base
+  surface: '#FFFFFF', // Pure White Cards
+  primary: '#006C4B', // Mint Green (Primary brand)
+  primaryContainer: '#4CAF85', // Mint Green (FAB/Progress)
+  secondary: '#3E59AC', // Majorelle Blue (Headers/Active Nav)
+  tertiary: '#9C440F', // Terracotta (Arabic tags)
+  textPrimary: '#0D0D0D', // Ink Dark
+  textSecondary: '#6E7A72', // Outline / Secondary Text
+  surfaceContainer: '#F0EDEC',
+  surfaceContainerLow: '#F6F3F2',
+  surfaceContainerHigh: '#EBE7E7',
+  surfaceContainerHighest: '#E5E2E1',
+  error: '#BA1A1A',
+  errorContainer: '#FFDAD6',
+  white: '#FFFFFF',
+  black: '#000000',
+  darkBg: '#0D0D0D', // Dark Ink Panel
 };
 
 export const radii = {
-  sm: 8,
-  default: 16,
-  md: 24,
-  lg: 32,
-  xl: 48,
+  sm: 4,
+  default: 8,
+  md: 12,
+  lg: 16,
+  xl: 20, // 20px standard cards
   full: 9999,
 };
 
 export const spacing = {
-  unit: 8,
-  gutter: 24,
-  marginMobile: 20,
-  marginDesktop: 64,
+  unit: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  marginEdge: 20,
+  containerPadding: 20,
 };
 
 export const typography = {
-  displayLg: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 48,
-    lineHeight: 56,
-    letterSpacing: -0.96,
-  },
-  displayLgMobile: {
-    fontFamily: 'PlayfairDisplay_700Bold',
+  display: {
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 32,
     lineHeight: 40,
+    fontWeight: '600',
   },
   headlineLg: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 32,
-    lineHeight: 40,
-  },
-  headlineMd: {
-    fontFamily: 'PlayfairDisplay_600SemiBold',
-    fontSize: 32,
-    lineHeight: 40,
-  },
-  headlineSm: {
-    fontFamily: 'PlayfairDisplay_600SemiBold',
+    fontFamily: 'Inter_500Medium',
     fontSize: 24,
     lineHeight: 32,
+    fontWeight: '500',
+  },
+  headlineLgMobile: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: '500',
+  },
+  headlineMd: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 20,
+    lineHeight: 28,
+    fontWeight: '500',
   },
   bodyLg: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 18,
-    lineHeight: 28,
+    fontFamily: 'Inter_300Light',
+    fontSize: 17,
+    lineHeight: 26,
+    fontWeight: '300',
   },
   bodyMd: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 16,
-    lineHeight: 24,
+    fontFamily: 'Inter_300Light',
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '300',
   },
-  labelMd: {
-    fontFamily: 'Inter_600SemiBold',
+  labelLg: {
+    fontFamily: 'Inter_500Medium',
     fontSize: 14,
     lineHeight: 20,
-    letterSpacing: 0.7,
+    fontWeight: '500',
   },
   labelSm: {
-    fontFamily: 'Inter_500Medium',
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 12,
     lineHeight: 16,
-    letterSpacing: 1.2,
+    fontWeight: '600',
   },
-  metadataSm: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 13,
-    lineHeight: 18,
-    letterSpacing: 0.13,
+};
+
+export const shadows = {
+  card: {
+    shadowColor: '#0D0D0D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 20,
+    elevation: 2,
   },
-  timerMono: {
-    fontFamily: 'JetBrainsMono_500Medium',
-    fontSize: 14,
-    lineHeight: 20,
-    letterSpacing: 0.7,
+  active: {
+    shadowColor: '#0D0D0D',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 30,
+    elevation: 4,
   },
 };
 
@@ -110,4 +109,5 @@ export default {
   radii,
   spacing,
   typography,
+  shadows,
 };
