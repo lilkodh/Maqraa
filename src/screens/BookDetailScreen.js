@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   bookAuthor: {
-    fontFamily: 'CourierPrime_400Regular',
+    fontFamily: 'Inter_500Medium',
     fontSize: 14,
     color: colors.primaryContainer,
     marginTop: 4,
@@ -334,12 +334,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   cardSubtitle: {
-    fontFamily: 'CourierPrime_400Regular',
-    fontSize: 11,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
     color: colors.textSecondary,
     fontWeight: '600',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   progressTextRow: {
     flexDirection: 'row',
@@ -353,8 +352,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   progressDetails: {
-    fontFamily: 'JetBrainsMono_500Medium',
-    fontSize: 13,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
     color: colors.textSecondary,
     marginLeft: 8,
   },
@@ -517,7 +516,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   sessionStatLabel: {
-    fontFamily: 'CourierPrime_400Regular',
+    fontFamily: 'Inter_500Medium',
     fontSize: 11,
     color: colors.textSecondary,
   },
@@ -550,10 +549,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(181, 137, 0, 0.05)',
   },
   outlineActionText: {
-    fontFamily: 'CourierPrime_400Regular',
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 15,
     color: colors.primary,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   filledActionButton: {
     flex: 1,
@@ -569,9 +568,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   filledActionText: {
-    fontFamily: 'CourierPrime_400Regular',
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 15,
     color: colors.white,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
 });

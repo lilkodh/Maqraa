@@ -799,11 +799,9 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   welcomeText: {
-    fontFamily: 'CourierPrime_400Regular',
-    fontSize: 11,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
     color: colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   userName: {
     fontFamily: 'PlayfairDisplay_700Bold',
@@ -861,13 +859,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.7)',
   },
   categoryLabel: {
-    fontFamily: 'CourierPrime_400Regular',
-    fontSize: 11,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
     color: colors.textSecondary,
     marginTop: 4,
   },
   categoryLabelActive: {
-    fontFamily: 'CourierPrime_400Regular',
+    fontFamily: 'Inter_600SemiBold',
     color: colors.secondary,
     fontWeight: 'bold',
   },
@@ -923,10 +921,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   goalSubtitle: {
-    fontFamily: 'CourierPrime_400Regular',
-    fontSize: 12,
+    fontFamily: 'Inter_300Light',
+    fontSize: 14,
     color: colors.textSecondary,
-    marginTop: 4,
+    marginTop: 2,
   },
   onTrackBadge: {
     flexDirection: 'row',
@@ -946,9 +944,10 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   badgeText: {
-    fontFamily: 'JetBrainsMono_500Medium',
-    fontSize: 10,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
     color: colors.tertiary,
+    fontWeight: '600',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -1264,8 +1263,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   removeBookAuthor: {
-    fontFamily: 'CourierPrime_400Regular',
-    fontSize: 11,
+    fontFamily: 'Inter_300Light',
+    fontSize: 12,
     color: colors.textSecondary,
     marginTop: 2,
   },

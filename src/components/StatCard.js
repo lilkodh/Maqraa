@@ -128,12 +128,10 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   titleText: {
-    fontFamily: 'CourierPrime_400Regular',
-    fontSize: 11,
+    fontFamily: 'Inter_300Light',
+    fontSize: 12,
     color: colors.textSecondary,
     marginTop: 2,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   // Navigation styles
   navContainer: {

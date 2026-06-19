@@ -251,11 +251,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   headerStatLabel: {
-    fontFamily: 'CourierPrime_400Regular',
+    fontFamily: 'Inter_500Medium',
     fontSize: 10,
     color: colors.textSecondary,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
     marginTop: 4,
   },
   canvasContent: {
@@ -318,14 +318,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(181, 137, 0, 0.15)',
   },
   barLabel: {
-    fontFamily: 'JetBrainsMono_500Medium',
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 8,
     color: colors.textSecondary,
+    fontWeight: 'bold',
     marginTop: 8,
   },
   barLabelActive: {
     color: colors.primary,
-    fontFamily: 'JetBrainsMono_500Medium',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   historyBookFinished: {
-    fontFamily: 'CourierPrime_400Regular',
+    fontFamily: 'Inter_300Light',
     fontSize: 11,
     color: colors.textSecondary,
     marginTop: 2,
@@ -405,9 +405,10 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   historyBadgeMintText: {
-    fontFamily: 'JetBrainsMono_500Medium',
-    fontSize: 9,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
     color: colors.primary,
+    fontWeight: 'bold',
   },
   historyBadgeBlue: {
     backgroundColor: 'rgba(62, 89, 172, 0.08)',
@@ -416,9 +417,10 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   historyBadgeBlueText: {
-    fontFamily: 'JetBrainsMono_500Medium',
-    fontSize: 9,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
     color: colors.secondary,
+    fontWeight: 'bold',
   },
   deleteButton: {
     padding: 8,
@@ -437,12 +439,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dangerButtonText: {
-    fontFamily: 'CourierPrime_400Regular',
+    fontFamily: 'Inter_500Medium',
     fontSize: 14,
     color: colors.error,
+    fontWeight: '500',
   },
   versionText: {
-    fontFamily: 'CourierPrime_400Regular',
+    fontFamily: 'Inter_300Light',
     fontSize: 11,
     color: colors.textSecondary,
     marginTop: 16,

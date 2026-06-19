@@ -108,9 +108,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   verticalAuthor: {
-    fontFamily: 'CourierPrime_400Regular',
-    fontSize: 11,
+    fontFamily: 'Inter_300Light',
+    fontSize: 12,
     color: colors.textSecondary,
+    fontWeight: '300',
   },
   verticalProgressBg: {
     height: 6,
@@ -167,8 +168,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   author: {
-    fontFamily: 'CourierPrime_400Regular',
-    fontSize: 11,
+    fontFamily: 'Inter_300Light',
+    fontSize: 12,
     color: colors.textSecondary,
   },
   progressContainer: {
@@ -189,9 +190,10 @@ const styles = StyleSheet.create({
     borderRadius: radii.full,
   },
   progressText: {
-    fontFamily: 'JetBrainsMono_500Medium',
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 11,
     color: colors.primary,
     marginLeft: 8,
+    fontWeight: '600',
   },
 });
