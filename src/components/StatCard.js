@@ -101,9 +101,9 @@ export function BottomNav({ activeTab = 'home', state, descriptors, navigation }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(22, 28, 45, 0.8)',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.7)',
     padding: spacing.containerPadding,
     borderRadius: radii.xl,
     flex: 1,
@@ -133,9 +133,9 @@ const styles = StyleSheet.create({
     bottom: 24,
     left: spacing.marginEdge,
     right: spacing.marginEdge,
-    backgroundColor: 'rgba(22, 28, 45, 0.85)',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.6)',
     borderRadius: radii.full,
     flexDirection: 'row',
     justifyContent: 'space-around',

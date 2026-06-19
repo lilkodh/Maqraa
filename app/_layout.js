@@ -45,7 +45,7 @@ export default function Layout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <Tabs
         tabBar={(props) => <BottomNav {...props} />}
         screenOptions={{
