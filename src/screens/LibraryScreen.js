@@ -307,22 +307,21 @@ export default function LibraryScreen({
       </ScrollView>
 
       {/* Backdrop for expanded FAB */}
-      {isExpanded && (
-        <Animated.View
-          style={[
-            styles.backdrop,
-            {
-              opacity: backdropOpacity,
-            },
-          ]}
-        >
-          <TouchableOpacity
-            style={styles.backdropPressable}
-            activeOpacity={1}
-            onPress={() => setIsExpanded(false)}
-          />
-        </Animated.View>
-      )}
+      <Animated.View
+        style={[
+          styles.backdrop,
+          {
+            opacity: backdropOpacity,
+          },
+        ]}
+        pointerEvents={isExpanded ? 'auto' : 'none'}
+      >
+        <TouchableOpacity
+          style={styles.backdropPressable}
+          activeOpacity={1}
+          onPress={() => setIsExpanded(false)}
+        />
+      </Animated.View>
 
       {/* Sub-buttons for FAB */}
       {subButtons.map((btn) => (
@@ -355,34 +354,19 @@ export default function LibraryScreen({
       ))}
 
       {/* Main Floating Action Button */}
-      <Animated.View
-        style={[
-          styles.fabContainer,
-          {
-            opacity: mainRotate.interpolate({
-              inputRange: [0, 0.2, 1],
-              outputRange: [1, 0, 0],
-            }),
-            transform: [
-              {
-                scale: mainRotate.interpolate({
-                  inputRange: [0, 0.2, 1],
-                  outputRange: [1, 0, 0],
-                }),
-              },
-            ],
-          },
-        ]}
-        pointerEvents={isExpanded ? 'none' : 'auto'}
+      <View
+        style={styles.fabContainer}
       >
         <TouchableOpacity
           style={[styles.fab, shadows.active]}
-          onPress={() => setIsExpanded(true)}
+          onPress={() => setIsExpanded(!isExpanded)}
           activeOpacity={0.8}
         >
-          <MaterialIcons name="add" size={32} color={colors.white} />
+          <Animated.View style={{ transform: [{ rotate: rotation }] }}>
+            <MaterialIcons name="add" size={32} color={colors.white} />
+          </Animated.View>
         </TouchableOpacity>
-      </Animated.View>
+      </View>
 
       {/* Shared Bottom Nav Component */}
       <BottomNav activeTab="home" />
