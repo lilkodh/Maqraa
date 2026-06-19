@@ -6,10 +6,10 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  SafeAreaView,
   FlatList,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radii, spacing, typography } from '../utils/theme';
 import BookCard from '../components/BookCard';
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
   centerBookTransform: {
     width: 120,
     height: 180,
-    transform: [{ perspective: 1200 }, { rotateY: '-15deg' }, { translateZ: 50 }],
+    transform: [{ perspective: 1200 }, { rotateY: '-15deg' }, { scale: 1.15 }],
     borderLeftWidth: 4,
     borderLeftColor: '#2a1700',
   },

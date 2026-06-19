@@ -6,9 +6,9 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  SafeAreaView,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radii, spacing, typography } from '../utils/theme';
 import StatCard from '../components/StatCard';
