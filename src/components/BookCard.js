@@ -1,20 +1,46 @@
-import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { colors, radii, spacing, shadows } from "../utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function BookCard({ book, onPress, horizontal = false }) {
   if (!book) return null;
 
+  const currentPage = book.currentPage || 0;
+  const totalPages = book.totalPages || 0;
+
   const progressPercent =
-    book.totalPages > 0
-      ? Math.round(((book.currentPage || 0) / book.totalPages) * 100)
+    totalPages > 0
+      ? Math.min(
+          100,
+          Math.round((currentPage / totalPages) * 100)
+        )
       : 0;
 
   const isArabic = book.language === "Arabic";
 
-  const coverUri =
-    book.coverImage ||
-    "https://via.placeholder.com/300x450.png?text=No+Cover";
+  const renderCover = (isHorizontal) => {
+    const coverStyle = isHorizontal ? styles.horizontalCover : styles.verticalCover;
+
+    if (book.coverImage) {
+      return (
+        <Image
+          source={{ uri: book.coverImage }}
+          style={coverStyle}
+          resizeMode="cover"
+        />
+      );
+    }
+
+    return (
+      <View style={styles.placeholderContainer}>
+        <MaterialIcons
+          name="menu-book"
+          size={isHorizontal ? 20 : 40}
+          color={colors.primary}
+        />
+      </View>
+    );
+  };
 
   if (horizontal) {
     return (
@@ -24,11 +50,7 @@ export default function BookCard({ book, onPress, horizontal = false }) {
         activeOpacity={0.9}
       >
         <View style={styles.horizontalCoverContainer}>
-          <Image
-            source={{ uri: coverUri }}
-            style={styles.horizontalCover}
-            resizeMode="cover"
-          />
+          {renderCover(true)}
 
           {isArabic && (
             <View style={styles.arabicBadge}>
@@ -70,11 +92,7 @@ export default function BookCard({ book, onPress, horizontal = false }) {
       activeOpacity={0.9}
     >
       <View style={[styles.coverContainer, shadows.card]}>
-        <Image
-          source={{ uri: coverUri }}
-          style={styles.verticalCover}
-          resizeMode="cover"
-        />
+        {renderCover(false)}
 
         {isArabic && (
           <View style={styles.arabicBadge}>
@@ -231,5 +249,12 @@ const styles = StyleSheet.create({
     color: colors.primary,
     marginLeft: 8,
     fontWeight: "600",
+  },
+  placeholderContainer: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(181, 137, 0, 0.05)",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
