@@ -1,12 +1,12 @@
 export const colors = {
-  background: '#FAF6F0', // Warm Cream Base
-  surface: '#FFFFFF', // Pure White Cards
-  primary: '#B58900', // Dark Yellow / Mustard (Primary brand)
-  primaryContainer: '#E5A93C', // Warm Amber (FAB/Progress)
-  secondary: '#3E59AC', // Majorelle Blue (Headers/Active Nav)
-  tertiary: '#9C440F', // Terracotta (Arabic tags)
-  textPrimary: '#0D0D0D', // Ink Dark
-  textSecondary: '#6E7A72', // Outline / Secondary Text
+  background: '#FAF6F0',
+  surface: '#FFFFFF',
+  primary: '#B58900',
+  primaryContainer: '#E5A93C',
+  secondary: '#3E59AC',
+  tertiary: '#9C440F',
+  textPrimary: '#0D0D0D',
+  textSecondary: '#6E7A72',
   surfaceContainer: '#F0EDEC',
   surfaceContainerLow: '#F6F3F2',
   surfaceContainerHigh: '#EBE7E7',
@@ -15,7 +15,7 @@ export const colors = {
   errorContainer: '#FFDAD6',
   white: '#FFFFFF',
   black: '#000000',
-  darkBg: '#0D0D0D', // Dark Ink Panel
+  darkBg: '#0D0D0D',
 };
 
 export const radii = {
@@ -23,7 +23,7 @@ export const radii = {
   default: 8,
   md: 12,
   lg: 16,
-  xl: 20, // 20px standard cards
+  xl: 20,
   full: 9999,
 };
 
@@ -89,18 +89,18 @@ export const typography = {
 
 export const shadows = {
   card: {
-    shadowColor: 'transparent',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0,
-    shadowRadius: 0,
-    elevation: 0,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
   },
   active: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
   },
 };
 

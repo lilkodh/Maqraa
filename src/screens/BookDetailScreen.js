@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,59 +8,105 @@ import {
   TouchableOpacity,
   TextInput,
   SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
+  Alert,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
-import { colors, radii, spacing, typography, shadows } from '../utils/theme';
+import { colors, radii, spacing, shadows } from '../utils/theme';
+import { useLocalSearchParams, router } from 'expo-router';
+import useBookStore from '../store/bookStore';
 
-export default function BookDetailScreen({
-  book,
-  timerState,
-  onUpdateProgress,
-  onToggleCompletion,
-  onStartTimer,
-  onPauseTimer,
-  onStopTimer,
-  onBack,
-}) {
+export default function BookDetailScreen() {
+  const { id } = useLocalSearchParams();
+  const books = useBookStore((state) => state.books);
+  const book = books.find((b) => b.id === id);
+
+  const timerSeconds = useBookStore((state) => state.timerSeconds);
+  const isTimerRunning = useBookStore((state) => state.isTimerRunning);
+  const startTimer = useBookStore((state) => state.startTimer);
+  const pauseTimer = useBookStore((state) => state.pauseTimer);
+  const resetTimer = useBookStore((state) => state.resetTimer);
+  const incrementTimer = useBookStore((state) => state.incrementTimer);
+  const updateProgress = useBookStore((state) => state.updateProgress);
+  const toggleFavorite = useBookStore((state) => state.toggleFavorite);
+
   const [pageInput, setPageInput] = useState('');
+
+  useEffect(() => {
+    let interval;
+
+    if (isTimerRunning) {
+      interval = setInterval(() => {
+        incrementTimer();
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isTimerRunning]);
 
   if (!book) return null;
 
-  const progressPercent = book.progressPercent || 0;
-  const isTimerRunning = timerState?.isRunning || false;
+  const progressPercent = book.totalPages > 0
+    ? Math.round(((book.currentPage || 0) / book.totalPages) * 100)
+    : 0;
 
-  // Format timer time nicely using static string
-  const formattedTime = '00:00:00';
+  const seconds = timerSeconds;
+
+  const formatTime = (totalSeconds) => {
+    const hrs = Math.floor(totalSeconds / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+    return [
+      hrs.toString().padStart(2, '0'),
+      mins.toString().padStart(2, '0'),
+      secs.toString().padStart(2, '0')
+    ].join(':');
+  };
+  const formattedTime = formatTime(seconds);
 
   const handleUpdate = () => {
-    onUpdateProgress();
-    setPageInput('');
+    if (pageInput === "") {
+      return;
+    }
+
+    const pageNumber = Number(pageInput);
+    if (isNaN(pageNumber) || pageNumber < 0 || pageNumber > book.totalPages) {
+      Alert.alert(
+        "Invalid page",
+        `Enter a page between 0 and ${book.totalPages}`
+      );
+      return;
+    }
+
+    updateProgress(book.id, pageNumber);
+    setPageInput("");
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.keyboardContainer}
-    >
+  
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* Top 45% Dark Panel */}
           <View style={styles.darkHeaderPanel}>
             <View style={styles.navRow}>
-              <TouchableOpacity onPress={onBack} style={styles.headerButton}>
+              <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
                 <MaterialIcons name="arrow-back" size={24} color={colors.white} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.headerButton}>
-                <MaterialIcons name="share" size={24} color={colors.white} />
+              <TouchableOpacity onPress={() => toggleFavorite(book.id)} style={styles.headerButton}>
+                <MaterialIcons
+                  name={book.favorite ? "favorite" : "favorite-border"}
+                  size={24}
+                  color={book.favorite ? colors.primary : colors.white}
+                />
               </TouchableOpacity>
             </View>
 
             <View style={styles.bookDisplayContainer}>
               <View style={styles.coverShadowContainer}>
-                <Image source={{ uri: book.coverUrl }} style={styles.bookCover} resizeMode="cover" />
+                <Image source={{ uri: book.coverImage || 'https://via.placeholder.com/300x450.png?text=No+Cover' }} style={styles.bookCover} resizeMode="cover" />
               </View>
               <Text style={styles.bookTitle} numberOfLines={1}>{book.title}</Text>
               <Text style={styles.bookAuthor}>{book.author}</Text>
@@ -73,16 +119,14 @@ export default function BookDetailScreen({
             </View>
           </View>
 
-          {/* Canvas */}
           <View style={styles.canvasContent}>
-            {/* Progress Section */}
             <View style={[styles.card, shadows.card]}>
               <View style={styles.cardHeader}>
                 <View>
                   <Text style={styles.cardSubtitle}>OVERALL PROGRESS</Text>
                   <View style={styles.progressTextRow}>
                     <Text style={styles.progressPercent}>{progressPercent}%</Text>
-                    <Text style={styles.progressDetails}>{book.readPages} / {book.totalPages} pages</Text>
+                    <Text style={styles.progressDetails}>{book.currentPage || 0} / {book.totalPages} pages</Text>
                   </View>
                 </View>
                 <View style={styles.avatarRow}>
@@ -119,7 +163,6 @@ export default function BookDetailScreen({
               </View>
             </View>
 
-            {/* Reading Session Card */}
             <View style={[styles.card, shadows.card]}>
               <View style={styles.sessionHeader}>
                 <Text style={styles.cardSubtitle}>READING SESSION</Text>
@@ -135,20 +178,18 @@ export default function BookDetailScreen({
                 <Text style={styles.timerText}>{formattedTime}</Text>
                 
                 <View style={styles.controlsRow}>
-                  {/* Pause Button */}
                   <TouchableOpacity
                     style={styles.controlButtonSmall}
-                    onPress={onPauseTimer}
+                    onPress={pauseTimer}
                     disabled={!isTimerRunning}
                     activeOpacity={0.7}
                   >
                     <MaterialIcons name="pause" size={24} color={isTimerRunning ? colors.textPrimary : colors.textSecondary} />
                   </TouchableOpacity>
 
-                  {/* Play Button */}
                   <TouchableOpacity
                     style={styles.controlButtonLarge}
-                    onPress={onStartTimer}
+                    onPress={startTimer}
                     activeOpacity={0.8}
                   >
                     <MaterialIcons
@@ -158,10 +199,9 @@ export default function BookDetailScreen({
                     />
                   </TouchableOpacity>
 
-                  {/* Stop Button */}
                   <TouchableOpacity
                     style={styles.controlButtonSmall}
-                    onPress={() => onStopTimer('Finished reading session.')}
+                    onPress={resetTimer}
                     activeOpacity={0.7}
                   >
                     <MaterialIcons name="stop" size={24} color={colors.textPrimary} />
@@ -178,25 +218,23 @@ export default function BookDetailScreen({
                   <View style={styles.sessionStatItem}>
                     <Text style={styles.sessionStatLabel}>Time elapsed</Text>
                     <Text style={styles.sessionStatValue}>
-                      0 min
+                      {Math.floor(seconds / 60)} min
                     </Text>
                   </View>
                 </View>
               </View>
             </View>
 
-            {/* Decorative Divider */}
             <View style={styles.dividerContainer}>
               <Svg height="12" width="100%" viewBox="0 0 100 12" preserveAspectRatio="none">
                 <Path d="M0 6C150 6 150 0 300 0C450 0 450 12 600 12C750 12 750 0 900 0C1050 0 1050 6 1200 6" stroke={colors.primary} strokeWidth="1.5" fill="none" />
               </Svg>
             </View>
 
-            {/* Status Buttons */}
             <View style={styles.actionRow}>
               <TouchableOpacity
-                style={[styles.outlineActionButton, book.status === 'in_progress' && styles.activeOutlineButton]}
-                onPress={onToggleCompletion}
+                style={[styles.outlineActionButton, book.status === 'reading' && styles.activeOutlineButton]}
+                onPress={() => updateProgress(book.id, book.currentPage > 0 ? book.currentPage : 1)}
                 activeOpacity={0.8}
               >
                 <Text style={styles.outlineActionText}>Currently Reading</Text>
@@ -204,7 +242,7 @@ export default function BookDetailScreen({
               
               <TouchableOpacity
                 style={styles.filledActionButton}
-                onPress={() => onUpdateProgress(book.totalPages)}
+                onPress={() => updateProgress(book.id, book.totalPages)}
                 activeOpacity={0.8}
               >
                 <Text style={styles.filledActionText}>Mark as Finished</Text>
@@ -213,7 +251,6 @@ export default function BookDetailScreen({
           </View>
         </ScrollView>
       </SafeAreaView>
-    </KeyboardAvoidingView>
   );
 }
 
@@ -291,9 +328,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
   },
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: 'rgba(13, 13, 13, 0.08)',
     borderRadius: 20,
     padding: spacing.containerPadding,
     marginBottom: spacing.lg,
@@ -337,14 +374,14 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: colors.white,
+    borderColor: colors.primary,
   },
   moreAvatarBadge: {
     width: 32,
     height: 32,
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: colors.white,
+    borderColor: colors.primary,
     backgroundColor: colors.surfaceContainer,
     alignItems: 'center',
     justifyContent: 'center',
@@ -373,9 +410,9 @@ const styles = StyleSheet.create({
   },
   pageInput: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    borderColor: 'rgba(13, 13, 13, 0.08)',
     borderRadius: radii.md,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -479,9 +516,9 @@ const styles = StyleSheet.create({
   },
   sessionStatItem: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    borderColor: 'rgba(255, 255, 255, 0.6)',
     padding: spacing.sm,
     borderRadius: radii.md,
     marginHorizontal: 4,

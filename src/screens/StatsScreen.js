@@ -7,25 +7,51 @@ import {
   Image,
   TouchableOpacity,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors, radii, spacing, typography, shadows } from '../utils/theme';
+import { colors, radii, spacing, shadows } from '../utils/theme';
+import useBookStore from '../store/bookStore';
 
-export default function StatsScreen({
-  streakCount = 12,
-  finishedBooksCount = 14,
-  totalPagesRead = 3420,
-  totalReadingHours = 124,
-  monthlyData = [],
-  readingHistory = [],
-  profilePhoto = null,
-  onDeleteHistoryItem,
-  onDeleteAllData,
-}) {
+const MOCK_MONTHLY_DATA = [
+  { month: 'JAN', count: 2, heightPct: 40, isActive: false },
+  { month: 'FEB', count: 3, heightPct: 60, isActive: false },
+  { month: 'MAR', count: 1, heightPct: 20, isActive: false },
+  { month: 'APR', count: 2, heightPct: 40, isActive: false },
+  { month: 'MAY', count: 4, heightPct: 80, isActive: false },
+  { month: 'JUN', count: 2, heightPct: 40, isActive: false },
+  { month: 'JUL', count: 3, heightPct: 60, isActive: false },
+  { month: 'AUG', count: 4, heightPct: 80, isActive: false },
+  { month: 'SEP', count: 5, heightPct: 100, isActive: true },
+  { month: 'OCT', count: 1, heightPct: 20, isActive: false },
+  { month: 'NOV', count: 2, heightPct: 40, isActive: false },
+  { month: 'DEC', count: 1, heightPct: 20, isActive: false },
+];
+
+export default function StatsScreen() {
+  const books = useBookStore((state) => state.books);
+  const profilePhoto = useBookStore((state) => state.profilePhoto);
+  const deleteBook = useBookStore((state) => state.deleteBook);
+  const clearBooks = useBookStore((state) => state.clearBooks);
+
+  const finishedBooksCount = books.filter((b) => b.status === 'completed').length;
+  const currentBooksCount = books.filter((b) => b.status !== 'completed').length;
+  const totalPagesRead = books.reduce((sum, b) => sum + (b.currentPage || 0), 0);
+
+  const handleDeleteAll = () => {
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete all books? Your profile photo will be kept.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: () => clearBooks() }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Top Profile Panel (Dark Ink) */}
         <View style={styles.darkHeaderPanel}>
           <View style={styles.headerTopRow}>
             <Text style={styles.logoText}>Maqra</Text>
@@ -34,7 +60,6 @@ export default function StatsScreen({
             </TouchableOpacity>
           </View>
 
-          {/* User Identity */}
           <View style={styles.userIdentityContainer}>
             <View style={styles.avatarContainer}>
               <Image
@@ -49,35 +74,32 @@ export default function StatsScreen({
             <Text style={styles.membershipText}>Member since 2024</Text>
           </View>
 
-          {/* Stats Grid inside Header */}
           <View style={styles.headerStatsGrid}>
             <View style={styles.headerStatCard}>
-              <Text style={styles.headerStatValue}>{finishedBooksCount}</Text>
+              <Text style={styles.headerStatValue}>{books.length}</Text>
               <Text style={styles.headerStatLabel}>Total Books</Text>
             </View>
             <View style={styles.headerStatCard}>
+              <Text style={styles.headerStatValue}>{finishedBooksCount}</Text>
+              <Text style={styles.headerStatLabel}>Completed</Text>
+            </View>
+            <View style={styles.headerStatCard}>
+              <Text style={styles.headerStatValue}>{currentBooksCount}</Text>
+              <Text style={styles.headerStatLabel}>Current Books</Text>
+            </View>
+            <View style={styles.headerStatCard}>
               <Text style={styles.headerStatValue}>{totalPagesRead.toLocaleString()}</Text>
-              <Text style={styles.headerStatLabel}>Total Pages</Text>
-            </View>
-            <View style={styles.headerStatCard}>
-              <Text style={styles.headerStatValue}>{totalReadingHours}</Text>
-              <Text style={styles.headerStatLabel}>Total Hours</Text>
-            </View>
-            <View style={styles.headerStatCard}>
-              <Text style={styles.headerStatValue}>{streakCount}</Text>
-              <Text style={styles.headerStatLabel}>Day Streak</Text>
+              <Text style={styles.headerStatLabel}>Pages Read</Text>
             </View>
           </View>
         </View>
 
-        {/* Content Canvas */}
         <View style={styles.canvasContent}>
-          {/* Monthly Chart Section */}
           <Text style={styles.sectionTitle}>Statistics</Text>
           <View style={[styles.chartCard, shadows.card]}>
             <Text style={styles.chartSubtitle}>Books finished per month</Text>
             <View style={styles.chartBarsRow}>
-              {monthlyData.map((data, index) => {
+              {MOCK_MONTHLY_DATA.map((data, index) => {
                 const isActive = data.isActive || false;
                 const barHeightPct = data.heightPct || 0;
 
@@ -101,7 +123,6 @@ export default function StatsScreen({
             </View>
           </View>
 
-          {/* Reading History Section */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Reading history</Text>
             <TouchableOpacity activeOpacity={0.6}>
@@ -110,41 +131,64 @@ export default function StatsScreen({
           </View>
 
           <View style={styles.historyList}>
-            {readingHistory.map((item) => (
-              <View key={item.id} style={[styles.historyRow, shadows.card]}>
-                <View style={styles.historyBookInfo}>
-                  <View style={styles.historyBookCoverContainer}>
-                    <Image source={{ uri: item.coverUrl }} style={styles.historyBookCover} resizeMode="cover" />
-                  </View>
-                  <View style={styles.historyTextDetails}>
-                    <Text style={styles.historyBookTitle}>{item.title}</Text>
-                    <Text style={styles.historyBookFinished}>
-                      Finished {item.formattedDate || '18 Jun 2026'}
-                    </Text>
-                    <View style={styles.historyBadgesRow}>
-                      <View style={styles.historyBadgeMint}>
-                        <Text style={styles.historyBadgeMintText}>{item.durationHours} hrs</Text>
+            {books.length === 0 ? (
+              <View style={{ alignItems: 'center', padding: 24 }}>
+                <Text style={{ color: colors.textSecondary, fontFamily: 'Inter_500Medium' }}>No books in library.</Text>
+              </View>
+            ) : (
+              books.map((item) => {
+                const isCompleted = item.status === "completed";
+                const progressPercent = item.totalPages > 0
+                  ? Math.round(((item.currentPage || 0) / item.totalPages) * 100)
+                  : 0;
+
+                return (
+                  <View key={item.id} style={[styles.historyRow, shadows.card]}>
+                    <View style={styles.historyBookInfo}>
+                      <View style={styles.historyBookCoverContainer}>
+                        <Image source={{ uri: item.coverImage || 'https://via.placeholder.com/300x450.png?text=No+Cover' }} style={styles.historyBookCover} resizeMode="cover" />
                       </View>
-                      <View style={styles.historyBadgeBlue}>
-                        <Text style={styles.historyBadgeBlueText}>{item.totalPages} pgs</Text>
+                      <View style={styles.historyTextDetails}>
+                        <Text style={styles.historyBookTitle}>{item.title}</Text>
+                        <Text style={styles.historyBookFinished}>
+                          {isCompleted ? "Completed" : `Progress: ${item.currentPage || 0} / ${item.totalPages || 0}`}
+                        </Text>
+                        <View style={styles.historyBadgesRow}>
+                          <View style={styles.historyBadgeMint}>
+                            <Text style={styles.historyBadgeMintText}>
+                              {isCompleted ? "Finished" : `${progressPercent}%`}
+                            </Text>
+                          </View>
+                          <View style={styles.historyBadgeBlue}>
+                            <Text style={styles.historyBadgeBlueText}>{item.totalPages || 0} pgs</Text>
+                          </View>
+                        </View>
                       </View>
                     </View>
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => {
+                        Alert.alert(
+                          "Confirm Removal",
+                          `Are you sure you want to remove '${item.title}'?`,
+                          [
+                            { text: "Cancel", style: "cancel" },
+                            { text: "Remove", style: "destructive", onPress: () => deleteBook(item.id) }
+                          ]
+                        );
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <MaterialIcons name="delete" size={20} color={colors.textSecondary} />
+                    </TouchableOpacity>
                   </View>
-                </View>
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => onDeleteHistoryItem(item.id)}
-                  activeOpacity={0.7}
-                >
-                  <MaterialIcons name="delete" size={20} color={colors.textSecondary} />
-                </TouchableOpacity>
-              </View>
-            ))}
+                );
+              })
+            )}
           </View>
 
-          {/* Danger Zone */}
           <View style={styles.dangerZone}>
-            <TouchableOpacity style={styles.dangerButton} onPress={onDeleteAllData} activeOpacity={0.8}>
+            <TouchableOpacity style={styles.dangerButton} onPress={handleDeleteAll} activeOpacity={0.8}>
               <Text style={styles.dangerButtonText}>Delete all data</Text>
             </TouchableOpacity>
             <Text style={styles.versionText}>Maqra v2.4.0 — All data is stored locally.</Text>
@@ -194,13 +238,18 @@ const styles = StyleSheet.create({
   avatarContainer: {
     position: 'relative',
     marginBottom: 12,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 5,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 2,
-    borderColor: colors.white,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 3,
+    borderColor: colors.primary,
   },
   cameraBadge: {
     position: 'absolute',
@@ -269,9 +318,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   chartCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: 'rgba(13, 13, 13, 0.08)',
     borderRadius: 20,
     padding: spacing.containerPadding,
     marginBottom: spacing.lg,
@@ -336,9 +385,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   historyRow: {
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: 'rgba(13, 13, 13, 0.08)',
     borderRadius: 20,
     padding: spacing.md,
     flexDirection: 'row',

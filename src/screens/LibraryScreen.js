@@ -17,11 +17,13 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
-import { colors, radii, spacing, typography, shadows } from '../utils/theme';
+import { colors, radii, spacing, shadows } from '../utils/theme';
 import BookCard from '../components/BookCard';
 import ProgressRing from '../components/ProgressRing';
 import { StatCard } from '../components/StatCard';
-import { router } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import useBookStore from '../store/bookStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -113,7 +115,7 @@ function GestureBottomSheet({ visible, onClose, children }) {
 
   return (
     <View style={StyleSheet.absoluteFill}>
-      {/* Backdrop */}
+     
       <Animated.View
         style={[
           styles.modalOverlayBackdrop,
@@ -143,8 +145,6 @@ function GestureBottomSheet({ visible, onClose, children }) {
           }}
         />
       </Animated.View>
-
-      {/* Sheet Content Container */}
       <View style={styles.modalOverlayContainer}>
         <Animated.View
           style={[
@@ -154,7 +154,6 @@ function GestureBottomSheet({ visible, onClose, children }) {
             },
           ]}
         >
-          {/* Touch Area for Dragging */}
           <View {...panResponder.panHandlers} style={styles.dragHandleArea}>
             <View style={styles.bottomSheetHandle} />
           </View>
@@ -165,26 +164,34 @@ function GestureBottomSheet({ visible, onClose, children }) {
   );
 }
 
-export default function LibraryScreen({
-  books = [],
-  goalCount = 20,
-  finishedBooksCount = 12,
-  streakCount = 12,
-  totalPagesRead = 1200,
-  profilePhoto = null,
-  onSelectBook,
-  onAddBook,
-  onStartSession,
-  onAddPhoto,
-  onPickCoverImage,
-  onDeleteBook,
-  onBottomSheetVisibilityChange,
-}) {
-  const goalProgress = 0.6;
+export default function LibraryScreen() {
+  const books = useBookStore((state) => state.books);
+  const profilePhoto = useBookStore((state) => state.profilePhoto);
+  const addBook = useBookStore((state) => state.addBook);
+  const deleteBook = useBookStore((state) => state.deleteBook);
+  const setProfilePhoto = useBookStore((state) => state.setProfilePhoto);
+  const navigation = useNavigation();
+
+  const [searchText, setSearchText] = useState('');
+  
+  const filteredBooks = books.filter((book) =>
+    book.title.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  const finishedBooksCount = books.filter(
+    (book) => book.status === "completed"
+  ).length;
+
+  const totalPagesRead = books.reduce((total, book) => {
+    return total + (book.currentPage || 0);
+  }, 0);
+
+  const goalCount = 12;
+  const goalProgress = goalCount > 0 ? finishedBooksCount / goalCount : 0;
+  const streakCount = 0;
 
   const [isExpanded, setIsExpanded] = useState(false);
-  
-  // Modal States
+
   const [isAddBookVisible, setIsAddBookVisible] = useState(false);
   const [newBookTitle, setNewBookTitle] = useState('');
   const [newBookAuthor, setNewBookAuthor] = useState('');
@@ -192,14 +199,23 @@ export default function LibraryScreen({
   const [newBookCover, setNewBookCover] = useState(null);
   const [isRemoveBookVisible, setIsRemoveBookVisible] = useState(false);
 
-
-  // Animated values
   const anim1 = useRef(new Animated.Value(0)).current;
   const anim2 = useRef(new Animated.Value(0)).current;
   const anim3 = useRef(new Animated.Value(0)).current;
   const anim4 = useRef(new Animated.Value(0)).current;
   const mainRotate = useRef(new Animated.Value(0)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    navigation.setOptions({
+      tabBarStyle: (isAddBookVisible || isRemoveBookVisible) ? { display: 'none' } : undefined
+    });
+    return () => {
+      navigation.setOptions({
+        tabBarStyle: undefined
+      });
+    };
+  }, [isAddBookVisible, isRemoveBookVisible, navigation]);
 
   useEffect(() => {
     if (isExpanded) {
@@ -292,44 +308,100 @@ export default function LibraryScreen({
   });
 
   const handlePickCover = async () => {
-    if (onPickCoverImage) {
-      const uri = await onPickCoverImage();
-      if (uri) {
-        setNewBookCover(uri);
-      }
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert(
+        "Permission Required",
+        "Please allow access to your photo library."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [2, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setNewBookCover(result.assets[0].uri);
     }
   };
 
   const handleSaveBook = () => {
-    const pages = parseInt(newBookPages, 10);
-    if (!newBookTitle.trim() || isNaN(pages) || pages <= 0) return;
+    if (!newBookTitle || !newBookPages) {
+      return;
+    }
 
-    onAddBook({
-      title: newBookTitle.trim(),
-      author: newBookAuthor.trim() || 'Unknown Author',
-      totalPages: pages,
-      coverUrl: newBookCover || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCKgYRBY9pAVpwZ72mu2lqyGHwTJHx_8AL8PbSVoYFMVsG3PDOdVVuaeTdmVrkwIe-NRYEza_I7xQtfiB7ekGOEz4nVpSMR4QbAqnHtcOoKLu18lG49zMk2lAA9ZUFc6Sd25DjcLDm8GCR0EUfSrrK3iuGRPW49vuIufDLhCsw5cX6zE1uPKe2SnlGNvdtFsnMjRbbV3Ms_zkcn19f8Cf4p3mLSh1oJP7qBXGrrEALl4X0LxKWOhPdliF0krebIT7XV3u0P2SPPFkA',
-    });
+    const newBook = {
+      id: Date.now().toString(),
+      title: newBookTitle,
+      author: newBookAuthor || "Unknown Author",
+      totalPages: Number(newBookPages),
+      currentPage: 0,
+      status: "to-read",
+      coverImage: newBookCover,
+    };
 
-    // Reset and close
-    setNewBookTitle('');
-    setNewBookAuthor('');
-    setNewBookPages('');
+    addBook(newBook);
+
+    setNewBookTitle("");
+    setNewBookAuthor("");
+    setNewBookPages("");
     setNewBookCover(null);
     setIsAddBookVisible(false);
   };
 
-  // Calculate coordinates for the arc fanning out from the bottom-right (center of FAB)
-  // Radius of arc = 110 (widened to accommodate 4 buttons)
-  
-  // Button 1 (top, 90 degrees): dx = 0, dy = -110
+  const handleAddPhoto = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert(
+        "Permission Required",
+        "Please allow access to your photo library."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setProfilePhoto(result.assets[0].uri);
+    }
+  };
+
+  const handleStartSession = () => {
+    const readingBook = books.find(
+      (book) => book.status === "reading"
+    );
+
+    if (readingBook) {
+      router.push(`/book/${readingBook.id}`);
+      return;
+    }
+
+    if (books.length > 0) {
+      router.push(`/book/${books[0].id}`);
+      return;
+    }
+
+    Alert.alert(
+      "No Books",
+      "Add a book before starting a reading session."
+    );
+  };
+
   const sub1TranslateX = 0;
   const sub1TranslateY = anim1.interpolate({
     inputRange: [0, 1],
     outputRange: [0, -110],
   });
 
-  // Button 2 (top-diagonal, 120 degrees): dx = -55, dy = -95.3
   const sub2TranslateX = anim2.interpolate({
     inputRange: [0, 0.4, 1],
     outputRange: [0, -10, -55],
@@ -339,7 +411,6 @@ export default function LibraryScreen({
     outputRange: [0, -70, -95.3],
   });
 
-  // Button 3 (left-diagonal, 150 degrees): dx = -95.3, dy = -55
   const sub3TranslateX = anim3.interpolate({
     inputRange: [0, 0.4, 1],
     outputRange: [0, -40, -95.3],
@@ -349,7 +420,6 @@ export default function LibraryScreen({
     outputRange: [0, -35, -55],
   });
 
-  // Button 4 (left, 180 degrees): dx = -110, dy = 0
   const sub4TranslateX = anim4.interpolate({
     inputRange: [0, 1],
     outputRange: [0, -110],
@@ -359,7 +429,6 @@ export default function LibraryScreen({
     outputRange: [0, -20, 0],
   });
 
-  // Scale and opacity interpolations
   const sub1Scale = anim1.interpolate({
     inputRange: [0, 1],
     outputRange: [0.3, 1],
@@ -386,7 +455,7 @@ export default function LibraryScreen({
       translateY: sub1TranslateY,
       scale: sub1Scale,
       opacity: anim1,
-      onPress: () => handleClose(onAddPhoto),
+      onPress: () => handleClose(handleAddPhoto),
     },
     {
       id: 'session',
@@ -396,7 +465,7 @@ export default function LibraryScreen({
       translateY: sub2TranslateY,
       scale: sub2Scale,
       opacity: anim2,
-      onPress: () => handleClose(onStartSession),
+      onPress: () => handleClose(handleStartSession),
     },
     {
       id: 'book',
@@ -407,7 +476,6 @@ export default function LibraryScreen({
       scale: sub3Scale,
       opacity: anim3,
       onPress: () => {
-        if (onBottomSheetVisibilityChange) onBottomSheetVisibilityChange(true);
         handleClose(() => setIsAddBookVisible(true));
       },
     },
@@ -420,7 +488,6 @@ export default function LibraryScreen({
       scale: sub4Scale,
       opacity: anim4,
       onPress: () => {
-        if (onBottomSheetVisibilityChange) onBottomSheetVisibilityChange(true);
         handleClose(() => setIsRemoveBookVisible(true));
       },
     },
@@ -428,16 +495,17 @@ export default function LibraryScreen({
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Top App Bar */}
       <View style={styles.header}>
         <View style={styles.profileSection}>
-          <View style={styles.avatarContainer}>
-            <Image
-              source={{
-                uri: profilePhoto || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCHzrnCzrjwiROv4PgItFRGi_VHtq8llyf5FvHi7lnD5c8IPzpKhVNCIyVosynMT0wUrjgEd-BIUKidJzTCpiIxT6tcMjSbDghw6khyZYiTEcf4mNw7Rdb1ziSYiqlmjyADoNYl2guZvJWLVWO4WpjTjBsgKqeIaY88ZTrAj0TzEh3hiw8JIKH5H6jVUFs8JWoy2XldrZ7tHpj5RJyn_3cfbFFtW62BP4MRPL3Z8MypK1elrpJzmf-ErSpdkFtGBNv9nRwH_T0plQI',
-              }}
-              style={styles.avatar}
-            />
+          <View style={styles.avatarShadow}>
+            <View style={styles.avatarContainer}>
+              <Image
+                source={{
+                  uri: profilePhoto || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCHzrnCzrjwiROv4PgItFRGi_VHtq8llyf5FvHi7lnD5c8IPzpKhVNCIyVosynMT0wUrjgEd-BIUKidJzTCpiIxT6tcMjSbDghw6khyZYiTEcf4mNw7Rdb1ziSYiqlmjyADoNYl2guZvJWLVWO4WpjTjBsgKqeIaY88ZTrAj0TzEh3hiw8JIKH5H6jVUFs8JWoy2XldrZ7tHpj5RJyn_3cfbFFtW62BP4MRPL3Z8MypK1elrpJzmf-ErSpdkFtGBNv9nRwH_T0plQI',
+                }}
+                style={styles.avatar}
+              />
+            </View>
           </View>
           <View style={styles.profileText}>
             <Text style={styles.welcomeText}>Good morning,</Text>
@@ -450,7 +518,6 @@ export default function LibraryScreen({
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Categories Tab Bar */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -458,7 +525,7 @@ export default function LibraryScreen({
           contentContainerStyle={styles.categoriesContent}
         >
           {['General', 'History', 'Literature', 'Magazine', 'Diary'].map((cat, idx) => {
-            const isActive = idx === 0; // General active
+            const isActive = idx === 0;
             return (
               <View key={cat} style={styles.categoryWrapper}>
                 <TouchableOpacity
@@ -477,19 +544,18 @@ export default function LibraryScreen({
           })}
         </ScrollView>
 
-        {/* Search Pill */}
         <View style={styles.searchContainer}>
           <View style={styles.searchPill}>
             <MaterialIcons name="search" size={22} color={colors.textSecondary} style={styles.searchIcon} />
-            <TextInput
-              placeholder="Search your library..."
-              placeholderTextColor={colors.textSecondary}
-              style={styles.searchInput}
-            />
+           <TextInput
+  placeholder="Search books..."
+  style={styles.searchInput}
+  value={searchText}
+  onChangeText={setSearchText}
+/>
           </View>
         </View>
 
-        {/* Goal Card */}
         <View style={[styles.goalCard, shadows.card]}>
           <View style={styles.goalInfo}>
             <Text style={styles.goalTitle}>2026 Goal</Text>
@@ -502,7 +568,6 @@ export default function LibraryScreen({
           <ProgressRing progress={goalProgress} size={88} strokeWidth={8} />
         </View>
 
-        {/* All Books Section */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>All Books</Text>
           <TouchableOpacity activeOpacity={0.6}>
@@ -515,19 +580,17 @@ export default function LibraryScreen({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.booksCarousel}
         >
-          {books.map((book) => (
-            <BookCard key={book.id} book={book} onPress={() => onSelectBook(book.id)} />
+          {filteredBooks.map((book) => (
+            <BookCard key={book.id} book={book} onPress={() => router.push(`/book/${book.id}`)} />
           ))}
         </ScrollView>
 
-        {/* Section Divider (Wavy Line) */}
         <View style={styles.dividerContainer}>
           <Svg height="12" width="100%" viewBox="0 0 100 12" preserveAspectRatio="none">
             <Path d="M0 10C25 10 25 2 50 2C75 2 75 10 100 10" stroke="#bdc9c1" strokeWidth="1.5" fill="none" />
           </Svg>
         </View>
 
-        {/* Statistics Section */}
         <Text style={styles.sectionTitleStats}>Statistics</Text>
         <View style={styles.statsGrid}>
           <StatCard title="Total Books" value={books.length} iconName="library-books" iconColor={colors.secondary} />
@@ -537,7 +600,6 @@ export default function LibraryScreen({
         </View>
       </ScrollView>
 
-      {/* Backdrop for expanded FAB */}
       <Animated.View
         style={[
           styles.backdrop,
@@ -554,7 +616,6 @@ export default function LibraryScreen({
         />
       </Animated.View>
 
-      {/* Sub-buttons for FAB */}
       {subButtons.map((btn) => (
         <Animated.View
           key={btn.id}
@@ -581,7 +642,6 @@ export default function LibraryScreen({
         </Animated.View>
       ))}
 
-      {/* Main Floating Action Button */}
       <View
         style={styles.fabContainer}
       >
@@ -596,7 +656,6 @@ export default function LibraryScreen({
         </TouchableOpacity>
       </View>
 
-      {/* Add Book Sheet */}
       <GestureBottomSheet
         visible={isAddBookVisible}
         onClose={() => setIsAddBookVisible(false)}
@@ -613,7 +672,6 @@ export default function LibraryScreen({
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalForm}>
-            {/* Cover Image Picker */}
             <TouchableOpacity style={styles.coverPickerContainer} onPress={handlePickCover} activeOpacity={0.8}>
               {newBookCover ? (
                 <View style={styles.coverPreviewWrapper}>
@@ -632,7 +690,6 @@ export default function LibraryScreen({
               )}
             </TouchableOpacity>
 
-            {/* Form Fields */}
             <View style={styles.formField}>
               <Text style={styles.formLabel}>Book Title</Text>
               <TextInput
@@ -667,7 +724,6 @@ export default function LibraryScreen({
               />
             </View>
 
-            {/* Buttons */}
             <View style={styles.modalButtonsRow}>
               <TouchableOpacity
                 style={styles.modalCancelButton}
@@ -689,7 +745,6 @@ export default function LibraryScreen({
         </KeyboardAvoidingView>
       </GestureBottomSheet>
 
-      {/* Remove Book Sheet */}
       <GestureBottomSheet
         visible={isRemoveBookVisible}
         onClose={() => setIsRemoveBookVisible(false)}
@@ -708,11 +763,11 @@ export default function LibraryScreen({
               <Text style={styles.emptyRemoveText}>No books in library to remove.</Text>
             </View>
           ) : (
-            books.map((b) => (
+             books.map((b) => (
               <View key={b.id} style={[styles.removeBookRow, shadows.card]}>
                 <View style={styles.removeBookInfo}>
                   <View style={styles.removeBookCoverContainer}>
-                    <Image source={{ uri: b.coverUrl }} style={styles.removeBookCover} resizeMode="cover" />
+                    <Image source={{ uri: b.coverImage || 'https://via.placeholder.com/300x450.png?text=No+Cover' }} style={styles.removeBookCover} resizeMode="cover" />
                   </View>
                   <View style={styles.removeBookTextDetails}>
                     <Text style={styles.removeBookTitle} numberOfLines={1}>{b.title}</Text>
@@ -728,7 +783,7 @@ export default function LibraryScreen({
                       `Are you sure you want to remove '${b.title}' from your library?`,
                       [
                         { text: "Cancel", style: "cancel" },
-                        { text: "Remove", style: "destructive", onPress: () => onDeleteBook(b.id) }
+                        { text: "Remove", style: "destructive", onPress: () => deleteBook(b.id) }
                       ]
                     );
                   }}
@@ -769,13 +824,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  avatarShadow: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
   avatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: radii.full,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: colors.white,
+    borderColor: colors.primary,
     backgroundColor: colors.surfaceContainerHighest,
   },
   avatar: {
@@ -812,7 +874,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   scrollContent: {
-    paddingBottom: 120, // space for bottom nav
+    paddingBottom: 120,
   },
   categoriesContainer: {
     marginVertical: spacing.sm,
@@ -841,9 +903,9 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: radii.xl,
     opacity: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    borderColor: 'rgba(13, 13, 13, 0.08)',
   },
   categoryLabel: {
     fontFamily: 'Inter_500Medium',
@@ -863,9 +925,9 @@ const styles = StyleSheet.create({
   searchPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    borderColor: 'rgba(13, 13, 13, 0.08)',
     borderRadius: radii.full,
     paddingHorizontal: 20,
     paddingVertical: 12,
@@ -881,9 +943,9 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   goalCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: 'rgba(13, 13, 13, 0.08)',
     marginHorizontal: spacing.marginEdge,
     borderRadius: 24,
     padding: 24,
@@ -998,7 +1060,7 @@ const styles = StyleSheet.create({
   subButtonContainer: {
     position: 'absolute',
     bottom: 106,
-    right: 30, // centered relative to the 56px fab
+    right: 30,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
@@ -1133,7 +1195,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   formInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: colors.white,
     borderRadius: radii.md,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -1141,7 +1203,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_300Light',
     color: colors.textPrimary,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    borderColor: 'rgba(13, 13, 13, 0.08)',
   },
   modalButtonsRow: {
     flexDirection: 'row',
@@ -1198,9 +1260,9 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   removeBookRow: {
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: 'rgba(13, 13, 13, 0.08)',
     borderRadius: radii.lg,
     padding: 12,
     flexDirection: 'row',

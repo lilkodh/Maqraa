@@ -40,6 +40,14 @@ export function BottomNav({ activeTab = 'home', state, descriptors, navigation }
   }
 
   const isTabBar = !!state;
+  if (isTabBar) {
+    const route = state.routes[state.index];
+    const { options } = descriptors[route.key];
+    if (options.tabBarStyle?.display === 'none') {
+      return null;
+    }
+  }
+
   const tabs = [
     { id: 'home', label: 'Home', icon: 'home', route: '/' },
     { id: 'profile', label: 'Profile', icon: 'person', route: '/stats' },
@@ -52,7 +60,6 @@ export function BottomNav({ activeTab = 'home', state, descriptors, navigation }
     if (routeName === 'index') currentActiveTab = 'home';
     else if (routeName === 'stats') currentActiveTab = 'profile';
 
-    // Hide bottom tab bar on detail screens (e.g. book/[id])
     if (routeName === 'book/[id]') {
       return null;
     }
@@ -99,9 +106,9 @@ export function BottomNav({ activeTab = 'home', state, descriptors, navigation }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: 'rgba(13, 13, 13, 0.08)',
     padding: spacing.containerPadding,
     borderRadius: radii.xl,
     flex: 1,
@@ -125,15 +132,14 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 2,
   },
-  // Navigation styles
   navContainer: {
     position: 'absolute',
     bottom: 24,
     left: spacing.marginEdge,
     right: spacing.marginEdge,
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.6)',
+    borderColor: 'rgba(13, 13, 13, 0.08)',
     borderRadius: radii.full,
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -150,7 +156,7 @@ const styles = StyleSheet.create({
     minWidth: 64,
   },
   activeTabButton: {
-    backgroundColor: 'rgba(62, 89, 172, 0.1)', // Light tint of Majorelle Blue
+    backgroundColor: 'rgba(62, 89, 172, 0.1)',
   },
   tabLabel: {
     fontFamily: 'Inter_500Medium',

@@ -7,14 +7,12 @@ export default function ProgressRing({ progress = 0.6, size = 96, strokeWidth = 
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   
-  // Constrain progress between 0 and 1
   const constrainedProgress = Math.min(1, Math.max(0, progress));
   const strokeDashoffset = circumference - constrainedProgress * circumference;
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
       <Svg width={size} height={size}>
-        {/* Background Track */}
         <Circle
           cx={size / 2}
           cy={size / 2}
@@ -23,7 +21,6 @@ export default function ProgressRing({ progress = 0.6, size = 96, strokeWidth = 
           strokeWidth={strokeWidth}
           fill="transparent"
         />
-        {/* Progress Fill */}
         <Circle
           cx={size / 2}
           cy={size / 2}
