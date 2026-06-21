@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   Animated,
   Platform,
+  KeyboardAvoidingView,
   Dimensions,
   PanResponder,
   Alert,
