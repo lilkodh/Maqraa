@@ -661,7 +661,7 @@ export default function LibraryScreen() {
         onClose={() => setIsAddBookVisible(false)}
       >
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.modalKeyboardAvoiding}
         >
           <View style={styles.modalHeader}>
