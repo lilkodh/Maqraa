@@ -1,7 +1,6 @@
-import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors, spacing, typography } from '../utils/theme';
+import { colors, spacing } from '../utils/theme';
 
 export default function Emptystate({ message = 'No data available', subMessage = 'Check back later.' }) {
   return (

@@ -10,7 +10,6 @@ import {
   SafeAreaView,
   Animated,
   Platform,
-  KeyboardAvoidingView,
   Dimensions,
   PanResponder,
   Alert,
@@ -767,7 +766,13 @@ export default function LibraryScreen() {
               <View key={b.id} style={[styles.removeBookRow, shadows.card]}>
                 <View style={styles.removeBookInfo}>
                   <View style={styles.removeBookCoverContainer}>
-                    <Image source={{ uri: b.coverImage || 'https://via.placeholder.com/300x450.png?text=No+Cover' }} style={styles.removeBookCover} resizeMode="cover" />
+                    {b.coverImage ? (
+                      <Image source={{ uri: b.coverImage }} style={styles.removeBookCover} resizeMode="cover" />
+                    ) : (
+                      <View style={styles.placeholderCoverContainer}>
+                        <MaterialIcons name="menu-book" size={16} color={colors.primary} />
+                      </View>
+                    )}
                   </View>
                   <View style={styles.removeBookTextDetails}>
                     <Text style={styles.removeBookTitle} numberOfLines={1}>{b.title}</Text>
@@ -1284,6 +1289,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceContainer,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  placeholderCoverContainer: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(181, 137, 0, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   removeBookCover: {
     width: '100%',

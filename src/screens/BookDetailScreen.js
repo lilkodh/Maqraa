@@ -106,7 +106,13 @@ export default function BookDetailScreen() {
 
             <View style={styles.bookDisplayContainer}>
               <View style={styles.coverShadowContainer}>
-                <Image source={{ uri: book.coverImage || 'https://via.placeholder.com/300x450.png?text=No+Cover' }} style={styles.bookCover} resizeMode="cover" />
+                {book.coverImage ? (
+                  <Image source={{ uri: book.coverImage }} style={styles.bookCover} resizeMode="cover" />
+                ) : (
+                  <View style={styles.detailPlaceholderContainer}>
+                    <MaterialIcons name="menu-book" size={64} color={colors.primary} />
+                  </View>
+                )}
               </View>
               <Text style={styles.bookTitle} numberOfLines={1}>{book.title}</Text>
               <Text style={styles.bookAuthor}>{book.author}</Text>
@@ -255,12 +261,16 @@ export default function BookDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  keyboardContainer: {
-    flex: 1,
-  },
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  detailPlaceholderContainer: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(181, 137, 0, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scrollContent: {
     paddingBottom: 120,

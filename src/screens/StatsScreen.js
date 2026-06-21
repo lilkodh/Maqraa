@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   View,
   Text,
@@ -146,7 +145,13 @@ export default function StatsScreen() {
                   <View key={item.id} style={[styles.historyRow, shadows.card]}>
                     <View style={styles.historyBookInfo}>
                       <View style={styles.historyBookCoverContainer}>
-                        <Image source={{ uri: item.coverImage || 'https://via.placeholder.com/300x450.png?text=No+Cover' }} style={styles.historyBookCover} resizeMode="cover" />
+                        {item.coverImage ? (
+                          <Image source={{ uri: item.coverImage }} style={styles.historyBookCover} resizeMode="cover" />
+                        ) : (
+                          <View style={styles.placeholderCoverContainer}>
+                            <MaterialIcons name="menu-book" size={16} color={colors.primary} />
+                          </View>
+                        )}
                       </View>
                       <View style={styles.historyTextDetails}>
                         <Text style={styles.historyBookTitle}>{item.title}</Text>
@@ -408,6 +413,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceContainer,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  placeholderCoverContainer: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(181, 137, 0, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   historyBookCover: {
     width: '100%',
